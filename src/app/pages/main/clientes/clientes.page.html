@@ -1,0 +1,69 @@
+<app-header title="Clientes" [showMenu]="true" />
+
+<ion-content [fullscreen]="true" class="ion-padding">
+
+  <ion-list>
+    <ion-item>
+      <select-ruta (onEmitRuta)="onChangeRuta($event)" />
+    </ion-item>
+    <ion-item>
+      <ion-grid>
+        <ion-col>
+          <app-search-bar
+            *ngIf="!loading"
+            (onEmitQuery)="onSearchBar($event)" />
+          <ion-skeleton-text
+            *ngIf="loading"
+            animated 
+            style="width: 100%; height: 50px;"></ion-skeleton-text>
+        </ion-col>
+      </ion-grid>
+    </ion-item>
+  </ion-list>
+
+  <ion-list *ngIf="clientes.length > 0 && !loading">
+    <ion-item
+      *ngFor="let cliente of clientesFiltrados"
+      detail
+      button
+      (click)="goToCliente(cliente)"
+    >
+      <ion-label>
+        <ion-grid>
+          <ion-row>
+            <ion-col>
+              <ion-text><h3>{{cliente.nombre | titlecase}}</h3></ion-text>
+            </ion-col>
+            <ion-col size="auto">
+              <ion-text>
+                <h3>
+                  <ion-badge 
+                    [color]="cliente.status ? 'success':'danger' " 
+                    mode="ios">{{ cliente.status ? 'Activo':'Inactivo' }}</ion-badge>
+                </h3>
+              </ion-text>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <ion-list *ngIf="loading">
+    <ion-item class="product-item" *ngFor="let product of [1,1,1,1,1,1]">
+      <ion-label>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="10">
+              <ion-skeleton-text animated style="width: 80%"></ion-skeleton-text>
+            </ion-col>
+            <ion-col size="2">
+              <ion-skeleton-text animated style="width: 100%"></ion-skeleton-text>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+</ion-content>

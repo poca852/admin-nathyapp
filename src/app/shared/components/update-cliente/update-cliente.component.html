@@ -1,0 +1,72 @@
+<app-header title="Actualizar Cliente" [isModal]="true" />
+
+<ion-content class="ion-padding">
+  <form (ngSubmit)="updateCliente()" [formGroup]="form">
+    <custom-input
+      [control]="form.controls.nombre"
+      type="text"
+      label="Nombre"
+    />
+
+    <custom-input
+      [control]="form.controls.alias"
+      type="text"
+      label="Alias"
+    />
+
+    <custom-input
+      [control]="form.controls.dpi"
+      type="text"
+      label="Documento"
+    />
+
+    <custom-input
+      [control]="form.controls.direccion"
+      type="text"
+      label="Direccion"
+    />
+
+    <custom-input
+      [control]="form.controls.telefono"
+      type="text"
+      label="Telefono"
+    />
+
+    <ion-item class="custom-input" lines="none">
+
+      <div class="fotos">
+
+        <div class="foto" (click)="takePicture('document_image')">
+          <ion-img 
+            *ngIf="!!imagesCliente.document_image"
+            [src]="imagesCliente.document_image"></ion-img>
+          <ion-icon name="camera-outline" *ngIf="!imagesCliente.document_image"></ion-icon>
+          <ion-text *ngIf="!imagesCliente.document_image">Documento</ion-text>
+        </div>
+  
+        <div class="foto" (click)="takePicture('business_image')">
+          <ion-img 
+            *ngIf="!!imagesCliente.business_image"
+            [src]="imagesCliente.business_image"></ion-img>
+          <ion-icon name="camera-outline" *ngIf="!imagesCliente.business_image"></ion-icon>
+          <ion-text *ngIf="!imagesCliente.business_image">Negocio</ion-text>
+        </div>
+  
+        <div class="foto" (click)="takePicture('house_image')">
+          <ion-img
+            *ngIf="!!imagesCliente.house_image" 
+            [src]="imagesCliente.house_image"></ion-img>
+          <ion-icon name="camera-outline" *ngIf="!imagesCliente.house_image"></ion-icon>
+          <ion-text *ngIf="!imagesCliente.house_image">Casa</ion-text>
+        </div>
+  
+      </div>
+
+    </ion-item>
+
+    <ion-button mode="ios" type="submit" expand="block">
+      Actualizar
+      <ion-icon slot="end" name="checkmark-circle-outline"></ion-icon>
+    </ion-button>
+  </form>
+</ion-content>

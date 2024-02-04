@@ -1,8 +1,8 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'io.ionic.starter',
-  appName: 'new-admin',
+  appId: 'lat.nathyapp.admin',
+  appName: 'Administrador NathyApp',
   webDir: 'www',
   server: {
     androidScheme: 'https'

@@ -1,0 +1,62 @@
+<app-header title="Dashboard" [showMenu]="true" />
+
+<ion-content [fullscreen]="true" class="ion-padding">
+
+  <!-- este es el skeleton del loading -->
+  <ion-list *ngIf="loading">
+    <ion-item class="product-item" *ngFor="let product of [1,1,1,1,1,1]">
+      <ion-label>
+        <ion-grid>
+          <ion-row>
+            <ion-col>
+              <ion-skeleton-text animated style="width: 80%"></ion-skeleton-text>
+            </ion-col>
+            <ion-col>
+              <ion-skeleton-text animated style="width: 50%"></ion-skeleton-text>
+            </ion-col>
+            <ion-col>
+              <ion-skeleton-text animated style="width: 50%"></ion-skeleton-text>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <ion-list *ngIf="!loading && !!empresa">
+
+    <ion-item *ngFor="let ruta of empresa.rutas">
+      <ion-grid>
+
+        <ion-row>
+
+          <ion-col>
+            <ion-text>{{ ruta.nombre | titlecase }}</ion-text>
+          </ion-col>
+
+          <ion-col>
+            <ion-badge [color]="ruta.status ? 'success':'danger' " mode="ios">
+              {{ ruta.status ? 'Abierta':'Cerrada' }}
+            </ion-badge>
+          </ion-col>
+
+          <ion-col>
+
+            <ion-button 
+              (click)="confirmacion(ruta)" 
+              size="small" 
+              [color]="ruta.status ? 'danger':'success'"
+              [disabled]="utilsSvc.getFromLocalStorage('user').rol !== 'ADMIN'">
+              {{ ruta.status ? 'Cerrar':'Abrir' }}
+            </ion-button>
+
+          </ion-col>
+
+        </ion-row>
+
+      </ion-grid>
+    </ion-item>
+
+  </ion-list>
+
+</ion-content>

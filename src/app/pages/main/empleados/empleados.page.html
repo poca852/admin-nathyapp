@@ -1,0 +1,52 @@
+<app-header title="Empleados" [showMenu]="true" />
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-grid>
+    <ion-row>
+      <ion-col>
+        <app-search-bar (onEmitQuery)="filtrarClientes($event)" />
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <ion-list>
+    <ion-item
+      *ngFor="let employe of employesFilter" 
+      button 
+      detail
+      (click)="presentActions(employe)">
+      <ion-label>
+        <ion-grid>
+          <ion-row>
+            <ion-col>
+              <ion-text>
+                <h3>{{employe.nombre | titlecase}}</h3>
+              </ion-text>
+            </ion-col>
+            <ion-col>
+              <ion-text>{{employe.rol | titlecase}}</ion-text>
+            </ion-col>
+            <ion-col>
+              <ion-text>
+                <ion-badge [color]="employe.estado ? 'success' : 'danger'" mode="ios">
+                  {{employe.estado ? 'Activo' : 'Bloqueado'}}
+                </ion-badge>
+              </ion-text>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button>
+      <ion-icon name="chevron-up-circle"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-list side="top">
+      <ion-fab-button (click)="addUpdateEmploye()">
+        <ion-icon name="people"></ion-icon>
+      </ion-fab-button>
+    </ion-fab-list>
+  </ion-fab>
+</ion-content>

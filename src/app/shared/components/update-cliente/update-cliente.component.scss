@@ -1,0 +1,34 @@
+.fotos {
+   display: flex;
+   flex-direction: row;
+   justify-content: space-between;
+   align-content: center;
+   margin-top: 20px;
+   margin-bottom: 20px;
+
+   .foto {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #ccc;
+      width: 100px;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      height: 100px;
+
+      ion-img {
+         width: 100%;
+         height: 100%;
+      }
+
+      ion-icon {
+         font-size: 50px;
+         color: #ccc;
+      }
+
+      ion-text {
+         font-size: 12px;
+         color: #ccc;
+      }
+   }
+}

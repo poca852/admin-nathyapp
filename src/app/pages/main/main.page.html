@@ -1,0 +1,45 @@
+<ion-menu contentId="menu-content" menuId="menu-content" side="start">
+
+  <app-header title="Menu" />
+
+  <ion-content class="ion-text-center">
+
+    <!-- <ion-avatar>
+      <img *ngIf="user().image" [src]="user()?.image" />
+  
+      <ion-icon *ngIf="!user().image" class="empty-icon" name="person-circle-outline"></ion-icon>
+    </ion-avatar> -->
+    
+    <h4>{{user().nombre | titlecase}}</h4>
+  
+    <!-- <ion-item [ngClass]="{'active': currentPath === page.url}" [routerLink]="page.url" routerDirection="root" detail>
+      <ion-icon slot="start" [name]="page.icon"></ion-icon>
+      <ion-label>{{page.title}}</ion-label>
+    </ion-item> -->
+    <ion-menu-toggle auto-hide="false" *ngFor="let page of pages">
+
+
+      <ng-container *ngIf="isAdminOrSuperAdmin() || page.url !== '/main/empleados' && page.url !== '/main/rutas'">
+        <ion-item [ngClass]="{'active': currentPath === page.url}" [routerLink]="page.url" routerDirection="root" detail>
+          <ion-icon slot="start" [name]="page.icon"></ion-icon>
+          <ion-label>{{page.title}}</ion-label>
+        </ion-item>
+      </ng-container>
+
+    </ion-menu-toggle>
+
+  </ion-content>
+
+  <ion-footer class="ion-no-border safe-p-bottom">
+    <ion-menu-toggle auto-hide="false">
+
+      <ion-item lines="none" (click)="signOut()">
+        <ion-icon slot="start" name="log-out-outline"></ion-icon>
+        <ion-label>Cerrar Sesion</ion-label>
+      </ion-item>
+
+    </ion-menu-toggle>
+  </ion-footer>
+</ion-menu>
+
+<ion-router-outlet id="menu-content" main></ion-router-outlet>

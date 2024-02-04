@@ -1,0 +1,42 @@
+<app-header title="Empresa" [showMenu]="true" />
+
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-card *ngIf="!!empresa">
+
+    <ion-card-header>
+      <ion-card-title>
+        {{ empresa.name | titlecase }}
+      </ion-card-title>
+      <ion-button (click)="getBackup()">
+        Copia de seguridad
+      </ion-button>
+    </ion-card-header>
+
+    <ion-card-content>
+
+      <ion-text>
+
+        <h2><strong>Pais: </strong> {{empresa.country | titlecase}} </h2>
+        
+      </ion-text>
+
+      <ion-text>
+        <h2><strong>N° de Rutas: </strong> {{empresa.rutas.length}} </h2>
+      </ion-text>
+
+    </ion-card-content>
+
+  </ion-card>
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button>
+      <ion-icon name="chevron-up-circle"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-list side="top">
+      <ion-fab-button (click)="editEmpresa()">
+        <ion-icon name="pencil"></ion-icon>
+      </ion-fab-button>
+    </ion-fab-list>
+  </ion-fab>
+</ion-content>

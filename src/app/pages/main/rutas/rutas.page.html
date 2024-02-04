@@ -1,0 +1,59 @@
+<app-header title="Rutas" [showMenu]="true" />
+
+<ion-content [fullscreen]="true" class="ion-padding">
+
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- aqui pondre el skeleton -->
+  <ion-list *ngIf="loading">
+    <ion-item class="product-item" *ngFor="let product of [1,1,1,1,1,1]">
+      <ion-label>
+        <ion-grid>
+          <ion-row>
+            <ion-col>
+              <ion-skeleton-text animated style="width: 80%"></ion-skeleton-text>
+            </ion-col>
+            <ion-col size="1">
+              <ion-skeleton-text animated style="width: 30%"></ion-skeleton-text>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <ion-list *ngIf="!loading && empresa">
+    <ion-item
+      *ngFor="let ruta of empresa.rutas">
+      <ion-label>
+        <ion-grid>
+          <ion-row>
+            <ion-col>
+              <ion-text>
+                <h3>{{ruta.nombre | titlecase}}</h3>
+              </ion-text>
+            </ion-col>
+            <ion-col size="auto">
+              <ion-button fill="clear" (click)="presentActions(ruta)">
+                <ion-icon name="ellipsis-vertical-outline"></ion-icon>
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button>
+      <ion-icon name="chevron-up-circle"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-list side="top">
+      <ion-fab-button (click)="addUpdateRuta()">
+        <ion-icon name="add"></ion-icon>
+      </ion-fab-button>
+    </ion-fab-list>
+  </ion-fab>
+</ion-content>

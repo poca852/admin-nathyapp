@@ -1,0 +1,88 @@
+<app-header title="Oficina" [showMenu]="true" /> 
+
+<ion-content [fullscreen]="true" class="ion-padding">
+ 
+  <ion-list>
+
+    <ion-item>
+
+      <select-ruta (onEmitRuta)="onChangeRuta($event)" />
+
+    </ion-item>
+
+    <ion-item>
+
+      <ion-select
+        aria-label="Movimiento" 
+        interface="popover"
+        [formControl]="oficina"
+        placeholder="Selecciona un tipo de Oficina">
+      <ion-select-option
+        *ngFor="let oficina of listOficina"
+        [value]="oficina"
+      >
+         {{oficina | titlecase}}
+        </ion-select-option>
+      </ion-select>
+
+    </ion-item>
+
+    <ion-item>
+
+      <ion-datetime-button datetime="datetime"></ion-datetime-button>
+      <ion-modal #modal [keepContentsMounted]="true">
+        <ng-template>
+          <ion-datetime mode="ios" id="datetime" #datetime presentation="date" (ionChange)="onChangeDay($event)"
+            locale="es-GT">
+            <span slot="title">Selecciona una fecha</span>
+          </ion-datetime>
+        </ng-template>
+      </ion-modal>
+
+    </ion-item>
+
+  </ion-list>
+
+  <ion-button (click)="submit()" expand="block">
+    Buscar
+  </ion-button>
+
+  <ion-list *ngIf="data.length > 0" class="ion-margin-top">
+    <ion-item
+      *ngFor="let d of data"
+    >
+      <ion-label>
+
+        <ion-text *ngIf="d.gasto">
+          <h3>
+            <strong>Concepto: </strong>
+            {{d.gasto.gasto | titlecase}}
+          </h3>
+        </ion-text>
+
+        <ion-text>
+          <h3>
+            <strong>Valor: </strong>
+            {{ d.valor | currency:'USD':'symbol':'':'en' }}
+          </h3>
+        </ion-text>
+
+        <ion-text>
+          <h3>
+            <strong>Fecha: </strong>
+            {{ d.fecha | date:'fullDate' }}
+          </h3>
+        </ion-text>
+
+        <ion-text *ngIf="!!d.nota">
+          <h3>
+            <strong>Detalle: </strong>
+            {{ d.nota | lowercase }}
+          </h3>
+        </ion-text>
+
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+</ion-content>

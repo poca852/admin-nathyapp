@@ -1,0 +1,153 @@
+<ion-card 
+  *ngIf="!!ruta" 
+  mode="ios">
+
+  <ion-card-header>
+    <ion-grid fixed>
+      <ion-row>
+        <ion-col>
+          <ion-card-title>{{ ruta.nombre | titlecase }}</ion-card-title>
+        </ion-col>
+        <ion-col size="auto">
+          <ion-button (click)="updateRutas()" fill="clear">
+            <ion-icon name="refresh-outline"></ion-icon>
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-card-header>
+
+  <ion-card-content>
+    <ion-grid>
+
+      <ion-row>
+        <ion-col size="auto" class="ion-text-end">
+          <ion-text>Estado:</ion-text>
+        </ion-col>
+        <ion-col>
+          <ion-badge
+            [color]="ruta.status ? 'success': 'danger'"
+          >
+            {{ruta.status ? 'Abierta': 'Cerrada'}}
+          </ion-badge>
+        </ion-col>
+      </ion-row>
+
+      <ion-row>
+        <ion-col size="5">
+          <ion-text>Ultima Apertura:</ion-text>
+        </ion-col>
+        <ion-col>
+          <ion-text>{{ruta.ultima_apertura}}</ion-text>
+        </ion-col>
+      </ion-row>
+
+      <ion-row>
+        <ion-col size="5">
+          <ion-text>Ultimo Cierre:</ion-text>
+        </ion-col>
+        <ion-col>
+          <ion-text>{{ruta.ultimo_cierre}}</ion-text>
+        </ion-col>
+      </ion-row>
+
+      <ion-row>
+        <ion-col size="5">
+          <ion-text>Cartera:</ion-text>
+        </ion-col>
+        <ion-col>
+          <ion-text>{{ruta.cartera | currency:'USD':'symbol':'':'en'}}</ion-text>
+        </ion-col>
+      </ion-row>
+
+      <ion-row>
+        <ion-col size="5">
+          <ion-text>Total Clientes:</ion-text>
+        </ion-col>
+        <ion-col>
+          <ion-text>{{ruta.clientes}}</ion-text>
+        </ion-col>
+      </ion-row>
+
+      <ion-row>
+        <ion-col size="5">
+          <ion-text>Clientes activos:</ion-text>
+        </ion-col>
+        <ion-col>
+          <ion-text>{{ruta.clientes_activos}}</ion-text>
+        </ion-col>
+      </ion-row>
+
+      <ion-row>
+        <ion-col>
+          <ion-text><=== Caja Actual ===></ion-text>
+        </ion-col>
+      </ion-row>
+
+      <ion-row>
+        <ion-col size="5">
+          <ion-text>Base:</ion-text>
+        </ion-col>
+        <ion-col>
+          <ion-text>{{ruta.caja_actual?.base | currency:'USD':'symbol':'':'en'}}</ion-text>
+        </ion-col>
+      </ion-row>
+
+      <ion-row>
+        <ion-col size="5">
+          <ion-text>Cobro:</ion-text>
+        </ion-col>
+        <ion-col>
+          <ion-text>{{ruta.caja_actual?.cobro | currency:'USD':'symbol':'':'en'}}</ion-text>
+        </ion-col>
+      </ion-row>
+
+      <ion-row>
+        <ion-col size="5">
+          <ion-text>Prestamo:</ion-text>
+        </ion-col>
+        <ion-col>
+          <ion-text>{{ruta.caja_actual?.prestamo | currency:'USD':'symbol':'':'en'}}</ion-text>
+        </ion-col>
+      </ion-row>
+
+      <ion-row>
+        <ion-col size="5">
+          <ion-text>Gastos:</ion-text>
+        </ion-col>
+        <ion-col>
+          <ion-text>{{ruta.caja_actual?.gasto | currency:'USD':'symbol':'':'en'}}</ion-text>
+        </ion-col>
+      </ion-row>
+
+      <ion-row>
+        <ion-col size="5">
+          <ion-text>Retiros:</ion-text>
+        </ion-col>
+        <ion-col>
+          <ion-text>{{ruta.caja_actual?.retiro | currency:'USD':'symbol':'':'en'}}</ion-text>
+        </ion-col>
+      </ion-row>
+
+      <ion-row>
+        <ion-col size="5">
+          <ion-text>Inversion:</ion-text>
+        </ion-col>
+        <ion-col>
+          <ion-text>{{ruta.caja_actual?.inversion | currency:'USD':'symbol':'':'en'}}</ion-text>
+        </ion-col>
+      </ion-row>
+
+      <ion-row>
+        <ion-col size="5">
+          <ion-text>Caja Final:</ion-text>
+        </ion-col>
+        <ion-col>
+          <ion-text>{{ruta.caja_actual?.caja_final | currency:'USD':'symbol':'':'en'}}</ion-text>
+        </ion-col>
+      </ion-row>
+
+    </ion-grid>
+  </ion-card-content>
+
+</ion-card>

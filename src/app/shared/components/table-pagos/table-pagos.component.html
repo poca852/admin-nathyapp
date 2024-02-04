@@ -1,0 +1,18 @@
+<ion-list>
+  <ion-item 
+    *ngFor="let pago of pagos"
+    button 
+    detail="true">
+    <ion-label>
+      <ion-text>
+        <h2><strong>{{ pago.cliente.nombre | titlecase }}</strong></h2>
+      </ion-text>
+      <ion-text>
+        <h3>Fecha: {{pago.fecha}}</h3>
+      </ion-text>
+      <ion-text>
+        <h3>Valor: {{pago.valor | currency:'$}}</h3>
+      </ion-text>
+    </ion-label>
+  </ion-item>
+</ion-list>

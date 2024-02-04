@@ -1,0 +1,12 @@
+<ion-select 
+  *ngIf="!!rutas"
+  placeholder="Seleccione una Ruta" 
+  justify="start"
+  interface="popover"
+  aria-label="Ruta"
+  (ionChange)="handleChangeSelect($event)"
+  [formControl]="rutaControl">
+  <ion-select-option 
+      *ngFor="let ruta of rutas" 
+      [value]="ruta._id">{{ ruta.nombre | titlecase}}</ion-select-option>
+</ion-select>
