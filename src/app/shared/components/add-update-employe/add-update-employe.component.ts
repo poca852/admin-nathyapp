@@ -83,11 +83,11 @@ export class AddUpdateEmployeComponent implements OnInit {
     const loading = await this.utilsSvc.loading();
     loading.present();
     
-    if(!this.form.controls.ruta) {
+    if(!this.form.controls.ruta.value) {
       delete this.form.controls.ruta;
     }
 
-    if(!this.form.controls.rutas) {
+    if(!this.form.controls.rutas.value.length) {
       delete this.form.controls.rutas;
     }
 
