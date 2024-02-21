@@ -86,8 +86,8 @@ export class AddUpdateEmployeComponent implements OnInit {
     if(!this.form.controls.ruta.value) {
       delete this.form.controls.ruta;
     }
-
-    if(!this.form.controls.rutas.value.length) {
+    
+    if(!!this.form.controls.rutas.value) {
       delete this.form.controls.rutas;
     }
 

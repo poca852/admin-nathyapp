@@ -6,6 +6,7 @@ import { Ruta } from '../../../models';
 import { EmpresaService } from '../../../services/empresa.service';
 import { NotificacionesService } from 'src/app/services/notificaciones.service';
 import { Subscription } from 'rxjs';
+import { WsService } from '../../../services/ws.service';
 
 @Component({
   selector: 'app-rutero',
@@ -23,6 +24,7 @@ export class HomePage implements OnInit, OnDestroy {
     public utilsSvc: UtilsService,
     private empresaSvc: EmpresaService,
     private notificacionesSvc: NotificacionesService,
+    private ws: WsService,
   ) { }
 
   ngOnDestroy(): void {
@@ -78,6 +80,7 @@ export class HomePage implements OnInit, OnDestroy {
       next: () => {
         this.getEmpresa();
         loading.dismiss();
+        this.ws.emit('admin-close-caja', {ruta: ruta._id})
       }
     })
 

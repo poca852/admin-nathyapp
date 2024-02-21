@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { NotificacionesService } from './services/notificaciones.service';
 import { Subscription } from 'rxjs';
 import { EmpresaService } from './services/empresa.service';
+import { WsService } from './services/ws.service';
 
 @Component({
   selector: 'app-root',
@@ -15,6 +16,7 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor(
     private notificacionesSvc: NotificacionesService,
     private empresaSvc: EmpresaService,
+    private ws: WsService,
   ) {}
 
   ngOnDestroy(): void {

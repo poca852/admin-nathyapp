@@ -13,8 +13,6 @@ export class WsService {
   ) { }
 
   emit( event: string, payload?: any, callback?: Function ) {
-    console.log('Emitiendo', event);
-
     this.socket.emit( event, payload, callback );
   }
 

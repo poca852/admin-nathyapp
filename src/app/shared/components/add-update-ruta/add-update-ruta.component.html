@@ -14,61 +14,48 @@
       autocomplete="off"
     />
 
-    <ion-item class="custom-input" lines="none">
-      <ion-select
-        aria-label="Pais" 
-        formControlName="pais"
-        placeholder="Pais">
-        <ion-select-option
-          *ngFor="let pais of paises"
-          [value]="pais.name"
-        >
-          {{pais.name | titlecase}}
-        </ion-select-option>
-      </ion-select>
-    </ion-item>
+    <custom-input
+      [control]="form.controls.pais"
+      type="text"
+      label="Pais"
+      autocomplete="off"
+    />
 
-    
-    <ion-item 
-      *ngIf="form.controls.pais?.value.length > 0"
-      class="custom-input" 
-      lines="none">
-      <ion-select
-        aria-label="Departamento" 
-        formControlName="estado"
-        placeholder="Departamento">
-        <ion-select-option
-          *ngFor="let estado of estados"
-          [value]="estado.name"
-        >
-          {{estado.name | titlecase}}
-        </ion-select-option>
-      </ion-select>
-    </ion-item>
+    <custom-input
+      [control]="form.controls.estado"
+      type="text"
+      label="Estado"
+      autocomplete="off"
+    />
 
-    <ion-item 
-      *ngIf="form.controls.estado?.value.length > 0"
-      class="custom-input" 
-      lines="none">
-      <ion-select
-        aria-label="Ciudad" 
-        formControlName="ciudad"
-        placeholder="Ciudad">
-        <ion-select-option
-          *ngFor="let city of cities"
-          [value]="city.name"
-        >
-          {{city.name | titlecase}}
-        </ion-select-option>
-      </ion-select>
-    </ion-item>
+    <custom-input
+      [control]="form.controls.ciudad"
+      type="text"
+      label="Ciudad"
+      autocomplete="off"
+    />
 
-    <ion-item class="custom-input" lines="none">
+    <!-- <ion-item class="custom-input" lines="none">
       <ion-toggle
         [enableOnOffLabels]="true"
         formControlName="ingresar_gastos_cobrador"
       >Permitir que el cobrador ingrese gastos</ion-toggle> 
+    </ion-item> -->
+
+    <ion-item class="custom-input" lines="none">
+      <ion-toggle
+        [enableOnOffLabels]="true"
+        formControlName="have_login_falso"
+      >Inicio con calculadora</ion-toggle> 
     </ion-item>
+
+    <custom-input
+      *ngIf="form.controls.have_login_falso.value" 
+      [control]="form.controls.senha"
+      type="text"
+      label="Seña de la calculadora"
+      autocomplete="off"
+    />
 
     <ion-button mode="ios" type="submit" expand="block" [disabled]="form.invalid">
       {{ruta ? 'Actualizar Ruta' : 'Agregar Ruta'}}
