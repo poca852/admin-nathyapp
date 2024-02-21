@@ -7,15 +7,14 @@ export type FormatDate = 'DD/MM/YYYY'|'YYYY/MM/DD'|'YYYY, MM, DD'|'YYYY-MM-DD'
    providedIn: 'root'
 })
 export class MomentService {
-   constructor() {
-   }
+   constructor() {}
 
    now(): string{
       return moment().utc(true).toISOString();
    }
 
    nowWithFormat(format: FormatDate){
-      return moment(this.now()).format(format);
+      return moment().utc(true).format(format);
    }
 
    fecha(date: string, format: FormatDate) {
