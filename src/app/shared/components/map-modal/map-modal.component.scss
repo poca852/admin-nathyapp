@@ -1,0 +1,13 @@
+#map {
+   width: 100vw;
+   height: 100vh;
+   background-color: gray;
+}
+
+.icon {
+   cursor: pointer;
+   position: fixed;
+   top: 20px;
+   left: 20px;
+   z-index: 999;
+}

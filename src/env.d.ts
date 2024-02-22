@@ -15,13 +15,14 @@ interface ImportMetaEnv {
   NG_APP_DEV_API: string;
   NG_APP_URL_DEV_SOCKET: string;
   NG_APP_URL_PROD_SOCKET: string;
-  NG_APP_PROJECTID: string
-  NG_APP_APPID: string
-  NG_APP_STORAGEBUCKET: string
-  NG_APP_LOCATIONID: string
-  NG_APP_APIKEY: string
-  NG_APP_AUTHDOMAIN: string
-  NG_APP_MESSAGINGSENDERID: string
+  NG_APP_PROJECTID: string;
+  NG_APP_APPID: string;
+  NG_APP_STORAGEBUCKET: string;
+  NG_APP_LOCATIONID: string;
+  NG_APP_APIKEY: string;
+  NG_APP_AUTHDOMAIN: string;
+  NG_APP_MESSAGINGSENDERID: string;
+  NG_APP_MAP_BOX: string;
 }
 
 /*

@@ -15,7 +15,8 @@
           "options": {
             "allowedCommonJsDependencies": [
               "moment",
-              "file-saver"
+              "file-saver",
+              "mapbox-gl"
             ],
             "outputPath": "www",
             "index": "src/index.html",

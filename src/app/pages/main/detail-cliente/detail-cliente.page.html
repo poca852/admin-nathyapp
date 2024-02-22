@@ -136,10 +136,14 @@
       <ion-icon name="chevron-up-circle"></ion-icon>
     </ion-fab-button>
     <ion-fab-list side="top">
+      <ion-fab-button color="primary" (click)="viewMap()">
+        <ion-icon name="map"></ion-icon>
+      </ion-fab-button>
+
       <ion-fab-button color="primary" (click)="llamarCliente()">
         <ion-icon name="call"></ion-icon>
       </ion-fab-button>
- 
+      
       <ion-fab-button color="warning" (click)="editCliente()">
         <ion-icon name="pencil"></ion-icon>
       </ion-fab-button>

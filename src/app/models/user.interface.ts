@@ -11,6 +11,7 @@ export interface User {
    rutas?: string[];
    empresa: string;
    token?: string;
+   ubication: number[];
  }
 
  export interface AddUser{

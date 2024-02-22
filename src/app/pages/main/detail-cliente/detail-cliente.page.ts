@@ -7,6 +7,7 @@ import { UpdateClienteComponent } from 'src/app/shared/components/update-cliente
 import { RutaService } from '../../../services/ruta.service';
 import { ModalHistorialCreditoComponent } from 'src/app/shared/components/modal-historial-credito/modal-historial-credito.component';
 import { EmpresaService } from '../../../services/empresa.service';
+import { MapModalComponent } from 'src/app/shared/components/map-modal/map-modal.component';
 
 @Component({
   selector: 'app-detail-cliente',
@@ -90,6 +91,23 @@ export class DetailClientePage {
       component: ViewImageComponent,
       cssClass: 'add-update-modal',
       componentProps: {url}
+    })
+  }
+
+  async viewMap() {
+
+    if( this.currentCliente.ubication.length === 0 ){
+      return this.utilsSvc.presentAlert({
+        header: 'Información',
+        message: 'Este cliente aun no tiene la ubicacion',
+        buttons: ['OK']
+      })
+    }
+
+    await this.utilsSvc.presentModal({
+      component: MapModalComponent,
+      cssClass: 'map',
+      componentProps: { lngLat: this.currentCliente.ubication }
     })
   }
 

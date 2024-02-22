@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ReactiveFormsModule } from '@angular/forms';
+import mapboxgl from 'mapbox-gl';
 import { HeaderComponent } from './components/header/header.component';
 import { LogoComponent } from './components/logo/logo.component';
 import { CustomInputComponent } from './components/custom-input/custom-input.component';
@@ -19,7 +20,10 @@ import { UpdateGastoComponent } from './components/update-gasto/update-gasto.com
 import { RutaModalComponent } from './components/ruta-modal/ruta-modal.component';
 import { UpdateEmpresaComponent } from './components/update-empresa/update-empresa.component';
 import { UpdateCreditoComponent } from './components/update-credito/update-credito.component';
+import { MapModalComponent } from './components/map-modal/map-modal.component';
+import { environment } from 'src/environments/environment';
 
+mapboxgl.accessToken = environment.mapbox_token;
 
 
 @NgModule({
@@ -41,6 +45,7 @@ import { UpdateCreditoComponent } from './components/update-credito/update-credi
     RutaModalComponent,
     UpdateEmpresaComponent,
     UpdateCreditoComponent,
+    MapModalComponent,
   ],
   exports: [
     ReactiveFormsModule,
@@ -61,6 +66,7 @@ import { UpdateCreditoComponent } from './components/update-credito/update-credi
     RutaModalComponent,
     UpdateEmpresaComponent,
     UpdateCreditoComponent,
+    MapModalComponent,
   ],
   imports: [
     CommonModule,

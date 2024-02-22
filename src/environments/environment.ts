@@ -6,6 +6,7 @@ export const environment = {
   production: false,
   baseUrl: import.meta.env.NG_APP_DEV_API,
   socketUrl: import.meta.env.NG_APP_URL_DEV_SOCKET,
+  mapbox_token: import.meta.env.NG_APP_MAP_BOX,
   firebase: {
     projectId: import.meta.env.NG_APP_PROJECTID,
     appId: import.meta.env.NG_APP_APPID,
