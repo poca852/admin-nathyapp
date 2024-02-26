@@ -12,6 +12,7 @@ export interface User {
    empresa: string;
    token?: string;
    ubication: number[];
+   close_ruta?: boolean;
  }
 
  export interface AddUser{
@@ -21,4 +22,5 @@ export interface User {
   ruta?: string;
   rutas?: string[];
   rol: any[];
+  close_ruta?: boolean;
  }

@@ -46,7 +46,7 @@
               (click)="confirmacion(ruta)" 
               size="small" 
               [color]="ruta.status ? 'danger':'success'"
-              [disabled]="utilsSvc.getFromLocalStorage('user').rol !== 'ADMIN'">
+              [disabled]="!utilsSvc.getFromLocalStorage('user').close_ruta">
               {{ ruta.status ? 'Cerrar':'Abrir' }}
             </ion-button>
 

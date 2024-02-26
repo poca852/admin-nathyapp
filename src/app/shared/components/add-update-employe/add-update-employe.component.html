@@ -50,6 +50,13 @@
       </ion-select>
     </ion-item>
 
+    <ion-item class="custom-input" lines="none">
+      <ion-toggle
+        [enableOnOffLabels]="true"
+        formControlName="close_ruta"
+      >Puede abrir rutas</ion-toggle> 
+    </ion-item>
+
     <ion-item class="custom-input" lines="none" *ngIf="form.controls.rol.value === 'COBRADOR'">
       <ion-select
         aria-label="Ruta" 
