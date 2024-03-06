@@ -22,6 +22,7 @@ import { UpdateEmpresaComponent } from './components/update-empresa/update-empre
 import { UpdateCreditoComponent } from './components/update-credito/update-credito.component';
 import { MapModalComponent } from './components/map-modal/map-modal.component';
 import { environment } from 'src/environments/environment';
+import { UpdateUserComponent } from './components/update-user/update-user.component';
 
 mapboxgl.accessToken = environment.mapbox_token;
 
@@ -46,6 +47,7 @@ mapboxgl.accessToken = environment.mapbox_token;
     UpdateEmpresaComponent,
     UpdateCreditoComponent,
     MapModalComponent,
+    UpdateUserComponent,
   ],
   exports: [
     ReactiveFormsModule,
@@ -67,6 +69,7 @@ mapboxgl.accessToken = environment.mapbox_token;
     UpdateEmpresaComponent,
     UpdateCreditoComponent,
     MapModalComponent,
+    UpdateUserComponent,
   ],
   imports: [
     CommonModule,

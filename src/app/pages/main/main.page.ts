@@ -5,6 +5,7 @@ import { AuthService } from '../../services/auth.service';
 import { User } from 'src/app/models';
 import { RutaService } from '../../services/ruta.service';
 import { EmpresaService } from '../../services/empresa.service';
+import { UpdateUserComponent } from 'src/app/shared/components/update-user/update-user.component';
 
 @Component({
   selector: 'app-main',
@@ -62,6 +63,27 @@ export class MainPage implements OnInit {
   isAdminOrSuperAdmin(): boolean {
     const user = this.user();
     return user && (user.rol === 'ADMIN' || user.rol === 'SUPERADMIN');
+  }
+
+  public updateUser = async () => {
+
+    let success = await this.utilsSvc.presentModal({
+      component: UpdateUserComponent,
+      cssClass: 'add-update-modal',
+      componentProps: {user: this.user()}
+    })
+
+    if( success ){
+
+      this.utilsSvc.presentToast({
+        message: 'Usuario actualizado',
+        duration: 2400,
+        color: 'success',
+        icon: 'checkmark'
+      })
+
+    }
+
   }
 
 }

@@ -1,6 +1,6 @@
 <ion-menu contentId="menu-content" menuId="menu-content" side="start">
 
-  <app-header title="Menu" />
+  <app-header title="Menú" />
 
   <ion-content class="ion-text-center">
 
@@ -10,7 +10,15 @@
       <ion-icon *ngIf="!user().image" class="empty-icon" name="person-circle-outline"></ion-icon>
     </ion-avatar> -->
     
-    <h4>{{user().nombre | titlecase}}</h4>
+    <ion-button 
+      expand="block" 
+      fill="clear"
+      color="light"
+      size="large"
+      (click)="updateUser()">
+      {{user().username | titlecase}}
+      <ion-icon slot="end" name="pencil"></ion-icon>
+    </ion-button>
   
     <!-- <ion-item [ngClass]="{'active': currentPath === page.url}" [routerLink]="page.url" routerDirection="root" detail>
       <ion-icon slot="start" [name]="page.icon"></ion-icon>
