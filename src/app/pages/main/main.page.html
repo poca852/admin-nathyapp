@@ -27,7 +27,7 @@
     <ion-menu-toggle auto-hide="false" *ngFor="let page of pages">
 
 
-      <ng-container *ngIf="isAdminOrSuperAdmin() || page.url !== '/main/empleados' && page.url !== '/main/rutas'">
+      <ng-container *ngIf="isAdminOrSuperAdmin() || page.url !== '/main/empleados'">
         <ion-item [ngClass]="{'active': currentPath === page.url}" [routerLink]="page.url" routerDirection="root" detail>
           <ion-icon slot="start" [name]="page.icon"></ion-icon>
           <ion-label>{{page.title}}</ion-label>
