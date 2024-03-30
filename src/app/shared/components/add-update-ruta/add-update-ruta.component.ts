@@ -27,6 +27,7 @@ export class AddUpdateRutaComponent {
     ingresar_gastos_cobrador: new FormControl(true),
     have_login_falso: new FormControl(true),
     senha: new FormControl(''),
+    autoOpen: new FormControl(false, [Validators.required])
   })
 
   constructor() { }

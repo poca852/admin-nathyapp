@@ -23,4 +23,5 @@ export interface Ruta {
    ultima_caja: Caja;
    turno: number;
    empresa?: string;
+   autoOpen: boolean;
 }

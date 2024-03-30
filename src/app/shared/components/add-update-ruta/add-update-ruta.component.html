@@ -57,6 +57,13 @@
       autocomplete="off"
     />
 
+    <ion-item class="custom-input" lines="none">
+      <ion-toggle
+        [enableOnOffLabels]="true"
+        formControlName="autoOpen"
+      >Apertura de caja automatico</ion-toggle> 
+    </ion-item>
+
     <ion-button mode="ios" type="submit" expand="block" [disabled]="form.invalid">
       {{ruta ? 'Actualizar Ruta' : 'Agregar Ruta'}}
       <ion-icon slot="end" name="checkmark-circle-outline"></ion-icon>
