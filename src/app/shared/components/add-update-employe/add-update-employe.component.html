@@ -50,7 +50,7 @@
       </ion-select>
     </ion-item>
 
-    <ion-item class="custom-input" lines="none">
+    <ion-item class="custom-input" lines="none" *ngIf="form.controls.rol.value !== 'COBRADOR'">
       <ion-toggle
         [enableOnOffLabels]="true"
         formControlName="close_ruta"
