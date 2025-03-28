@@ -23,9 +23,9 @@
     </ion-item>
   </ion-list>
 
-  <ion-list *ngIf="!loading && !!empresa">
+  <ion-list *ngIf="!loading">
 
-    <ion-item *ngFor="let ruta of empresa.rutas">
+    <ion-item *ngFor="let ruta of rutas">
       <ion-grid>
 
         <ion-row>
@@ -42,11 +42,10 @@
 
           <ion-col>
 
-            <ion-button 
-              (click)="confirmacion(ruta)" 
-              size="small" 
-              [color]="ruta.status ? 'danger':'success'"
-              [disabled]="!utilsSvc.getFromLocalStorage('user').close_ruta">
+            <ion-button
+              (click)="confirmacion(ruta)"
+              size="small"
+              [color]="ruta.status ? 'danger':'success'">
               {{ ruta.status ? 'Cerrar':'Abrir' }}
             </ion-button>
 

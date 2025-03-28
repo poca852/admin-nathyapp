@@ -79,15 +79,15 @@ export class AddUpdateEmployeComponent implements OnInit {
 
   }
 
-  async addEmploye() {   
-    
+  async addEmploye() {
+
     const loading = await this.utilsSvc.loading();
     loading.present();
-    
+
     if(!this.form.controls.ruta.value) {
       delete this.form.controls.ruta;
     }
-    
+
     if(!!this.form.controls.rutas.value) {
       delete this.form.controls.rutas;
     }
@@ -124,7 +124,7 @@ export class AddUpdateEmployeComponent implements OnInit {
     if (e.detail.value !== Roles.cobrador) {
       this.form.controls.ruta.setValue(null);
     }
-    
+
     if (e.detail.value !== Roles.supervisor) {
       this.form.controls.rutas.setValue(null);
     }

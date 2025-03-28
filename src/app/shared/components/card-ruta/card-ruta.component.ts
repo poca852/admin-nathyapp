@@ -24,7 +24,6 @@ export class CardRutaComponent  implements OnInit {
 
   updateRutas() {
     console.log('hello')
-    this.empresaSvc.setEmpresa();
   }
 
 }

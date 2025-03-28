@@ -65,7 +65,7 @@ export class EmpresaPage implements OnInit {
             icon: 'cloud-download-outline'
           })
         }
-        
+
       },
       error: err => {
         this.utilsSvc.presentAlert({
@@ -79,7 +79,7 @@ export class EmpresaPage implements OnInit {
   }
 
   private async downloadFile(buffer: ArrayBuffer) {
-    
+
     const blod = new Blob([buffer], {type: 'application/csv'});
 
     const fileName =  `${this.empresa.name}_backup.csv`;
@@ -95,7 +95,7 @@ export class EmpresaPage implements OnInit {
 
   async editEmpresa() {
 
-    if(this.utilsSvc.getFromLocalStorage('user').rol !== 'ADMIN') return; 
+    if(this.utilsSvc.getFromLocalStorage('user').rol !== 'ADMIN') return;
 
     let success = await this.utilsSvc.presentModal({
       component: UpdateEmpresaComponent,
@@ -104,7 +104,7 @@ export class EmpresaPage implements OnInit {
     })
 
     if(success) {
-      this.empresaSvc.setEmpresa();
+      // TODO: pendiente de implementar
     }
   }
 

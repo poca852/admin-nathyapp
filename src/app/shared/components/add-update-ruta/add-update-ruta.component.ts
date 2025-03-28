@@ -77,7 +77,6 @@ export class AddUpdateRutaComponent {
           this.empresaSvc.addRuta(this.utilsSvc.getFromLocalStorage('user').empresa, ruta._id).subscribe({
             next: () => {
               loading.dismiss();
-              this.empresaSvc.setEmpresa();
               this.utilsSvc.dismissModal({success: true});
             },
             error: err => {
@@ -85,7 +84,7 @@ export class AddUpdateRutaComponent {
               this.utilsSvc.dismissModal({success: false});
             }
           })
-          
+
         },
         error: err => {
           loading.dismiss();

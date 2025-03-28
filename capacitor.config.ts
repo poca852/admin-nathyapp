@@ -1,7 +1,7 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'lat.nathyapp.admin',
+  appId: 'lat.nathyappv2.admin',
   appName: 'Administrador NathyApp',
   webDir: 'www',
   server: {

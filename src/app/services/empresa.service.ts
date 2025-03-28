@@ -1,8 +1,7 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { UtilsService } from './utils.service';
-import { Empresa, ResponseBackup, Ruta, User } from '../models';
-import { AuthService } from './auth.service';
+import { Empresa, Ruta, User } from '../models';
 import { Observable, map } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
@@ -28,7 +27,7 @@ export class EmpresaService {
   constructor(
     private http: HttpClient,
     private utilsSvc: UtilsService,
-  ) { 
+  ) {
     // this.setEmpresa();
   }
 
@@ -48,8 +47,8 @@ export class EmpresaService {
     this._rutas.set([]);
   }
 
-  setEmpresa() {
-    this.getEmpresa().subscribe({
+  setEmpresa(id: string) {
+    this.getEmpresa(id).subscribe({
       next: empresa => {
         this._empresa.set(empresa);
         this._rutas.set(empresa.rutas);
@@ -58,8 +57,8 @@ export class EmpresaService {
     })
   }
 
-  getEmpresa(): Observable<Empresa>{
-    const url: string = `${this.baseUrl}/empresa/${this.user.empresa}`;
+  getEmpresa(id: string): Observable<Empresa>{
+    const url: string = `${this.baseUrl}/empresa/${id}`;
     const headers = new HttpHeaders()
       .append('authorization', `Bearer ${this.user.token}`);
 
@@ -80,7 +79,7 @@ export class EmpresaService {
     const url: string = `${this.baseUrl}/empresa/get-empleados`;
     const headers = new HttpHeaders()
       .append('authorization', `Bearer ${this.user.token}`);
-    
+
     const params = new HttpParams().append('empresa', this.user.empresa)
 
     return this.http.get<User[]>(url, {headers, params})
@@ -89,13 +88,13 @@ export class EmpresaService {
   addEmpleado(empleado: any): Observable<boolean> {
 
     empleado.empresa = this.empresa()._id;
-    
+
     const url: string = `${this.baseUrl}/empresa/add-empleado`;
     const headers = new HttpHeaders()
       .append('authorization', `Bearer ${this.user.token}`);
 
     return this.http.post<boolean>(url, empleado, {headers})
-  } 
+  }
 
   deleteEmpleado(idEmpleado: string): Observable<boolean> {
     const url: string = `${this.baseUrl}/empresa/remove-empleado`;

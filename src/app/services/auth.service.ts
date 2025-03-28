@@ -37,8 +37,7 @@ export class AuthService {
     this._currentUser.set(user);
     this._authStatus.set(AuthStatus.authenticated);
     this.utilsSvc.saveInLocalStorage('user', {...user, token});
-    this.empresaSvc.setEmpresa()
-    
+    this.empresaSvc.setEmpresa(user.empresa)
 
     return true;
   }

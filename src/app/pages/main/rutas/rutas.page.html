@@ -24,9 +24,9 @@
     </ion-item>
   </ion-list>
 
-  <ion-list *ngIf="!loading && empresa">
+  <ion-list *ngIf="!loading && rutas.length > 0">
     <ion-item
-      *ngFor="let ruta of empresa.rutas">
+      *ngFor="let ruta of rutas">
       <ion-label>
         <ion-grid>
           <ion-row>

@@ -3,8 +3,7 @@ import { UtilsService } from '../../../services/utils.service';
 import { Ruta } from 'src/app/models';
 import { AddUpdateRutaComponent } from 'src/app/shared/components/add-update-ruta/add-update-ruta.component';
 import { RutaModalComponent } from 'src/app/shared/components/ruta-modal/ruta-modal.component';
-import { EmpresaService } from '../../../services/empresa.service';
-import { Empresa } from '../../../models/empresa.interface';
+import { RutaService } from 'src/app/services/ruta.service';
 
 @Component({
   selector: 'app-rutas',
@@ -14,40 +13,39 @@ import { Empresa } from '../../../models/empresa.interface';
 export class RutasPage implements OnInit {
 
   private utilsSvc = inject(UtilsService);
-  private empresaSvc = inject(EmpresaService);
-  public empresa: Empresa;
+  private rutaSvc = inject(RutaService);
+  public rutas: Ruta[] = [];
   public loading: boolean = true;
-  
+
   constructor() { }
 
-  ngOnInit() {
-    this.getEmpresa();
-  }
+  ngOnInit() { }
 
   ionViewWillEnter() {
-    
+    this.getRutas();
   }
 
   handleRefresh(event) {
     setTimeout(() => {
-      this.getEmpresa();
+      this.getRutas();
       event.target.complete();
     }, 2000);
   }
 
-  getEmpresa(){
+  getRutas(){
     this.loading = true;
-    this.empresaSvc.getEmpresa().subscribe({
-      next: empresa => {
-        this.empresa = empresa;
+    this.rutaSvc.getRutasByEmpresa().subscribe({
+      next: rutas => {
+        this.rutas = rutas;
         this.loading = false;
       },
       error: err => {
         this.loading = false
       }
     })
+
   }
-  
+
   async presentActions(ruta: Ruta) {
 
     await this.utilsSvc.presentActionSheet({
@@ -95,7 +93,7 @@ export class RutasPage implements OnInit {
     })
 
     if(success) {
-      this.getEmpresa();
+      this.getRutas();
     }
   }
 

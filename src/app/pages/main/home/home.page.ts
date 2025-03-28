@@ -18,11 +18,11 @@ export class HomePage implements OnInit, OnDestroy {
   public loading: boolean = true;
   public empresa!: Empresa;
   private logoutSubs: Subscription;
+  public rutas: Ruta[] = [];
 
   constructor(
     private rutaSvc: RutaService,
     public utilsSvc: UtilsService,
-    private empresaSvc: EmpresaService,
     private notificacionesSvc: NotificacionesService,
     private ws: WsService,
   ) { }
@@ -33,25 +33,30 @@ export class HomePage implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.logoutSubs = this.notificacionesSvc.logOut$.subscribe(() => {
-      this.empresa = null;
+      this.rutas = [];
     })
   }
 
   ionViewWillEnter() {
-    this.getEmpresa();
+    this.getRutas();
   }
 
-  getEmpresa() {
+  getRutas() {
     this.loading = true;
-    this.empresaSvc.getEmpresa().subscribe({
-      next: empresa => {
-        this.empresa = empresa;
+    this.rutaSvc.getRutasByEmpresa().subscribe({
+      next: rutas => {
+        this.rutas = rutas;
         this.loading = false;
       },
       error: err => {
         this.loading = false;
+        this.utilsSvc.presentToast({
+          message: 'Error al obtener las rutas',
+          duration: 2000,
+          position: 'bottom'
+        })
       }
-    })
+    });
   }
 
   async openAndCloseRuta(ruta: Ruta): Promise<void> {
@@ -68,7 +73,6 @@ export class HomePage implements OnInit, OnDestroy {
 
       this.rutaSvc.newCaja(ruta._id).subscribe({
         next: () => {
-          this.getEmpresa();
           loading.dismiss();
         }
       })
@@ -78,9 +82,13 @@ export class HomePage implements OnInit, OnDestroy {
 
     this.rutaSvc.closeCaja(ruta._id).subscribe({
       next: () => {
-        this.getEmpresa();
         loading.dismiss();
-        this.ws.emit('admin-close-caja', {ruta: ruta._id})
+        this.utilsSvc.presentToast({
+          message: 'Ruta cerrada',
+          duration: 2000,
+          position: 'bottom',
+          color: 'success'
+        })
       }
     })
 

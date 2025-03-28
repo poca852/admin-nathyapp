@@ -1,5 +1,4 @@
-import { Component, OnInit, inject, Output, EventEmitter } from '@angular/core';
-import { RutaService } from '../../../services/ruta.service';
+import { Component, inject, Output, EventEmitter } from '@angular/core';
 import { UtilsService } from '../../../services/utils.service';
 import { Ruta } from 'src/app/models';
 import { FormBuilder, FormControl } from '@angular/forms';
@@ -11,7 +10,7 @@ import { EmpresaService } from '../../../services/empresa.service';
   templateUrl: './select-ruta.component.html',
   styleUrls: ['./select-ruta.component.scss'],
 })
-export class SelectRutaComponent  implements OnInit {
+export class SelectRutaComponent {
 
   @Output()
   onEmitRuta = new EventEmitter<Ruta>();
@@ -25,10 +24,8 @@ export class SelectRutaComponent  implements OnInit {
 
   constructor() { }
 
-  ngOnInit() {}
-
   get rutas() {
-    return this.empresaSvc.empresa()?.rutas;
+    return this.empresaSvc.rutas();
   }
 
   public async handleChangeSelect(e): Promise<void> {
@@ -39,7 +36,7 @@ export class SelectRutaComponent  implements OnInit {
     const selectRuta = this.rutas.find( (ruta) => ruta._id === e.detail.value);
 
     this.onEmitRuta.emit(selectRuta);
-    
+
     this.empresaSvc.setRuta(selectRuta);
     this.comunicacionSvc.notificarChangeRuta();
 

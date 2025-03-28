@@ -1,4 +1,4 @@
-package lat.nathyapp.admin;
+package lat.nathyappv2.admin;
 
 import com.getcapacitor.BridgeActivity;
 

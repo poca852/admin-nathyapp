@@ -90,4 +90,13 @@ export class RutaService {
     return this.http.patch<boolean>(url, {}, { headers, params })
   }
 
+  getRutasByEmpresa() {
+    const url: string = `${this.baseUrl}/empresa`;
+
+    const headers = new HttpHeaders()
+      .append('authorization', `Bearer ${this.user.token}`);
+
+    return this.http.get<Ruta[]>(url, { headers })
+  }
+
 }
