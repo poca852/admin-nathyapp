@@ -45,13 +45,17 @@ export class RutaService {
     return this.http.get<Ruta[]>(url, { headers })
   }
 
-  addRuta(ruta: any): Observable<Ruta> {
-    const url: string = `${this.baseUrl}/ruta`;
+  addRuta(ruta: any, empresaID: string): Observable<Ruta> {
+
+    const url: string = `${this.baseUrl}/empresa/add-ruta`;
 
     const headers = new HttpHeaders()
       .append('authorization', `Bearer ${this.user.token}`)
 
-    return this.http.post<Ruta>(url, ruta, { headers })
+    const params = new HttpParams()
+      .append('empresa', empresaID);
+
+    return this.http.patch<Ruta>(url, ruta, { headers, params })
   }
 
   updateRuta(idRuta: string, data: any): Observable<boolean> {

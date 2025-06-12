@@ -1,4 +1,4 @@
-<app-header 
+<app-header
   [title]="employe ? 'Editar empleado': 'Agregar empleado'"
   [isModal]="true"
 />
@@ -9,21 +9,21 @@
     [formGroup]="form"
     (ngSubmit)="submit()"
   >
-    <custom-input 
+    <custom-input
       [control]="form.controls.nombre"
       type="text"
       label="Nombre"
       autocomplete="off"
     />
 
-    <custom-input 
+    <custom-input
       [control]="form.controls.username"
       type="text"
       label="Usuario"
       autocomplete="off"
     />
 
-    <custom-input 
+    <custom-input
       [control]="form.controls.password"
       type="password"
       label="Contraseña"
@@ -36,8 +36,7 @@
 
     <ion-item class="custom-input" lines="none">
       <ion-select
-        aria-label="Roles" 
-        interface="popover"
+        aria-label="Roles"
         (ionChange)="onRolChange($event)"
         formControlName="rol"
         placeholder="Selecciona un rol">
@@ -54,14 +53,13 @@
       <ion-toggle
         [enableOnOffLabels]="true"
         formControlName="close_ruta"
-      >Puede abrir rutas</ion-toggle> 
+      >Puede abrir rutas</ion-toggle>
     </ion-item>
 
     <ion-item class="custom-input" lines="none" *ngIf="form.controls.rol.value === 'COBRADOR'">
       <ion-select
-        aria-label="Ruta" 
+        aria-label="Ruta"
         formControlName="ruta"
-        interface="popover"
         placeholder="Selecciona una ruta">
         <ion-select-option
           *ngFor="let ruta of rutas"
@@ -74,7 +72,7 @@
 
     <ion-item class="custom-input" lines="none" *ngIf="form.controls.rol.value === 'SUPERVISOR'">
       <ion-select
-        aria-label="Ruta" 
+        aria-label="Ruta"
         formControlName="rutas"
         multiple="true"
         interface="popover"

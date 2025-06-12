@@ -4,6 +4,7 @@ import { UtilsService } from './utils.service';
 import { Empresa, Ruta, User } from '../models';
 import { Observable, map } from 'rxjs';
 import { environment } from 'src/environments/environment';
+import { RutaService } from './ruta.service';
 
 @Injectable({
   providedIn: 'root'
@@ -27,6 +28,7 @@ export class EmpresaService {
   constructor(
     private http: HttpClient,
     private utilsSvc: UtilsService,
+    private rutaSvc: RutaService,
   ) {
     // this.setEmpresa();
   }
@@ -117,19 +119,6 @@ export class EmpresaService {
 
     return this.http.patch<boolean>(url, empresa, {headers});
 
-  }
-
-  addRuta(empresa: string, ruta: string) {
-    const url: string = `${this.baseUrl}/empresa/add-ruta`;
-
-    const headers = new HttpHeaders()
-      .append('authorization', `Bearer ${this.user.token}`);
-
-    const params = new HttpParams()
-      .append('ruta', ruta)
-      .append('empresa', empresa)
-
-    return this.http.patch<boolean>(url, {}, {headers, params})
   }
 
   getBackUp(idEmpresa: string): Observable<ArrayBuffer> {

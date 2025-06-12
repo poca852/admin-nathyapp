@@ -25,9 +25,10 @@ export class AddUpdateRutaComponent {
     ciudad: new FormControl('', [Validators.required]),
     estado: new FormControl('', [Validators.required]),
     ingresar_gastos_cobrador: new FormControl(true),
-    have_login_falso: new FormControl(true),
-    senha: new FormControl(''),
-    autoOpen: new FormControl(false, [Validators.required])
+    have_login_falso: new FormControl(false),
+    senha: new FormControl('0000'),
+    autoOpen: new FormControl(false, [Validators.required]),
+    empresa: new FormControl(this.empresaSvc.empresa()._id),
   })
 
   constructor() { }
@@ -66,25 +67,15 @@ export class AddUpdateRutaComponent {
   }
 
   async addRuta() {
-
     const loading = await this.utilsSvc.loading();
     loading.present();
 
-    this.rutaSvc.addRuta(this.form.value)
+    this.rutaSvc.addRuta(this.form.value, this.empresaSvc.empresa()._id)
       .subscribe({
         next: ruta => {
-
-          this.empresaSvc.addRuta(this.utilsSvc.getFromLocalStorage('user').empresa, ruta._id).subscribe({
-            next: () => {
-              loading.dismiss();
-              this.utilsSvc.dismissModal({success: true});
-            },
-            error: err => {
-              loading.dismiss();
-              this.utilsSvc.dismissModal({success: false});
-            }
-          })
-
+          this.empresaSvc.setEmpresa(this.empresaSvc.empresa()._id)
+          this.utilsSvc.dismissModal({success: true});
+          loading.dismiss();
         },
         error: err => {
           loading.dismiss();
