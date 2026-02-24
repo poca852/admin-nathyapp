@@ -31,9 +31,9 @@
  </ion-list>
 
  <ion-list>
-  <ion-item 
+  <ion-item
     *ngFor="let pago of pagos"
-    button 
+    button
     detail
     (click)="updatePago(pago)">
     <ion-label>
@@ -41,10 +41,10 @@
         <h2><strong>{{ pago.cliente.nombre | titlecase }}</strong></h2>
       </ion-text>
       <ion-text>
-        <h3>Fecha: {{pago.fecha}}</h3>
+        <h3>Fecha: {{pago.fecha | date}}</h3>
       </ion-text>
       <ion-text>
-        <h3>Valor: {{pago.valor | currency:'USD':'symbol':'':'en'}}</h3>
+        <h3>Valor: {{pago.monto | currency:'USD':'symbol':'':'en'}}</h3>
       </ion-text>
     </ion-label>
   </ion-item>

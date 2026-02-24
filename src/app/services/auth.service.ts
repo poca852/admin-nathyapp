@@ -2,10 +2,9 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { AuthStatus, LoginResponse, User } from '../models';
-import { Observable, catchError, map, of, tap } from 'rxjs';
+import { Observable, catchError, map, of } from 'rxjs';
 import { UtilsService } from './utils.service';
 import { NotificacionesService } from './notificaciones.service';
-import * as moment from 'moment';
 import { WsService } from './ws.service';
 import { EmpresaService } from './empresa.service';
 
@@ -25,8 +24,6 @@ export class AuthService {
   private _authStatus = signal<AuthStatus>(AuthStatus.checking);
   public currentUser = computed(() => this._currentUser());
   public authStatus = computed(() => this._authStatus());
-
-  private today = moment().utc(true).format('DD/MM/YYYY')
 
   constructor(){
   }

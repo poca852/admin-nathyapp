@@ -46,7 +46,7 @@ export class UpdateEmpresaComponent  implements OnInit {
   }
 
   editEmpresa() {
-    this.empresaSvc.editEmpresa(this.empresa._id, this.form.value).subscribe({
+    this.empresaSvc.editEmpresa(this.empresa.id, this.form.value).subscribe({
       next: () => {
         this.utilsSvc.dismissModal({success: true})
       },

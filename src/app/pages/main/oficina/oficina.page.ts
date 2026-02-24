@@ -21,7 +21,7 @@ enum Oficina {
   styleUrls: ['./oficina.page.scss'],
 })
 export class OficinaPage implements OnInit {
-  
+
   @ViewChild('modal') modal: IonModal;
 
   private _dateSelected = signal<string>(moment().utc(true).format('YYYY-MM-DD'));
@@ -52,7 +52,7 @@ export class OficinaPage implements OnInit {
   }
 
   private getGastos() {
-    this.gastoSvc.getGastosByDate(this._dateSelected(), this.currentRuta._id)
+    this.gastoSvc.getGastosByDate(this._dateSelected(), this.currentRuta.id)
       .subscribe({
         next: gastos => {
           this.data = gastos;
@@ -61,7 +61,7 @@ export class OficinaPage implements OnInit {
   }
 
   getInversiones() {
-    this.inversionSvc.getInversionesByDate(this._dateSelected(), this.currentRuta._id)
+    this.inversionSvc.getInversionesByDate(this._dateSelected(), this.currentRuta.id)
       .subscribe({
         next: inversiones => {
           this.data = inversiones
@@ -70,7 +70,7 @@ export class OficinaPage implements OnInit {
   }
 
   getRetiros() {
-    this.retiroSvc.getRetirosByDate(this._dateSelected(), this.currentRuta._id)
+    this.retiroSvc.getRetirosByDate(this._dateSelected(), this.currentRuta.id)
       .subscribe({
         next: retiros => {
           this.data = retiros
@@ -79,7 +79,7 @@ export class OficinaPage implements OnInit {
   }
 
   submit() {
-    
+
     if(this.oficina.value === Oficina.GASTOS) return this.getGastos();
     if(this.oficina.value === Oficina.INVERSION) return this.getInversiones();
     if(this.oficina.value === Oficina.RETIRO) return this.getRetiros();

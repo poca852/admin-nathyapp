@@ -30,7 +30,7 @@ export class EmpresaPage implements OnInit {
   getBackup() {
 
     if(!this.platform.is('hybrid')){
-      this.empresaSvc.getBackUp(this.empresa._id).subscribe({
+      this.empresaSvc.getBackUp(this.empresa.id).subscribe({
         next: (response) => {
           this.downloadFile(response)
         },
@@ -54,7 +54,7 @@ export class EmpresaPage implements OnInit {
       return;
     }
 
-    this.empresaSvc.sendBackup(this.empresa._id, this.empresa.email).subscribe({
+    this.empresaSvc.sendBackup(this.empresa.id, this.empresa.email).subscribe({
       next: (response) => {
 
         if(response){

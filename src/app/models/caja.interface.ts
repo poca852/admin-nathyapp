@@ -1,8 +1,6 @@
-import { Ruta } from "./";
-
 export interface Caja {
-   _id: string;
-   fecha: string;
+   id: string;
+   fecha: Date;
    base: number;
    inversion: number;
    retiro: number;
@@ -14,6 +12,4 @@ export interface Caja {
    renovaciones: number;
    caja_final: number
    pretendido: number
-   extra: number;
-   ruta: Ruta;
  }

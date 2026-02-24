@@ -1,12 +1,12 @@
 import { Ruta, User } from "./";
 
 export interface Empresa {
-   _id?: string;
+   id: string;
    name: string;
    email?: string;
    dayOfPay: number;
    country: string;
-   owner?: User; 
+   owner?: User;
    employes: User[];
    rutas: Ruta[];
 }

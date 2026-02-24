@@ -1,4 +1,4 @@
-<app-header 
+<app-header
   [title]="ruta ? 'Editar Ruta': 'Agregar Ruta'"
   [isModal]="true"
 />
@@ -7,7 +7,7 @@
 
   <form [formGroup]="form" (ngSubmit)="submit()">
 
-    <custom-input 
+    <custom-input
       [control]="form.controls.nombre"
       type="text"
       label="Nombre"
@@ -22,38 +22,9 @@
     />
 
     <custom-input
-      [control]="form.controls.estado"
-      type="text"
-      label="Estado"
-      autocomplete="off"
-    />
-
-    <custom-input
       [control]="form.controls.ciudad"
       type="text"
       label="Ciudad"
-      autocomplete="off"
-    />
-
-    <!-- <ion-item class="custom-input" lines="none">
-      <ion-toggle
-        [enableOnOffLabels]="true"
-        formControlName="ingresar_gastos_cobrador"
-      >Permitir que el cobrador ingrese gastos</ion-toggle> 
-    </ion-item> -->
-
-    <ion-item class="custom-input" lines="none">
-      <ion-toggle
-        [enableOnOffLabels]="true"
-        formControlName="have_login_falso"
-      >Inicio con calculadora</ion-toggle> 
-    </ion-item>
-
-    <custom-input
-      *ngIf="form.controls.have_login_falso.value" 
-      [control]="form.controls.senha"
-      type="text"
-      label="Seña de la calculadora"
       autocomplete="off"
     />
 
@@ -61,7 +32,27 @@
       <ion-toggle
         [enableOnOffLabels]="true"
         formControlName="autoOpen"
-      >Apertura de caja automatico</ion-toggle> 
+      >Apertura de caja automatico</ion-toggle>
+    </ion-item>
+
+    <ion-item class="custom-input" lines="none">
+      <ion-select
+        aria-label="timeZone"
+        interface="popover"
+        placeholder="Selecciona la zona horaria de la ruta"
+        formControlName="timeZone"
+      >
+        <ion-select-option value="America/Bogota">
+          Colombia (Bogotá - GMT-5)
+        </ion-select-option>
+        <ion-select-option value="America/Guatemala">
+          Guatemala (Ciudad de Guatemala - GMT-6)
+        </ion-select-option>
+        <ion-select-option value="America/sao_pablo">
+          Brasil (São Paulo - GMT-3)
+        </ion-select-option>
+      </ion-select>
+      <ion-note slot="helper">Esto asegura que las horas de la ruta coincidan con la hora local del lugar.</ion-note>
     </ion-item>
 
     <ion-button mode="ios" type="submit" expand="block" [disabled]="form.invalid">

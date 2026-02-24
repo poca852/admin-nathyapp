@@ -28,10 +28,7 @@ export class EmpresaService {
   constructor(
     private http: HttpClient,
     private utilsSvc: UtilsService,
-    private rutaSvc: RutaService,
-  ) {
-    // this.setEmpresa();
-  }
+  ) {}
 
   get user(): User {
     return this.utilsSvc.getFromLocalStorage('user') as User;
@@ -49,12 +46,19 @@ export class EmpresaService {
     this._rutas.set([]);
   }
 
+  setRutas(rutas: Ruta[]) {
+    this._rutas.set(rutas);
+  }
+
   setEmpresa(id: string) {
     this.getEmpresa(id).subscribe({
       next: empresa => {
         this._empresa.set(empresa);
         this._rutas.set(empresa.rutas);
         this._employes.set(empresa.employes)
+      },
+      error: (err) => {
+        console.log('Error al obtener la empresa', err);
       }
     })
   }
@@ -65,16 +69,7 @@ export class EmpresaService {
       .append('authorization', `Bearer ${this.user.token}`);
 
     return this.http.get<Empresa>(url, {headers})
-      .pipe(
-        map((empresa: Empresa) => {
-          if(this.user.rutas.length === 0){
-            return empresa;
-          }else {
-            empresa.rutas = empresa.rutas.filter(ruta => this.user.rutas.includes(ruta._id))
-            return empresa;
-          }
-        })
-      )
+
   }
 
   getEmpleados(): Observable<User[]> {
@@ -89,7 +84,7 @@ export class EmpresaService {
 
   addEmpleado(empleado: any): Observable<boolean> {
 
-    empleado.empresa = this.empresa()._id;
+    empleado.empresa = this.empresa().id;
 
     const url: string = `${this.baseUrl}/empresa/add-empleado`;
     const headers = new HttpHeaders()
@@ -104,7 +99,7 @@ export class EmpresaService {
       .append('authorization', `Bearer ${this.user.token}`);
 
     const params = new HttpParams()
-      .append('empresa', this.empresa()._id)
+      .append('empresa', this.empresa().id)
       .append('empleado', idEmpleado)
 
     return this.http.delete<boolean>(url, {headers, params})

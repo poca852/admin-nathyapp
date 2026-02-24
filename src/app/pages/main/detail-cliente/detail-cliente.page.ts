@@ -61,12 +61,12 @@ export class DetailClientePage {
     let success = await this.utilsSvc.presentModal({
       component: UpdateClienteComponent,
       cssClass: 'add-update-modal',
-      componentProps: {cliente: this.currentCliente} 
+      componentProps: {cliente: this.currentCliente}
     })
 
     if(success){
       this.loading = true;
-      this.clienteSvc.getClientesByRuta(this.empresaSvc.ruta()._id)
+      this.clienteSvc.getClientesByRuta(this.empresaSvc.ruta().id)
         .subscribe({
           next: clientes => {
             this.clienteSvc.setClientes(clientes)

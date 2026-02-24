@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { Ruta, User } from '../models';
+import { Empresa, Ruta, User } from '../models';
 import { environment } from 'src/environments/environment';
 import { UtilsService } from './utils.service';
 import * as moment from 'moment';
@@ -76,10 +76,7 @@ export class RutaService {
     const headers = new HttpHeaders()
       .append('authorization', `Bearer ${this.user.token}`)
 
-    const params = new HttpParams()
-      .set('fecha', this.today)
-
-    return this.http.patch<boolean>(url, {}, { headers, params })
+    return this.http.patch<boolean>(url, {}, { headers })
   }
 
   closeCaja(idRuta: string): Observable<boolean> {
@@ -94,13 +91,13 @@ export class RutaService {
     return this.http.patch<boolean>(url, {}, { headers, params })
   }
 
-  getRutasByEmpresa() {
+  getRutasByEmpresa(): Observable<Empresa> {
     const url: string = `${this.baseUrl}/empresa`;
 
     const headers = new HttpHeaders()
       .append('authorization', `Bearer ${this.user.token}`);
 
-    return this.http.get<Ruta[]>(url, { headers })
+    return this.http.get<Empresa>(url, { headers })
   }
 
 }

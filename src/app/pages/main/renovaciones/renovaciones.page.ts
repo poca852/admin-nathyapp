@@ -18,7 +18,7 @@ export class RenovacionesPage implements OnInit {
   @ViewChild('modalRenocaciones') modalRenocaciones: IonModal;
   creditos: Credito[] = [];
   loading: boolean = true;
-  currentDate = this.moment.nowWithFormat('DD/MM/YYYY');
+  currentDate = new Date();
 
   constructor(
     public moment: MomentService,
@@ -35,13 +35,16 @@ export class RenovacionesPage implements OnInit {
   }
 
   getRenovaciones(){
-    this.creditoSvc.getRenovaciones(this.currentDate)
-      .subscribe({
-        next: creditos => {
-          this.creditos = creditos
-          this.loading = false;
-        }
-      })
+    const date = new Date();
+    date.setHours(0,0,0,0);
+    this.loading = false;
+    // this.creditoSvc.getRenovaciones(date.toISOString())
+    //   .subscribe({
+    //     next: creditos => {
+    //       this.creditos = creditos
+    //       this.loading = false;
+    //     }
+    //   })
   }
 
   async openModal(credito: Credito) {
@@ -124,7 +127,7 @@ export class RenovacionesPage implements OnInit {
 
   onChangeDay(e) {
 
-    this.currentDate = this.moment.fecha(e.detail.value,'DD/MM/YYYY');
+    this.currentDate = e.detail.value
     this.getRenovaciones();
     this.modalRenocaciones.dismiss()
 

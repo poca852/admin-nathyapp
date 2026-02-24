@@ -61,7 +61,7 @@ export class UtilsService {
   async presentToast(opts?: ToastOptions) {
     const toast = await this.toastCtrl.create({
       ...opts,
-      mode: 'ios',
+      mode: 'md',
     });
     await toast.present();
   }

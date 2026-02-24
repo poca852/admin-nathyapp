@@ -43,7 +43,7 @@ export class CreditosService {
       .set('fecha', fecha);
 
     return this.http.get<Credito[]>(url, {headers, params});
-      
+
   }
 
   updateCredito(id: string, credito: any){

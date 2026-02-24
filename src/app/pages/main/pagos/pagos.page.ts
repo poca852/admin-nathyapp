@@ -10,6 +10,7 @@ import { IonModal } from '@ionic/angular';
 import { UpdatePagoComponent } from 'src/app/shared/components/update-pago/update-pago.component';
 import { EmpresaService } from '../../../services/empresa.service';
 import { FormControl } from '@angular/forms';
+import { MovimientoCaja } from 'src/app/models/movimiento-caja.interface';
 
 @Component({
   selector: 'app-pagos',
@@ -22,11 +23,11 @@ export class PagosPage implements OnInit {
   private utilsSvc = inject(UtilsService);
   private pagosSvc = inject(PagosService);
   private empresaSvc = inject(EmpresaService);
-  
+
   public rutaControl = new FormControl(null);
 
-  private dateSelect = moment().utc(true).format('DD/MM/YYYY');
-  currentRuta?: Ruta;
+  private dateSelect: Date = new Date();
+  private currentRuta: Ruta;
 
   @ViewChild('modalPagos') modalPagos: IonModal;
 
@@ -40,11 +41,7 @@ export class PagosPage implements OnInit {
     return this.empresaSvc.rutas();
   }
 
-  get today(): string {
-    return this.rutaSvc.today;
-  }
-
-  get pagos(): Pago[] {
+  get pagos(): MovimientoCaja[] {
     return this.pagosSvc.pagos();
   }
 
@@ -52,19 +49,35 @@ export class PagosPage implements OnInit {
     const loading = await this.utilsSvc.loading();
     await loading.present();
 
-    this.pagosSvc.getPagosByRutaAndDate(this.currentRuta._id, this.dateSelect)
+    this.pagosSvc.getPagosByRutaAndDate(this.currentRuta.id, this.dateSelect)
       .subscribe({
-        next: pagos => this.pagosSvc.setPagos(pagos)
+        next: (pagos) => {
+          if(pagos.length > 0){
+            this.pagosSvc.setPagos(pagos)
+          } else {
+            this.utilsSvc.presentToast({
+              message: 'No se encontraron resultados',
+              duration: 3000,
+              color: 'danger',
+              icon: 'triangle-outline',
+              swipeGesture: 'vertical'
+            })
+          }
+          loading.dismiss()
+        }
       })
-
-    loading.dismiss()
   }
 
   onChangeDay(e) {
 
-    this.dateSelect = moment(e.detail.value).format('DD/MM/YYYY');
-    this.modalPagos.dismiss()
-    this.setPagos();
+    const dateValue = Array.isArray(e.detail.value) ? e.detail.value[0] : e.detail.value;
+    if (dateValue) {
+      const newDate = new Date(dateValue);
+      newDate.setHours(0,0,0,0);
+      this.dateSelect = newDate;
+      this.modalPagos.dismiss()
+      this.setPagos();
+    }
 
   }
 
@@ -76,8 +89,7 @@ export class PagosPage implements OnInit {
 
   }
 
-  async updatePago(pago: Pago) {
-
+  async updatePago(pago: MovimientoCaja) {
     if(this.utilsSvc.getFromLocalStorage('user').rol !== 'ADMIN') {
       this.utilsSvc.presentToast({
         message: 'No tienes permisos necesarios',
@@ -87,25 +99,26 @@ export class PagosPage implements OnInit {
       return;
     }
 
-    let fechaDelPago = pago.fecha.split(' ')[0];
+    // let fechaDelPago = pago.fecha.split(' ')[0];
 
-    if (fechaDelPago !== this.today) {
-      return this.utilsSvc.presentAlert({
-        header: 'Importante',
-        message: 'No puedes actualizar un pago distinto al dia de hoy, para poder relizar esto debe hablar con el administrador',
-        buttons: ['OK']
-      })
-    }
+    // if (fechaDelPago !== this.today) {
+    //   return this.utilsSvc.presentAlert({
+    //     header: 'Importante',
+    //     message: 'No puedes actualizar un pago distinto al dia de hoy, para poder relizar esto debe hablar con el administrador',
+    //     buttons: ['OK']
+    //   })
+    // }
 
-    let success = await this.utilsSvc.presentModal({
-      component: UpdatePagoComponent,
-      cssClass: 'add-update-modal',
-      componentProps: { pago }
-    })
+    // let success = await this.utilsSvc.presentModal({
+    //   component: UpdatePagoComponent,
+    //   cssClass: 'add-update-modal',
+    //   componentProps: { pago }
+    // })
 
-    if (success) {
-      this.setPagos()
-    }
+    // if (success) {
+    //   this.setPagos()
+    // }
+    // * Despues se implementara el actualizar los pagos
   }
 
 }

@@ -22,7 +22,7 @@ export class TablePagosComponent  implements OnInit {
 
   public readonly today = moment().utc(true).format('DD/MM/YYYY');
 
-  constructor() { 
+  constructor() {
     // this.changeRutaNotificacion = this.notificacionSvc.changeRuta$.subscribe(() => {
     //   this.pagosSvc.getPagosByRutaAndDate(this.ruta._id, this.today)
     // })
@@ -30,9 +30,9 @@ export class TablePagosComponent  implements OnInit {
 
   ngOnInit() {}
 
-  get pagos(): Pago[] {
-    return this.pagosSvc.pagos();
-  }
+  // get pagos(): Pago[] {
+  //   return this.pagosSvc.pagos();
+  // }
 
   // get ruta(): Ruta {
   //   return this.rutaSvc.currentRuta();

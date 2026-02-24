@@ -1,12 +1,10 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { RutaService } from '../../../services/ruta.service';
 import { UtilsService } from '../../../services/utils.service';
-import { Empresa, User } from 'src/app/models';
 import { Ruta } from '../../../models';
-import { EmpresaService } from '../../../services/empresa.service';
-import { NotificacionesService } from 'src/app/services/notificaciones.service';
-import { Subscription } from 'rxjs';
+
 import { WsService } from '../../../services/ws.service';
+import { EmpresaService } from 'src/app/services/empresa.service';
 
 @Component({
   selector: 'app-rutero',
@@ -16,25 +14,20 @@ import { WsService } from '../../../services/ws.service';
 export class HomePage implements OnInit, OnDestroy {
 
   public loading: boolean = true;
-  public empresa!: Empresa;
-  private logoutSubs: Subscription;
-  public rutas: Ruta[] = [];
 
   constructor(
     private rutaSvc: RutaService,
     public utilsSvc: UtilsService,
-    private notificacionesSvc: NotificacionesService,
     private ws: WsService,
+    public empresaSvc: EmpresaService,
   ) { }
 
   ngOnDestroy(): void {
-    this.logoutSubs.unsubscribe();
+    // TODO: se debe implementar para limpiar las rutas
   }
 
   ngOnInit(): void {
-    this.logoutSubs = this.notificacionesSvc.logOut$.subscribe(() => {
-      this.rutas = [];
-    })
+    console.log('empresa', this.empresaSvc.empresa());
   }
 
   ionViewWillEnter() {
@@ -44,8 +37,9 @@ export class HomePage implements OnInit, OnDestroy {
   getRutas() {
     this.loading = true;
     this.rutaSvc.getRutasByEmpresa().subscribe({
-      next: rutas => {
-        this.rutas = rutas;
+      next: ({rutas}) => {
+        // Actualizar el estado de las rutas en el EmpresaService
+        this.empresaSvc.setRutas(rutas);
         this.loading = false;
       },
       error: err => {
@@ -71,16 +65,17 @@ export class HomePage implements OnInit, OnDestroy {
 
     if (!ruta.status) {
 
-      this.rutaSvc.newCaja(ruta._id).subscribe({
+      this.rutaSvc.newCaja(ruta.id).subscribe({
         next: () => {
           loading.dismiss();
+          this.getRutas();
         }
       })
 
       return;
     }
 
-    this.rutaSvc.closeCaja(ruta._id).subscribe({
+    this.rutaSvc.closeCaja(ruta.id).subscribe({
       next: () => {
         loading.dismiss();
         this.utilsSvc.presentToast({
@@ -89,6 +84,7 @@ export class HomePage implements OnInit, OnDestroy {
           position: 'bottom',
           color: 'success'
         })
+        this.getRutas();
       }
     })
 

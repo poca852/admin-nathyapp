@@ -33,7 +33,7 @@ export class SelectRutaComponent {
     const loading = await this.utilsSvc.loading({message: 'Cambiando ruta'});
     await loading.present();
 
-    const selectRuta = this.rutas.find( (ruta) => ruta._id === e.detail.value);
+    const selectRuta = this.rutas.find( (ruta) => ruta.id === e.detail.value);
 
     this.onEmitRuta.emit(selectRuta);
 

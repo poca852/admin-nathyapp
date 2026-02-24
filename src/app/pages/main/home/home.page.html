@@ -25,7 +25,7 @@
 
   <ion-list *ngIf="!loading">
 
-    <ion-item *ngFor="let ruta of rutas">
+    <ion-item *ngFor="let ruta of this.empresaSvc.rutas()">
       <ion-grid>
 
         <ion-row>

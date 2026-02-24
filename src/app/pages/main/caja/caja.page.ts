@@ -1,6 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { IonModal } from '@ionic/angular';
-import { MomentService } from '../../../config/plugins/moment.plugin';
+import { DatetimeCustomEvent, IonModal } from '@ionic/angular';
 import { Caja, Ruta } from 'src/app/models';
 import { CajaService } from '../../../services/caja.service';
 import { UtilsService } from '../../../services/utils.service';
@@ -14,13 +13,12 @@ export class CajaPage implements OnInit {
 
   @ViewChild('modalCaja') modalCaja: IonModal;
 
-  dateSelect: string = this.moment.nowWithFormat('DD/MM/YYYY');
+  dateSelect: Date;
   ruta: Ruta;
 
   currentCaja?: Caja;
 
   constructor(
-    private moment: MomentService,
     private cajaSvc: CajaService,
     private utilsSvc: UtilsService,
   ) { }
@@ -28,20 +26,23 @@ export class CajaPage implements OnInit {
   ngOnInit() {
   }
 
-  onChangeDay(e) {
-    this.dateSelect =  this.moment.fecha(e.detail.value, 'DD/MM/YYYY');
-    this.searchCaja();
-    this.modalCaja.dismiss()
+  onChangeDay(e: DatetimeCustomEvent ) {
+    const dateValue = Array.isArray(e.detail.value) ? e.detail.value[0] : e.detail.value;
+    if (dateValue) {
+      const newDate = new Date(dateValue);
+      newDate.setHours(0,0,0,0);
+      this.dateSelect = newDate;
+      this.searchCaja();
+      this.modalCaja.dismiss()
+    }
   }
 
   onChangeRuta(ruta: Ruta) {
     this.ruta = ruta;
-    this.searchCaja()
   }
 
   searchCaja() {
-
-    this.cajaSvc.getCajaByRutaAndDate(this.ruta._id, this.dateSelect).subscribe({
+    this.cajaSvc.getCajaByRutaAndDate(this.ruta.id, this.dateSelect.toISOString()).subscribe({
       next: caja => {
         this.currentCaja = caja;
       },

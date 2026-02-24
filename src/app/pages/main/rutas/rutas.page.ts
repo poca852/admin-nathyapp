@@ -35,7 +35,7 @@ export class RutasPage implements OnInit {
   getRutas(){
     this.loading = true;
     this.rutaSvc.getRutasByEmpresa().subscribe({
-      next: rutas => {
+      next: ({rutas}) => {
         this.rutas = rutas;
         this.loading = false;
       },

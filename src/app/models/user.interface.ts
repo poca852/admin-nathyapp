@@ -12,7 +12,6 @@ export interface User {
    empresa: string;
    token?: string;
    ubication: number[];
-   close_ruta?: boolean;
  }
 
  export interface AddUser{

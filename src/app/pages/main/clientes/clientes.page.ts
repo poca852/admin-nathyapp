@@ -21,8 +21,8 @@ export class ClientesPage implements OnInit {
   public clientesFiltrados: Cliente[] = [];
   public clientes: Cliente[] = []
 
-  constructor() { 
-   
+  constructor() {
+
   }
 
   ngOnInit() {
@@ -33,11 +33,11 @@ export class ClientesPage implements OnInit {
 
   ionViewWillEnter() {
   }
-  
+
   onChangeRuta(ruta: Ruta){
     this.loading = true;
     this.currentRuta = ruta;
-    this.clienteSvc.getClientesByRuta(this.currentRuta._id).subscribe({
+    this.clienteSvc.getClientesByRuta(this.currentRuta.id).subscribe({
       next: clientes => {
         this.clientesFiltrados = clientes
         this.clientes = clientes

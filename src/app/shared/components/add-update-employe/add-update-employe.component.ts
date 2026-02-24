@@ -29,7 +29,6 @@ export class AddUpdateEmployeComponent implements OnInit {
     ruta: new FormControl(''),
     rutas: new FormControl([]),
     rol: new FormControl('', [Validators.required]),
-    close_ruta: new FormControl(false),
   })
 
 
