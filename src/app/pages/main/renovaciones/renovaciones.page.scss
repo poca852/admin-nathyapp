@@ -1,0 +1,84 @@
+.filter-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin-bottom: 20px;
+  background: var(--ion-item-background, #fff);
+}
+
+.filter-item {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+
+  ion-label {
+    font-weight: 600;
+    color: var(--ion-color-medium);
+    margin-bottom: 8px;
+  }
+}
+
+.search-btn {
+  --background: linear-gradient(135deg, var(--ion-color-primary, #3880ff), var(--ion-color-primary-shade, #3171e0));
+  --border-radius: 14px;
+  --box-shadow: 0 6px 15px rgba(var(--ion-color-primary-rgb, 56, 128, 255), 0.3);
+  margin-top: 20px;
+  height: 52px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: 0.5px;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  &:hover {
+    transform: translateY(-2px);
+    --box-shadow: 0 8px 20px rgba(var(--ion-color-primary-rgb, 56, 128, 255), 0.4);
+  }
+
+  &:active {
+    transform: translateY(1px) scale(0.98);
+  }
+}
+
+.summary-card {
+  border-radius: 16px;
+  margin: 0;
+  height: 100%;
+
+  h2 {
+    font-weight: 800;
+    margin: 4px 0 0 0;
+    font-size: 1.4rem;
+  }
+
+  p {
+    font-size: 0.8rem;
+    color: var(--ion-color-medium);
+    margin: 0;
+  }
+}
+
+.total-card {
+  --background: rgba(var(--ion-color-success-rgb, 45, 211, 111), 0.05);
+  border: 1px solid rgba(var(--ion-color-success-rgb, 45, 211, 111), 0.1);
+}
+
+.quantity-card {
+  --background: rgba(var(--ion-color-primary-rgb, 56, 128, 255), 0.05);
+  border: 1px solid rgba(var(--ion-color-primary-rgb, 56, 128, 255), 0.1);
+}
+
+.route-header {
+  margin-top: 24px;
+  padding-bottom: 8px;
+
+  h1 {
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: var(--ion-color-dark);
+    margin-bottom: 4px;
+  }
+
+  ion-badge {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+}

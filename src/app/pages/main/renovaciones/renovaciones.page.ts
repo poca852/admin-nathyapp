@@ -1,5 +1,6 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { MomentService } from 'src/app/config/plugins/moment.plugin';
+import { Component, OnInit, ViewChild, signal, computed, effect } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { combineLatest, switchMap, tap } from 'rxjs';
 import { Credito } from 'src/app/models';
 import { CreditosService } from '../../../services/creditos.service';
 import { UtilsService } from '../../../services/utils.service';
@@ -7,6 +8,10 @@ import { ModalHistorialCreditoComponent } from 'src/app/shared/components/modal-
 import { IonModal } from '@ionic/angular';
 import { UpdateCreditoComponent } from '../../../shared/components/update-credito/update-credito.component';
 import { ClienteService } from 'src/app/services/cliente.service';
+import { RutaService } from 'src/app/services/ruta.service';
+import { format } from 'date-fns';
+import { Ruta } from 'src/app/models';
+import { EmpresaReport } from './interfaces/renovacion-report.interface';
 
 @Component({
   selector: 'app-renovaciones',
@@ -16,48 +21,89 @@ import { ClienteService } from 'src/app/services/cliente.service';
 export class RenovacionesPage implements OnInit {
 
   @ViewChild('modalRenocaciones') modalRenocaciones: IonModal;
-  creditos: Credito[] = [];
-  loading: boolean = true;
-  currentDate = new Date();
+
+  public report = signal<EmpresaReport | null>(null);
+  public loading = signal<boolean>(false);
+  public selectedDate = signal<string>(new Date().toISOString());
+  public selectedRouteId = signal<string>('all');
 
   constructor(
-    public moment: MomentService,
     private creditoSvc: CreditosService,
     private clienteSvc: ClienteService,
+    private rutaSvc: RutaService,
     private utilsSvc: UtilsService,
-  ) { }
+  ) {
+    this.setupReactiveFiltering();
+  }
+
+  private setupReactiveFiltering() {
+    combineLatest([
+      toObservable(this.selectedDate),
+      toObservable(this.selectedRouteId)
+    ]).pipe(
+      tap(() => this.loading.set(true)),
+      switchMap(([dateStr, routeId]) => {
+        const dateFormatted = format(new Date(dateStr), 'MM/dd/yyyy');
+        const rId = routeId === 'all' ? undefined : routeId;
+        return this.creditoSvc.getRenovaciones(dateFormatted, rId);
+      })
+    ).subscribe({
+      next: report => {
+        console.log(report);
+        this.report.set(report || null);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        console.error('Error in reactive filtering:', err);
+        this.loading.set(false);
+        this.report.set(null);
+      }
+    });
+  }
 
   ngOnInit() {
   }
 
   ionViewWillEnter() {
-    this.getRenovaciones();
   }
 
-  getRenovaciones(){
-    const date = new Date();
-    date.setHours(0,0,0,0);
-    this.loading = false;
-    // this.creditoSvc.getRenovaciones(date.toISOString())
-    //   .subscribe({
-    //     next: creditos => {
-    //       this.creditos = creditos
-    //       this.loading = false;
-    //     }
-    //   })
+  getRenovaciones() {
+    // Manually trigger a refresh if needed (e.g., after update/delete)
+    // By re-setting the same values, the combineLatest will trigger if we ensure they emit
+    // but better to just call the logic again or use a Refresh trigger.
+    // For now, let's keep it simple and just re-request.
+    const dateStr = this.selectedDate();
+    const routeId = this.selectedRouteId();
+
+    this.loading.set(true);
+    const dateFormatted = format(new Date(dateStr), 'MM/dd/yyyy');
+    const rId = routeId === 'all' ? undefined : routeId;
+
+    this.creditoSvc.getRenovaciones(dateFormatted, rId)
+      .subscribe({
+        next: report => {
+          console.log(report);
+          this.report.set(report[0] || null);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.loading.set(false);
+          this.report.set(null);
+        }
+      });
   }
 
   async openModal(credito: Credito) {
     await this.utilsSvc.presentModal({
       component: ModalHistorialCreditoComponent,
       cssClass: 'add-update-modal',
-      componentProps: {credito}
+      componentProps: { credito }
     })
   }
 
   async updateModal(credito: Credito) {
 
-    if(this.utilsSvc.getFromLocalStorage('user').rol !== 'ADMIN'){
+    if (this.utilsSvc.getFromLocalStorage('user').rol !== 'ADMIN') {
       this.utilsSvc.presentToast({
         message: 'Usted no tiene permiso para realizar esta operacion.',
         duration: 3500,
@@ -69,15 +115,15 @@ export class RenovacionesPage implements OnInit {
     let success = await this.utilsSvc.presentModal({
       component: UpdateCreditoComponent,
       cssClass: 'add-update-modal',
-      componentProps: {credito}
+      componentProps: { credito }
     })
 
-    if(success) this.getRenovaciones();
+    if (success) this.getRenovaciones();
   }
 
-  async deleteCredito(credito: Credito){
+  async deleteCredito(credito: Credito) {
 
-    if(this.utilsSvc.getFromLocalStorage('user').rol !== 'ADMIN'){
+    if (this.utilsSvc.getFromLocalStorage('user').rol !== 'ADMIN') {
       this.utilsSvc.presentToast({
         message: 'Usted no tiene permiso para realizar esta operacion.',
         duration: 3500,
@@ -125,12 +171,13 @@ export class RenovacionesPage implements OnInit {
     })
   }
 
-  onChangeDay(e) {
+  onChangeDay(e: any) {
+    this.selectedDate.set(e.detail.value);
+    if (this.modalRenocaciones) this.modalRenocaciones.dismiss();
+  }
 
-    this.currentDate = e.detail.value
-    this.getRenovaciones();
-    this.modalRenocaciones.dismiss()
-
+  handleRutaChange(ruta: Ruta) {
+    this.selectedRouteId.set(ruta ? ruta.id : 'all');
   }
 
 }
