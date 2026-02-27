@@ -5,6 +5,7 @@ import { Credito, User } from '../models';
 import { UtilsService } from './utils.service';
 import { Observable } from 'rxjs';
 import { MomentService } from '../config/plugins/moment.plugin';
+import { EmpresaReport } from '../pages/main/renovaciones/interfaces/renovacion-report.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +13,7 @@ import { MomentService } from '../config/plugins/moment.plugin';
 export class CreditosService {
 
   private readonly baseUrl: string = environment.baseUrl;
-  private _currentCredito = signal<Credito|null>(null);
+  private _currentCredito = signal<Credito | null>(null);
   public currentCredito = computed(() => this._currentCredito());
 
   constructor(
@@ -33,20 +34,22 @@ export class CreditosService {
     this._currentCredito.set(null);
   }
 
-  getRenovaciones(fecha: string): Observable<Credito[]> {
-    const url: string = `${this.baseUrl}/credito/renovaciones`;
+  getRenovaciones(fecha: string, ruta?: string): Observable<EmpresaReport> {
+    const url: string = `${this.baseUrl}/renovacion/diaria`;
 
     const headers = new HttpHeaders()
       .append('authorization', `Bearer ${this.user.token}`);
 
-    const params = new HttpParams()
+    let params = new HttpParams()
       .set('fecha', fecha);
 
-    return this.http.get<Credito[]>(url, {headers, params});
+    if (ruta) params = params.append('rutaId', ruta);
+
+    return this.http.get<EmpresaReport>(url, { headers, params });
 
   }
 
-  updateCredito(id: string, credito: any){
+  updateCredito(id: string, credito: any) {
     const url: string = `${this.baseUrl}/credito/${id}`;
 
     const headers = new HttpHeaders()
@@ -55,15 +58,15 @@ export class CreditosService {
     const params = new HttpParams()
       .set('fecha', this.moment.nowWithFormat('YYYY-MM-DD'));
 
-    return this.http.patch<Credito>(url, credito, {headers, params});
+    return this.http.patch<Credito>(url, credito, { headers, params });
   }
 
-  deleteCredito(id: string){
+  deleteCredito(id: string) {
     const url: string = `${this.baseUrl}/credito/${id}`;
 
     const headers = new HttpHeaders()
       .append('authorization', `Bearer ${this.user.token}`);
 
-    return this.http.delete<boolean>(url, {headers});
+    return this.http.delete<boolean>(url, { headers });
   }
 }

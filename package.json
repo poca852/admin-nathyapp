@@ -33,6 +33,7 @@
     "@capacitor/status-bar": "5.0.7",
     "@ionic/angular": "^7.0.0",
     "@ionic/pwa-elements": "^3.2.2",
+    "date-fns": "^4.1.0",
     "file-saver": "^2.0.5",
     "ionicons": "^7.0.0",
     "mapbox-gl": "^3.1.2",
