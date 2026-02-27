@@ -1,15 +1,9 @@
-import { Component, OnInit, inject, ViewChild } from '@angular/core';
-import { RutaService } from '../../../services/ruta.service';
+import { Component, OnInit, inject, ViewChild, signal, computed } from '@angular/core';
 import { UtilsService } from '../../../services/utils.service';
-import { Empresa, Pago, Ruta } from 'src/app/models';
-import * as moment from 'moment';
+import { Ruta } from 'src/app/models';
 import { PagosService } from '../../../services/pagos.service';
-import { Subscription } from 'rxjs';
-import { NotificacionesService } from 'src/app/services/notificaciones.service';
 import { IonModal } from '@ionic/angular';
-import { UpdatePagoComponent } from 'src/app/shared/components/update-pago/update-pago.component';
 import { EmpresaService } from '../../../services/empresa.service';
-import { FormControl } from '@angular/forms';
 import { MovimientoCaja } from 'src/app/models/movimiento-caja.interface';
 
 @Component({
@@ -19,106 +13,93 @@ import { MovimientoCaja } from 'src/app/models/movimiento-caja.interface';
 })
 export class PagosPage implements OnInit {
 
-  private rutaSvc = inject(RutaService);
   private utilsSvc = inject(UtilsService);
   private pagosSvc = inject(PagosService);
   private empresaSvc = inject(EmpresaService);
 
-  public rutaControl = new FormControl(null);
+  public dateSelect = signal<Date>(new Date());
+  public currentRuta = signal<Ruta | null>(null);
 
-  private dateSelect: Date = new Date();
-  private currentRuta: Ruta;
+  public rutas = computed(() => this.empresaSvc.rutas());
+  public pagos = computed(() => this.pagosSvc.pagos());
 
-  @ViewChild('modalPagos') modalPagos: IonModal;
-
-
-  constructor() { }
+  @ViewChild('modalPagos') modalPagos!: IonModal;
 
   ngOnInit() {
+    // Inicializar si es necesario
   }
 
-  get rutas(): Ruta[] {
-    return this.empresaSvc.rutas();
-  }
+  private async fetchPagos() {
+    const rutaId = this.currentRuta()?.id;
+    const date = this.dateSelect();
 
-  get pagos(): MovimientoCaja[] {
-    return this.pagosSvc.pagos();
-  }
+    if (!rutaId) return;
 
-  private async setPagos() {
     const loading = await this.utilsSvc.loading();
     await loading.present();
 
-    this.pagosSvc.getPagosByRutaAndDate(this.currentRuta.id, this.dateSelect)
+    this.pagosSvc.getPagosByRutaAndDate(rutaId, date)
       .subscribe({
         next: (pagos) => {
-          if(pagos.length > 0){
-            this.pagosSvc.setPagos(pagos)
-          } else {
+          this.pagosSvc.setPagos(pagos);
+          if (pagos.length === 0) {
             this.utilsSvc.presentToast({
               message: 'No se encontraron resultados',
               duration: 3000,
-              color: 'danger',
-              icon: 'triangle-outline',
-              swipeGesture: 'vertical'
-            })
+              color: 'warning',
+              icon: 'search-outline'
+            });
           }
-          loading.dismiss()
+        },
+        error: (err) => {
+          this.utilsSvc.presentToast({
+            message: 'Error al cargar los pagos',
+            duration: 3000,
+            color: 'danger',
+            icon: 'alert-circle-outline'
+          });
+        },
+        complete: () => {
+          loading.dismiss();
         }
-      })
+      });
   }
 
-  onChangeDay(e) {
-
+  onChangeDay(e: any) {
     const dateValue = Array.isArray(e.detail.value) ? e.detail.value[0] : e.detail.value;
     if (dateValue) {
       const newDate = new Date(dateValue);
-      newDate.setHours(0,0,0,0);
-      this.dateSelect = newDate;
-      this.modalPagos.dismiss()
-      this.setPagos();
+      newDate.setHours(0, 0, 0, 0);
+      this.dateSelect.set(newDate);
+      this.modalPagos.dismiss();
+      this.fetchPagos();
     }
-
   }
 
-  onChangeRuta(ruta: any) {
-
-    this.currentRuta = ruta;
-
-    this.setPagos()
-
+  onChangeRuta(ruta: Ruta) {
+    this.currentRuta.set(ruta);
+    this.fetchPagos();
   }
 
   async updatePago(pago: MovimientoCaja) {
-    if(this.utilsSvc.getFromLocalStorage('user').rol !== 'ADMIN') {
+    const user = this.utilsSvc.getFromLocalStorage('user');
+    if (user?.rol !== 'ADMIN') {
       this.utilsSvc.presentToast({
         message: 'No tienes permisos necesarios',
         duration: 3500,
-        color: 'danger'
-      })
+        color: 'danger',
+        icon: 'lock-closed-outline'
+      });
       return;
     }
 
-    // let fechaDelPago = pago.fecha.split(' ')[0];
-
-    // if (fechaDelPago !== this.today) {
-    //   return this.utilsSvc.presentAlert({
-    //     header: 'Importante',
-    //     message: 'No puedes actualizar un pago distinto al dia de hoy, para poder relizar esto debe hablar con el administrador',
-    //     buttons: ['OK']
-    //   })
-    // }
-
-    // let success = await this.utilsSvc.presentModal({
-    //   component: UpdatePagoComponent,
-    //   cssClass: 'add-update-modal',
-    //   componentProps: { pago }
-    // })
-
-    // if (success) {
-    //   this.setPagos()
-    // }
-    // * Despues se implementara el actualizar los pagos
+    // TODO: Implementar actualización de pago cuando esté listo el componente
+    this.utilsSvc.presentToast({
+      message: 'Funcionalidad de edición próximamente disponible',
+      duration: 2000,
+      color: 'secondary'
+    });
   }
 
 }
+

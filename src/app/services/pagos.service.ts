@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Pago, User } from '../models';
+import { User } from '../models';
 import { environment } from '../../environments/environment';
 import { UtilsService } from './utils.service';
 import { MovimientoCaja } from '../models/movimiento-caja.interface';
@@ -17,8 +17,6 @@ export class PagosService {
 
   private _pagos = signal<MovimientoCaja[]>([]);
   public pagos = computed(() => this._pagos());
-
-  constructor() { }
 
   get user(): User {
     return this.utilsSvc.getFromLocalStorage('user') as User;
@@ -38,16 +36,16 @@ export class PagosService {
       .append('rutaId', idRuta)
       .append('fecha', date.toISOString())
 
-    return this.http.get<MovimientoCaja[]>(url, {headers, params});
+    return this.http.get<MovimientoCaja[]>(url, { headers, params });
   }
 
-  updatePago(idPago: string, body: any): Observable<boolean>{
-
+  updatePago(idPago: string, body: any): Observable<boolean> {
     const url: string = `${this.baseUrl}/pago/${idPago}`;
 
     const headers = new HttpHeaders()
       .append('authorization', `Bearer ${this.user.token}`)
 
-    return this.http.patch<boolean>(url, body, {headers})
+    return this.http.patch<boolean>(url, body, { headers })
   }
 }
+

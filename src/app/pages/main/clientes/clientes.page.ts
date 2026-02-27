@@ -34,7 +34,7 @@ export class ClientesPage implements OnInit {
   ionViewWillEnter() {
   }
 
-  onChangeRuta(ruta: Ruta){
+  onChangeRuta(ruta: Ruta) {
     this.loading = true;
     this.currentRuta = ruta;
     this.clienteSvc.getClientesByRuta(this.currentRuta.id).subscribe({
@@ -61,7 +61,7 @@ export class ClientesPage implements OnInit {
 
   goToCliente(cliente: Cliente) {
     this.clienteSvc.setCurrentCliente(cliente)
-    this.utilsSvc.routerLink('/main/detail-cliente');
+    this.utilsSvc.routerLink('/main/detail-cliente/:idCliente', { idCliente: cliente._id });
   }
 
 }

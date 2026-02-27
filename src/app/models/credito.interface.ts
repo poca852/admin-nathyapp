@@ -1,17 +1,18 @@
 import { Pago, Cliente, Ruta } from "./";
 
 export enum TipoDeCliente {
-   BUENO="success",
-   REGULAR="warning",
-   MALO="danger"
+  BUENO = 'BUENO',
+  REGULAR = 'REGULAR',
+  MALO = 'MALO',
 };
 
 export enum FrecuenciaCobro {
-  DIARIO="diario",
-  SEMANAL="semanal"
+  DIARIO = "diario",
+  SEMANAL = "semanal"
 }
 
 export interface Credito {
+  id?: string;
   _id: string;
   pagos: Pago[];
   status: boolean;
@@ -23,8 +24,9 @@ export interface Credito {
   saldo: number;
   valor_cuota: number;
   fecha_inicio: string;
+  dueDate: Date;
   cliente: Cliente;
-  ruta: Ruta;
+  ruta: string;
   ultimo_pago: string;
   notas?: string;
   atraso: number;
@@ -32,7 +34,8 @@ export interface Credito {
   frecuencia_cobro: FrecuenciaCobro;
   se_cobran_domingos: boolean;
   turno: number;
-  clasificacion?: TipoDeCliente;
+  state?: TipoDeCliente;
+  daysOverdue?: number;
 }
 
 export interface NuevoCredito {
@@ -49,4 +52,15 @@ export interface NuevoCredito {
   ruta?: string;
   notas?: string;
   esAutomatico: boolean;
+}
+
+export interface HistorialCredito {
+  _id: string;
+  valor_credito: number;
+  interes: number;
+  fecha_inicio: Date;
+  frecuencia_cobro: string;
+  total_cuotas: number;
+  ultimo_pago: Date;
+  dias_tardados_en_pagar: number;
 }
