@@ -1,0 +1,74 @@
+.header-info {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+
+  ion-chip {
+    --background: rgba(var(--ion-color-primary-rgb), 0.1);
+    font-weight: 500;
+  }
+}
+
+.custom-input {
+  margin-bottom: 15px;
+  --background: var(--ion-color-step-50);
+  --border-radius: 12px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --highlight-color-focused: var(--ion-color-primary);
+
+  &.disabled {
+    opacity: 0.8;
+    --background: var(--ion-color-step-100);
+  }
+
+  &.textarea {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  // Estilo para labels modernos de Ionic
+  ion-input,
+  ion-select,
+  ion-textarea {
+    --label-color: var(--ion-color-step-600);
+    --font-weight: 600;
+    font-size: 16px;
+
+    &.bold-text {
+      font-weight: 700;
+      --color: var(--ion-color-primary);
+    }
+  }
+
+  h2 {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+}
+
+ion-button {
+  --border-radius: 12px;
+  --padding-top: 18px;
+  --padding-bottom: 18px;
+  font-weight: 600;
+  height: 52px;
+  margin-top: 24px;
+  box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb), 0.2);
+}
+
+.error-msg {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--ion-color-warning);
+  font-style: italic;
+  font-weight: 500;
+}
+
+// Estilos específicos para modo oscuro si es necesario
+:host-context(.dark) {
+  .custom-input {
+    --background: var(--ion-color-step-150);
+  }
+}
