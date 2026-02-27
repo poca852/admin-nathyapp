@@ -1,88 +1,137 @@
-<app-header title="Oficina" [showMenu]="true" /> 
+<app-header title="Oficina" [showMenu]="true" />
 
-<ion-content [fullscreen]="true" class="ion-padding">
- 
-  <ion-list>
+<ion-content [fullscreen]="true">
+  <div class="oficina-container ion-padding">
 
-    <ion-item>
+    <!-- Controls Section -->
+    <div class="controls-card">
+      @if (rutas().length > 0) {
+      <ion-item lines="none">
+        <select-ruta (onEmitRuta)="onChangeRuta($event)" />
+      </ion-item>
+      }
 
-      <select-ruta (onEmitRuta)="onChangeRuta($event)" />
+      <ion-item lines="none">
+        <div class="date-trigger" (click)="modalOficina.present()">
+          <div class="date-label">
+            <ion-icon name="calendar-clear-outline"></ion-icon>
+            <span>Filtrar por fecha</span>
+          </div>
+          <div class="date-value">
+            {{ dateSelect() | date: 'dd MMM, yyyy' }}
+          </div>
+        </div>
 
-    </ion-item>
+        <ion-modal #modalOficina [keepContentsMounted]="true" class="auto-height">
+          <ng-template>
+            <ion-datetime mode="ios" id="datetimeOficina" #datetimeOficina presentation="date"
+              (ionChange)="onChangeDay($event)" locale="es-GT">
+              <span slot="title">Selecciona una fecha</span>
+              <ion-buttons slot="buttons">
+                <ion-button color="medium" fill="clear" (click)="modalOficina.dismiss()">Cancelar</ion-button>
+                <ion-button color="primary" fill="solid" (click)="datetimeOficina.confirm()"
+                  style="--border-radius: 10px;">Confirmar</ion-button>
+              </ion-buttons>
+            </ion-datetime>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+    </div>
 
-    <ion-item>
+    @if (movimientos().length > 0) {
+    <!-- Summary Cards -->
+    <div class="summary-row">
+      <div class="summary-card gasto">
+        <ion-icon name="card-outline"></ion-icon>
+        <div class="summary-info">
+          <span class="summary-label">Gastos</span>
+          <span class="summary-value">{{ totalGastos() | currency:'USD':'symbol':'1.0-0':'en' }}</span>
+        </div>
+        <ion-button fill="clear" color="danger" size="small" (click)="addOrUpdateMovimiento(SubTipo.GASTO)">
+          <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
+        </ion-button>
+      </div>
+      <div class="summary-card inversion">
+        <ion-icon name="trending-up-outline"></ion-icon>
+        <div class="summary-info">
+          <span class="summary-label">Inversiones</span>
+          <span class="summary-value">{{ totalInversiones() | currency:'USD':'symbol':'1.0-0':'en' }}</span>
+        </div>
+        <ion-button fill="clear" color="primary" size="small" (click)="addOrUpdateMovimiento(SubTipo.INVERSION)">
+          <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
+        </ion-button>
+      </div>
+      <div class="summary-card retiro">
+        <ion-icon name="wallet-outline"></ion-icon>
+        <div class="summary-info">
+          <span class="summary-label">Retiros</span>
+          <span class="summary-value">{{ totalRetiros() | currency:'USD':'symbol':'1.0-0':'en' }}</span>
+        </div>
+        <ion-button fill="clear" color="warning" size="small" (click)="addOrUpdateMovimiento(SubTipo.RETIRO)">
+          <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
 
-      <ion-select
-        aria-label="Movimiento" 
-        interface="popover"
-        [formControl]="oficina"
-        placeholder="Selecciona un tipo de Oficina">
-      <ion-select-option
-        *ngFor="let oficina of listOficina"
-        [value]="oficina"
-      >
-         {{oficina | titlecase}}
-        </ion-select-option>
-      </ion-select>
+    <!-- Results Header -->
+    <div class="list-header">
+      <div class="title-container">
+        <h2>Movimientos de Oficina</h2>
+        <p>{{ movimientos().length }} movimientos encontrados</p>
+      </div>
+    </div>
+    }
 
-    </ion-item>
+    <!-- Movements List -->
+    <div class="movements-list">
+      @for (mov of movimientos(); track mov.id; let i = $index) {
+      <div class="movement-card animate__animated animate__fadeInUp" [style.animation-delay]="i * 40 + 'ms'"
+        (click)="addOrUpdateMovimiento(mov.subTipo, mov)">
 
-    <ion-item>
+        <div class="type-indicator" [ngClass]="mov.subTipo"></div>
 
-      <ion-datetime-button datetime="datetime"></ion-datetime-button>
-      <ion-modal #modal [keepContentsMounted]="true">
-        <ng-template>
-          <ion-datetime mode="ios" id="datetime" #datetime presentation="date" (ionChange)="onChangeDay($event)"
-            locale="es-GT">
-            <span slot="title">Selecciona una fecha</span>
-          </ion-datetime>
-        </ng-template>
-      </ion-modal>
+        <div class="movement-icon" [ngClass]="mov.subTipo">
+          <ion-icon
+            [name]="mov.subTipo === 'gasto' ? 'card-outline' : mov.subTipo === 'inversion' ? 'trending-up-outline' : 'wallet-outline'">
+          </ion-icon>
+        </div>
 
-    </ion-item>
+        <div class="movement-info">
+          <div class="movement-header">
+            <span class="type-badge" [ngClass]="mov.subTipo">
+              {{ getSubTipoLabel(mov.subTipo) }}
+            </span>
+          </div>
+          @if (mov.concepto) {
+          <p class="movement-concept">{{ mov.concepto | titlecase }}</p>
+          }
+          @if (mov.comentario) {
+          <p class="movement-note">
+            <ion-icon name="document-text-outline"></ion-icon>
+            {{ mov.comentario }}
+          </p>
+          }
+          <p class="movement-date">
+            <ion-icon name="time-outline"></ion-icon>
+            {{ mov.fecha | date:'mediumDate' }}
+          </p>
+        </div>
 
-  </ion-list>
+        <div class="movement-amount">
+          <span class="amount">{{ mov.valor | currency:'USD':'symbol':'1.0-0':'en' }}</span>
+        </div>
+      </div>
+      } @empty {
+      <!-- Empty State -->
+      <div class="empty-state animate__animated animate__fadeIn">
+        <div class="empty-icon">
+          <ion-icon name="file-tray-outline"></ion-icon>
+        </div>
+        <h3>Sin movimientos</h3>
+        <p>Selecciona una ruta y fecha para visualizar gastos, inversiones y retiros.</p>
+      </div>
+      }
+    </div>
 
-  <ion-button (click)="submit()" expand="block">
-    Buscar
-  </ion-button>
-
-  <ion-list *ngIf="data.length > 0" class="ion-margin-top">
-    <ion-item
-      *ngFor="let d of data"
-    >
-      <ion-label>
-
-        <ion-text *ngIf="d.gasto">
-          <h3>
-            <strong>Concepto: </strong>
-            {{d.gasto.gasto | titlecase}}
-          </h3>
-        </ion-text>
-
-        <ion-text>
-          <h3>
-            <strong>Valor: </strong>
-            {{ d.valor | currency:'USD':'symbol':'':'en' }}
-          </h3>
-        </ion-text>
-
-        <ion-text>
-          <h3>
-            <strong>Fecha: </strong>
-            {{ d.fecha | date:'fullDate' }}
-          </h3>
-        </ion-text>
-
-        <ion-text *ngIf="!!d.nota">
-          <h3>
-            <strong>Detalle: </strong>
-            {{ d.nota | lowercase }}
-          </h3>
-        </ion-text>
-
-      </ion-label>
-    </ion-item>
-  </ion-list>
-
+  </div>
 </ion-content>

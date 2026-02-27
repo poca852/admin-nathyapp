@@ -14,3 +14,4 @@ export * from './pago.interface';
 export * from './retiro.interface';
 export * from './ruta.interface';
 export * from './country.interface';
+export * from './categoria-gasto.enum';

@@ -1,0 +1,59 @@
+<app-header [title]="movimiento ? 'Editar Movimiento' : 'Nuevo Movimiento'" [isModal]="true" />
+
+<ion-content class="ion-padding">
+
+  <div class="header-info" *ngIf="ruta">
+    <ion-chip color="primary" mode="ios">
+      <ion-icon name="map-outline"></ion-icon>
+      <ion-label>{{ruta.nombre}}</ion-label>
+    </ion-chip>
+    <ion-chip [color]="isEditable() ? 'success' : 'warning'" mode="ios">
+      <ion-icon [name]="isEditable() ? 'calendar-outline' : 'lock-closed-outline'"></ion-icon>
+      <ion-label>{{fechaSeleccionada | date: 'dd/MM/yyyy'}}</ion-label>
+    </ion-chip>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+
+    <!-- Tipo de Movimiento (Solo lectura) -->
+    <ion-item class="custom-input disabled" lines="none">
+      <ion-input label="Tipo de Movimiento" label-placement="stacked" [value]="type | titlecase" readonly="true"
+        color="primary" class="bold-text"></ion-input>
+    </ion-item>
+
+    <!-- Monto -->
+    <custom-input [control]="form.controls.monto" type="number" label="Monto" icon="cash-outline" />
+
+    <!-- Concepto -->
+    <custom-input [control]="form.controls.concepto" type="text" label="Concepto" icon="document-text-outline" />
+
+    <!-- Categoría de Gasto (Solo si es gasto) -->
+    <ion-item class="custom-input" lines="none" *ngIf="type === SubTipo.GASTO">
+      <ion-select label="Categoría de Gasto" label-placement="stacked" formControlName="categoriaGasto"
+        placeholder="Selecciona una categoría">
+        <ion-select-option *ngFor="let item of categories" [value]="item">
+          {{item | titlecase}}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <!-- Concepto/Comentario -->
+    <ion-item class="custom-input textarea" lines="none">
+      <ion-textarea label="Motivo / Comentario" label-placement="stacked" formControlName="comentario"
+        placeholder="Escribe el motivo del movimiento..." rows="4"></ion-textarea>
+    </ion-item>
+
+    <!-- Botón de Acción -->
+    <ion-button mode="ios" type="submit" expand="block" class="ion-margin-top"
+      [disabled]="form.invalid || !isEditable()">
+      {{movimiento ? 'Actualizar' : 'Guardar'}} Movimiento
+      <ion-icon slot="end" [name]="movimiento ? 'refresh-outline' : 'save-outline'"></ion-icon>
+    </ion-button>
+
+    <p class="error-msg ion-text-center" *ngIf="!isEditable()">
+      No se pueden editar movimientos de fechas anteriores.
+    </p>
+
+  </form>
+
+</ion-content>

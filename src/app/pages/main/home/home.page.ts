@@ -27,7 +27,6 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    console.log('empresa', this.empresaSvc.empresa());
   }
 
   ionViewWillEnter() {
@@ -37,7 +36,7 @@ export class HomePage implements OnInit, OnDestroy {
   getRutas() {
     this.loading = true;
     this.rutaSvc.getRutasByEmpresa().subscribe({
-      next: ({rutas}) => {
+      next: ({ rutas }) => {
         // Actualizar el estado de las rutas en el EmpresaService
         this.empresaSvc.setRutas(rutas);
         this.loading = false;
