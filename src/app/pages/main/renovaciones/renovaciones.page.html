@@ -50,7 +50,7 @@
             <ion-icon name="cash-outline" slot="start" color="success"></ion-icon>
             <ion-label>
               <p>Total Empresa</p>
-              <h2>{{ report().totalEmpresa | currency:'USD':'symbol':'':'en' }}</h2>
+              <h2>{{ report().totalEmpresa | currency:'$': 'symbol':'':'en' }}</h2>
             </ion-label>
           </ion-item>
         </ion-card>
@@ -74,34 +74,36 @@
         <ion-label>
           <h1>{{ ruta.nombre | titlecase }}</h1>
           <p>
-            <ion-badge color="success">{{ ruta.totalMonto | currency:'USD':'symbol':'':'en' }}</ion-badge>
+            <ion-badge color="success">{{ ruta.totalMonto | currency:'$': 'symbol':'':'en' }}</ion-badge>
             <ion-badge color="tertiary" class="ion-margin-start">{{ ruta.cantidad }} renovaciones</ion-badge>
           </p>
         </ion-label>
       </ion-list-header>
 
       <ion-list lines="full">
-        <ion-item *ngFor="let credito of ruta.renovaciones" detail button>
+        @for(credito of ruta.renovaciones; track $index){
+        <ion-item detail button (click)="presentAcionSheet(credito)">
           <ion-label>
             <h2>
-              <strong>{{ credito.cliente | titlecase }}</strong>
+              <strong>{{ credito.nombre | titlecase }}</strong>
               <small *ngIf="credito.alias"> ({{credito.alias | titlecase}})</small>
             </h2>
             <h3>
               <strong>Monto: </strong>
-              <span color="success">{{ credito.monto | currency:'USD':'symbol':'':'en' }}</span>
+              <span color="success">{{ credito.monto | currency:'$': 'symbol':'':'en' }}</span>
             </h3>
             <!-- <p>
-              <ion-icon name="call-outline"></ion-icon> {{ credito.cliente.telefono }}
-            </p> -->
+                <ion-icon name="call-outline"></ion-icon> {{ credito.cliente.telefono }}
+              </p> -->
             <!-- <p>
-              <ion-icon name="location-outline"></ion-icon> {{ credito.cliente.ciudad | lowercase }}
-            </p> -->
+                <ion-icon name="location-outline"></ion-icon> {{ credito.cliente.ciudad | lowercase }}
+              </p> -->
           </ion-label>
           <!-- <ion-note slot="end" mode="ios">
-            {{ credito.turno }}
-          </ion-note> -->
+              {{ credito.turno }}
+            </ion-note> -->
         </ion-item>
+        }
       </ion-list>
     </div>
   </div>

@@ -1,13 +1,15 @@
-import { Component } from '@angular/core';
+import { Component, inject, Input, signal } from '@angular/core';
+import { switchMap, tap } from 'rxjs';
 import { UtilsService } from '../../../services/utils.service';
 import { ClienteService } from 'src/app/services/cliente.service';
-import { Cliente, Credito, Ruta } from 'src/app/models';
+import { Cliente, Credito, HistorialCredito, TipoDeCliente } from 'src/app/models';
 import { ViewImageComponent } from 'src/app/shared/components/view-image/view-image.component';
 import { UpdateClienteComponent } from 'src/app/shared/components/update-cliente/update-cliente.component';
-import { RutaService } from '../../../services/ruta.service';
 import { ModalHistorialCreditoComponent } from 'src/app/shared/components/modal-historial-credito/modal-historial-credito.component';
 import { EmpresaService } from '../../../services/empresa.service';
 import { MapModalComponent } from 'src/app/shared/components/map-modal/map-modal.component';
+import { ModalHistorialPagosComponent } from 'src/app/shared/components/modal-historial-pagos/modal-historial-pagos.component';
+import { CreditosService } from 'src/app/services/creditos.service';
 
 @Component({
   selector: 'app-detail-cliente',
@@ -15,100 +17,134 @@ import { MapModalComponent } from 'src/app/shared/components/map-modal/map-modal
   styleUrls: ['./detail-cliente.page.scss'],
 })
 export class DetailClientePage {
+  public readonly TipoDeCliente = TipoDeCliente;
 
-  public loading: boolean = true;
+  private readonly creditosSvc = inject(CreditosService);
+  private readonly utilsSvc = inject(UtilsService);
+  private readonly clienteSvc = inject(ClienteService);
+  private readonly empresaSvc = inject(EmpresaService);
 
-  constructor(
-    private utilsSvc: UtilsService,
-    private clienteSvc: ClienteService,
-    private rutaSvc: RutaService,
-    private empresaSvc: EmpresaService,
-  ) { }
+  readonly loading = signal(false);
+  readonly cliente = signal<Cliente | null>(null);
+  readonly creditoActual = signal<Credito | null>(null);
+  readonly historialCreditos = signal<HistorialCredito[]>([]);
 
-  ionViewWillEnter() {
-    this.loading = false;
-    if(!this.currentCliente){
-      this.utilsSvc.routerLink('/main/clientes')
-    }
+  @Input() idCliente!: string;
+
+  ionViewWillEnter(): void {
+    this.getCliente();
   }
 
-  ionViewWillLeave() {
+  ionViewWillLeave(): void {
     this.clienteSvc.removeCurrentCliente();
   }
 
-  get currentCliente(): Cliente {
-    return this.clienteSvc.currentCliente();
+  llamarCliente(): void {
+    const cliente = this.clienteSvc.currentCliente();
+    if (!cliente) return;
+
+    window.open(`tel:${cliente.telefono}`, '_system');
   }
 
-  public llamarCliente() {
-    const telefono = `tel:${this.currentCliente.telefono}`;
-
-    window.open(telefono, "_system");
-  }
-
-  async editCliente() {
-
-    if(this.utilsSvc.getFromLocalStorage('user').rol !== 'ADMIN') {
+  async editCliente(): Promise<void> {
+    if (this.utilsSvc.getFromLocalStorage('user').rol !== 'ADMIN') {
       this.utilsSvc.presentToast({
         message: 'Usted no tiene los permisos necesarios',
         duration: 3500,
-        color: 'danger'
-      })
-
-      return
+        color: 'danger',
+      });
+      return;
     }
 
-    let success = await this.utilsSvc.presentModal({
+    const success = await this.utilsSvc.presentModal({
       component: UpdateClienteComponent,
       cssClass: 'add-update-modal',
-      componentProps: {cliente: this.currentCliente}
-    })
+      componentProps: { cliente: this.clienteSvc.currentCliente() },
+    });
 
-    if(success){
-      this.loading = true;
-      this.clienteSvc.getClientesByRuta(this.empresaSvc.ruta().id)
-        .subscribe({
-          next: clientes => {
-            this.clienteSvc.setClientes(clientes)
-            let currentCliente = clientes.find(cliente => cliente._id === this.currentCliente._id)
+    if (success) {
+      this.loading.set(true);
+      this.clienteSvc.getClientesByRuta(this.empresaSvc.ruta().id).subscribe({
+        next: (clientes) => {
+          this.clienteSvc.setClientes(clientes);
+          const currentCliente = clientes.find(
+            (c) => c._id === this.clienteSvc.currentCliente()?._id
+          );
+          if (currentCliente) {
             this.clienteSvc.setCurrentCliente(currentCliente);
-            this.loading = false;
           }
-        })
+          this.loading.set(false);
+        },
+      });
     }
   }
 
-  async openHistorialCredito(credito: Credito) {
+  async openHistorialCredito(credito: Credito): Promise<void> {
     await this.utilsSvc.presentModal({
       component: ModalHistorialCreditoComponent,
       cssClass: 'add-update-modal',
-      componentProps: {credito}
-    })
+      componentProps: { credito },
+    });
   }
 
-  async viewImage(url: string) {
+  async viewImage(url: string): Promise<void> {
     await this.utilsSvc.presentModal({
       component: ViewImageComponent,
       cssClass: 'add-update-modal',
-      componentProps: {url}
-    })
+      componentProps: { url },
+    });
   }
 
-  async viewMap() {
+  async viewMap(): Promise<void> {
+    const cliente = this.clienteSvc.currentCliente();
 
-    if( this.currentCliente.ubication.length === 0 ){
+    if (!cliente || cliente.ubication.length === 0) {
       return this.utilsSvc.presentAlert({
         header: 'Información',
-        message: 'Este cliente aun no tiene la ubicacion',
-        buttons: ['OK']
-      })
+        message: 'Este cliente aún no tiene la ubicación',
+        buttons: ['OK'],
+      });
     }
 
     await this.utilsSvc.presentModal({
       component: MapModalComponent,
       cssClass: 'map',
-      componentProps: { lngLat: this.currentCliente.ubication }
-    })
+      componentProps: { lngLat: cliente.ubication },
+    });
   }
 
+  async openHistorialPagos(credito: Credito): Promise<void> {
+    await this.utilsSvc.presentModal({
+      component: ModalHistorialPagosComponent,
+      cssClass: 'add-update-modal',
+      componentProps: {
+        creditoId: credito.id,
+        rutaId: credito.ruta
+      },
+    });
+  }
+
+  private getCliente(): void {
+    this.loading.set(true);
+
+    this.clienteSvc
+      .getClienteById(this.idCliente)
+      .pipe(
+        tap((resp) => {
+          console.log(resp.credito);
+          this.cliente.set(resp.cliente);
+          this.creditoActual.set(resp.credito);
+        }),
+        switchMap(() => this.creditosSvc.getHistorialCreditos(this.idCliente))
+      )
+      .subscribe({
+        next: (historial) => {
+          this.historialCreditos.set(historial);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.loading.set(false);
+        },
+      });
+  }
 }

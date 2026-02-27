@@ -1,6 +1,7 @@
 
 export interface RenovacionDetalle {
-  cliente: string;
+  id: string;
+  nombre: string;
   alias?: string;
   monto: number;
   fecha: Date;

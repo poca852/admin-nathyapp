@@ -1,9 +1,14 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable, computed, signal } from '@angular/core';
 import { environment } from 'src/environments/environment';
-import { Cliente, User } from '../models';
+import { Cliente, Credito, User } from '../models';
 import { Observable } from 'rxjs';
 import { UtilsService } from './utils.service';
+
+export interface ClienteDetail {
+  cliente: Cliente;
+  credito: Credito | null;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +18,7 @@ export class ClienteService {
   private readonly baseUrl: string = environment.baseUrl;
   private _clientes = signal<Cliente[]>([]);
   public clientes = computed(() => this._clientes());
-  private _currentCliente = signal<Cliente|null>(null);
+  private _currentCliente = signal<Cliente | null>(null);
   public currentCliente = computed(() => this._currentCliente());
 
   constructor(
@@ -49,7 +54,7 @@ export class ClienteService {
     const params = new HttpParams()
       .append('idRuta', idRuta)
 
-    return this.http.get<Cliente[]>(url, {headers, params})
+    return this.http.get<Cliente[]>(url, { headers, params })
 
   }
 
@@ -58,7 +63,15 @@ export class ClienteService {
     const headers = new HttpHeaders()
       .append('authorization', `Bearer ${this.user.token}`);
 
-    return this.http.patch<boolean>(url, body, {headers});
+    return this.http.patch<boolean>(url, body, { headers });
+  }
+
+  getClienteById(idCliente: string): Observable<ClienteDetail> {
+    const url: string = `${this.baseUrl}/cliente/${idCliente}`;
+    const headers = new HttpHeaders()
+      .append('authorization', `Bearer ${this.user.token}`);
+
+    return this.http.get<ClienteDetail>(url, { headers });
   }
 
 }

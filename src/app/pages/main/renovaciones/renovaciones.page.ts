@@ -144,15 +144,14 @@ export class RenovacionesPage implements OnInit {
     })
   }
 
-  async presentAcionSheet(credito: Credito) {
+  async presentAcionSheet(credito: any) {
+    console.log(credito)
     await this.utilsSvc.presentActionSheet({
-      header: `Acciones para ${credito.cliente.nombre}`,
       buttons: [
         {
           text: 'Ver Información',
           handler: () => {
-            this.clienteSvc.setCurrentCliente(credito.cliente);
-            this.utilsSvc.routerLink('/main/detail-cliente')
+            this.utilsSvc.routerLink('/main/detail-cliente/:idCliente', { idCliente: credito.id })
           }
         },
         {

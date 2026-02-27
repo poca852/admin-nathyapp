@@ -67,7 +67,14 @@ export class UtilsService {
   }
 
   // enrutar a cualquier pagina disponible
-  routerLink(url: string) {
+  routerLink(url: string, params?: Record<string, any>) {
+
+    if (params) {
+      Object.keys(params).forEach(key => {
+        url = url.replace(new RegExp(`:${key}`, 'g'), params[key]);
+      });
+    }
+
     return this.router.navigateByUrl(url);
   }
 

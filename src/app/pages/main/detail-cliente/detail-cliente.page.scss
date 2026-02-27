@@ -1,0 +1,185 @@
+// ===== Skeleton Loading =====
+.skeleton-container {
+  padding: 16px;
+}
+
+// ===== Profile Card =====
+.profile-card {
+  border-radius: 12px;
+
+  .profile-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .profile-info {
+    flex: 1;
+  }
+
+  ion-badge {
+    margin-top: 4px;
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    border-radius: 20px;
+  }
+}
+
+.info-list {
+  padding: 0;
+
+  ion-item {
+    --padding-start: 0;
+    --inner-padding-end: 0;
+
+    ion-icon {
+      font-size: 1.2rem;
+      margin-right: 12px;
+    }
+
+    ion-label {
+      p {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--ion-color-medium);
+        margin-bottom: 2px;
+      }
+
+      h3 {
+        font-size: 0.95rem;
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+// ===== Image Gallery =====
+.images-section {
+  margin-top: 16px;
+
+  .section-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--ion-color-medium);
+    margin-bottom: 10px;
+    padding-left: 4px;
+  }
+}
+
+.image-gallery {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.image-thumb {
+  flex: 0 0 auto;
+  width: 100px;
+  text-align: center;
+  cursor: pointer;
+
+  img {
+    width: 100px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid var(--ion-color-light-shade);
+    transition: transform 0.2s ease;
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+
+  .image-label {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--ion-color-medium);
+    margin-top: 4px;
+  }
+}
+
+// ===== Credit Card =====
+.credit-card,
+.history-card {
+  border-radius: 12px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.05rem;
+
+  ion-icon {
+    font-size: 1.2rem;
+    color: var(--ion-color-primary);
+  }
+}
+
+.credit-list {
+  padding: 0;
+
+  ion-item {
+    --padding-start: 0;
+    --inner-padding-end: 0;
+    font-size: 0.9rem;
+  }
+}
+
+.credit-value {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--ion-text-color);
+
+  &.highlight {
+    font-weight: 700;
+    color: var(--ion-color-primary);
+  }
+}
+
+.pagos-btn {
+  margin-top: 16px;
+  --border-radius: 10px;
+  font-size: 0.85rem;
+}
+
+.atraso {
+  color: var(--ion-color-danger) !important;
+  font-weight: 700;
+}
+
+// ===== History List =====
+.history-list {
+  padding: 0;
+
+  ion-item {
+    --padding-start: 0;
+
+    ion-icon {
+      font-size: 1.1rem;
+      margin-right: 8px;
+    }
+
+    ion-label {
+      h3 {
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+
+      p {
+        font-size: 0.8rem;
+        color: var(--ion-color-medium);
+      }
+    }
+
+    ion-note {
+      font-size: 0.75rem;
+      color: var(--ion-color-medium);
+    }
+  }
+}

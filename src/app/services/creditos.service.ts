@@ -1,11 +1,12 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable, computed, signal } from '@angular/core';
 import { environment } from 'src/environments/environment';
-import { Credito, User } from '../models';
+import { Credito, HistorialCredito, User } from '../models';
 import { UtilsService } from './utils.service';
 import { Observable } from 'rxjs';
 import { MomentService } from '../config/plugins/moment.plugin';
 import { EmpresaReport } from '../pages/main/renovaciones/interfaces/renovacion-report.interface';
+import { CajaMovimiento } from '../models/caja-movimiento.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -69,4 +70,29 @@ export class CreditosService {
 
     return this.http.delete<boolean>(url, { headers });
   }
+
+  getHistorialCreditos(clienteId: string) {
+    const headers = new HttpHeaders()
+      .set('Authorization', `Bearer ${this.user.token}`);
+
+    const params = new HttpParams()
+      .append('clienteId', clienteId)
+
+    return this.http.get<HistorialCredito[]>(`${this.baseUrl}/credito/historial`, { headers, params })
+  }
+
+  getHistorialPagos(rutaId: string, creditoId: string) {
+
+    const url = `${this.baseUrl}/movimiento-caja/historial-pagos`;
+    const headers = new HttpHeaders()
+      .set('Authorization', `Bearer ${this.user.token}`);
+
+    const params = new HttpParams()
+      .append('rutaId', rutaId)
+      .append('creditoId', creditoId)
+
+    return this.http.get<CajaMovimiento[]>(url, { headers, params })
+
+  }
+
 }
