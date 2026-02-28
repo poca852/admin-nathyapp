@@ -19,5 +19,11 @@
       <div class="admin">N A T H Y</div>
 
     </ion-title>
+
+    <ion-buttons slot="end">
+      <ion-button *ngIf="pwaInstallSvc.canInstall" (click)="installPwa()" fill="clear" size="small">
+        <ion-icon name="download-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>

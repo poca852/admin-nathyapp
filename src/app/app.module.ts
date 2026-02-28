@@ -1,13 +1,14 @@
 import { LOCALE_ID, NgModule, isDevMode } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
+import { OfflineInterceptor } from './interceptors/offline.interceptor';
 
-import { initializeApp,provideFirebaseApp } from '@angular/fire/app';
-import { provideStorage,getStorage } from '@angular/fire/storage';
+import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
+import { provideStorage, getStorage } from '@angular/fire/storage';
 
 import localEs from '@angular/common/locales/es';
 import { registerLocaleData } from '@angular/common';
@@ -24,8 +25,8 @@ const config: SocketIoConfig = { url: environment.socketUrl, options: {} };
 @NgModule({
   declarations: [AppComponent],
   imports: [
-    BrowserModule, 
-    IonicModule.forRoot({mode: 'md'}),
+    BrowserModule,
+    IonicModule.forRoot({ mode: 'md' }),
     SocketIoModule.forRoot(config),
     provideFirebaseApp(() => initializeApp(environment.firebase)),
     provideStorage(() => getStorage()),
@@ -40,8 +41,9 @@ const config: SocketIoConfig = { url: environment.socketUrl, options: {} };
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    { provide: LOCALE_ID, useValue: 'es'}
+    { provide: LOCALE_ID, useValue: 'es' },
+    { provide: HTTP_INTERCEPTORS, useClass: OfflineInterceptor, multi: true }
   ],
   bootstrap: [AppComponent],
 })
-export class AppModule {}
+export class AppModule { }
