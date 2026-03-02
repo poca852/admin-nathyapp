@@ -1,3 +1,298 @@
+:host {
+   --card-border-radius: 16px;
+   --transition-speed: 0.3s;
+   --skeleton-bg: #f0f0f0;
+
+   // Light theme shadows
+   --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+   --card-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.1);
+
+   // Badge backgrounds with opacity (light theme)
+   --badge-success-bg: rgba(var(--ion-color-success-rgb), 0.15);
+   --badge-success-text: var(--ion-color-success);
+   --badge-danger-bg: rgba(var(--ion-color-danger-rgb), 0.15);
+   --badge-danger-text: var(--ion-color-danger);
+   --badge-warning-bg: rgba(var(--ion-color-warning-rgb), 0.15);
+   --badge-warning-text: var(--ion-color-warning);
+
+   // Border colors with opacity
+   --success-border: rgba(var(--ion-color-success-rgb), 0.5);
+   --danger-border: rgba(var(--ion-color-danger-rgb), 0.5);
+}
+
 ion-content {
-   --padding-botton: 70px;
+   --padding-bottom: 70px;
+}
+
+.skeleton-container {
+   padding-top: 16px;
+}
+
+.skeleton-card {
+   border-radius: var(--card-border-radius);
+   box-shadow: none;
+   background: white;
+
+   ion-card-header,
+   ion-card-content {
+      padding: 16px;
+   }
+
+   ion-skeleton-text {
+      --background-rgb: 240, 240, 240;
+      --border-radius: 4px;
+   }
+
+   .skeleton-button {
+      margin-top: 16px;
+   }
+}
+
+.empty-state {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+   text-align: center;
+   padding: 64px 24px;
+   color: var(--ion-color-medium);
+
+   .empty-icon {
+      font-size: 64px;
+      margin-bottom: 24px;
+      opacity: 0.5;
+   }
+
+   h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--ion-color-dark);
+   }
+
+   p {
+      font-size: 1rem;
+      margin-bottom: 24px;
+      max-width: 400px;
+   }
+}
+
+.route-card {
+   border-radius: var(--card-border-radius);
+   box-shadow: var(--card-shadow);
+   transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+   margin-bottom: 20px;
+   overflow: hidden;
+   border: 1px solid var(--ion-item-border-color, var(--ion-color-light-shade));
+   background: var(--ion-background-color);
+   color: var(--ion-text-color);
+
+   &:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--card-shadow-hover);
+   }
+
+   &.card-open {
+      --background: rgba(var(--ion-color-success-rgb), 0.05);
+      border: 1px solid rgba(var(--ion-color-success-rgb), 0.1);
+   }
+
+   &.card-closed {
+      --background: rgba(var(--ion-color-danger-rgb), 0.05);
+      border: 1px solid rgba(var(--ion-color-danger-rgb), 0.1);
+   }
+
+   ion-card-header {
+      padding-bottom: 8px;
+   }
+
+   .route-title {
+      display: flex;
+      align-items: center;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--ion-text-color);
+      margin-bottom: 4px;
+
+      ion-icon {
+         margin-right: 8px;
+         font-size: 1.5rem;
+      }
+   }
+
+   .route-subtitle {
+      display: flex;
+      align-items: center;
+      font-size: 0.9rem;
+      color: var(--ion-text-color);
+      opacity: 0.75;
+      margin-top: 0;
+
+      ion-icon {
+         margin-right: 6px;
+         font-size: 1rem;
+      }
+   }
+
+   .status-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+
+      ion-badge {
+         font-weight: 500;
+         padding: 6px 12px;
+         border-radius: 20px;
+      }
+
+      .status-badge[color="success"] {
+         --background: var(--badge-success-bg);
+         --color: var(--badge-success-text);
+      }
+
+      .status-badge[color="danger"] {
+         --background: var(--badge-danger-bg);
+         --color: var(--badge-danger-text);
+      }
+
+      .lock-badge {
+         --background: var(--badge-warning-bg);
+         --color: var(--badge-warning-text);
+
+         ion-icon {
+            margin-right: 4px;
+         }
+      }
+   }
+
+   .caja-info {
+      background: rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.03);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 16px;
+
+      p {
+         margin: 0 0 6px 0;
+         font-size: 0.9rem;
+         color: var(--ion-text-color);
+
+         &:last-child {
+            margin-bottom: 0;
+         }
+
+         strong {
+            color: var(--ion-text-color);
+            margin-right: 6px;
+         }
+      }
+   }
+
+   .auto-open {
+      display: flex;
+      align-items: center;
+      font-size: 0.85rem;
+      color: var(--ion-color-tertiary);
+      margin-top: 12px;
+
+      ion-icon {
+         margin-right: 6px;
+         font-size: 1rem;
+      }
+   }
+
+   .card-footer {
+      padding: 0;
+      border-top: 1px solid var(--ion-color-light-shade);
+   }
+
+   .action-button {
+      margin: 0;
+      border-radius: 0;
+      --border-radius: 0;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+
+      ion-icon {
+         font-size: 1.2rem;
+      }
+   }
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+   .route-card {
+      margin-bottom: 16px;
+   }
+
+   .route-title {
+      font-size: 1.1rem;
+   }
+
+   .status-container {
+      flex-direction: column;
+      align-items: flex-start;
+   }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+   :host {
+      --card-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      --card-shadow-hover: 0 12px 28px rgba(0, 0, 0, 0.4);
+      --skeleton-bg: #2a2a2a;
+
+      // Adjust badge opacities for dark theme
+      --badge-success-bg: rgba(var(--ion-color-success-rgb), 0.25);
+      --badge-danger-bg: rgba(var(--ion-color-danger-rgb), 0.25);
+      --badge-warning-bg: rgba(var(--ion-color-warning-rgb), 0.25);
+
+      // Darker borders for better contrast
+      --success-border: rgba(var(--ion-color-success-rgb), 0.7);
+      --danger-border: rgba(var(--ion-color-danger-rgb), 0.7);
+   }
+
+   .skeleton-card {
+      background: var(--ion-color-step-50);
+   }
+
+   .route-card {
+      // Backgrounds inherited from above
+      border-color: rgba(255, 255, 255, 0.08);
+   }
+
+   .caja-info {
+      background: rgba(255, 255, 255, 0.05);
+   }
+}
+
+/* Ionic dark class support */
+html.dark {
+   :host {
+      --card-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      --card-shadow-hover: 0 12px 28px rgba(0, 0, 0, 0.4);
+      --skeleton-bg: #2a2a2a;
+
+      // Adjust badge opacities for dark theme
+      --badge-success-bg: rgba(var(--ion-color-success-rgb), 0.25);
+      --badge-danger-bg: rgba(var(--ion-color-danger-rgb), 0.25);
+      --badge-warning-bg: rgba(var(--ion-color-warning-rgb), 0.25);
+
+      // Darker borders for better contrast
+      --success-border: rgba(var(--ion-color-success-rgb), 0.7);
+      --danger-border: rgba(var(--ion-color-danger-rgb), 0.7);
+   }
+
+   .skeleton-card {
+      background: var(--ion-color-step-50);
+   }
+
+   .route-card {
+      border-color: rgba(255, 255, 255, 0.08);
+   }
+
+   .caja-info {
+      background: rgba(255, 255, 255, 0.05);
+   }
 }

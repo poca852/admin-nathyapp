@@ -1,113 +1,107 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { RutaService } from '../../../services/ruta.service';
 import { UtilsService } from '../../../services/utils.service';
 import { Ruta } from '../../../models';
-
-import { WsService } from '../../../services/ws.service';
 import { EmpresaService } from 'src/app/services/empresa.service';
+import { finalize } from 'rxjs';
 
 @Component({
-  selector: 'app-rutero',
+  selector: 'app-home',
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
 })
-export class HomePage implements OnInit, OnDestroy {
-
-  public loading: boolean = true;
+export class HomePage {
+  loading = true;
 
   constructor(
     private rutaSvc: RutaService,
     public utilsSvc: UtilsService,
-    private ws: WsService,
-    public empresaSvc: EmpresaService,
+    public empresaSvc: EmpresaService
   ) { }
 
-  ngOnDestroy(): void {
-    // TODO: se debe implementar para limpiar las rutas
+  ionViewWillEnter(): void {
+    this.loadRutas();
   }
 
-  ngOnInit(): void {
-  }
-
-  ionViewWillEnter() {
-    this.getRutas();
-  }
-
-  getRutas() {
+  loadRutas(event?: any): void {
     this.loading = true;
-    this.rutaSvc.getRutasByEmpresa().subscribe({
-      next: ({ rutas }) => {
-        // Actualizar el estado de las rutas en el EmpresaService
-        this.empresaSvc.setRutas(rutas);
+    this.rutaSvc.getRutasByEmpresa()
+      .pipe(finalize(() => {
         this.loading = false;
-      },
-      error: err => {
-        this.loading = false;
-        this.utilsSvc.presentToast({
-          message: 'Error al obtener las rutas',
-          duration: 2000,
-          position: 'bottom'
-        })
-      }
-    });
-  }
-
-  async openAndCloseRuta(ruta: Ruta): Promise<void> {
-
-    let msgLoading = ruta.status ? 'Cerrando Ruta...' : 'Abriendo Ruta...'
-
-    const loading = await this.utilsSvc.loading({
-      message: msgLoading
-    });
-
-    await loading.present();
-
-    if (!ruta.status) {
-
-      this.rutaSvc.newCaja(ruta.id).subscribe({
-        next: () => {
-          loading.dismiss();
-          this.getRutas();
+        if (event) {
+          event.target.complete();
         }
-      })
-
-      return;
-    }
-
-    this.rutaSvc.closeCaja(ruta.id).subscribe({
-      next: () => {
-        loading.dismiss();
-        this.utilsSvc.presentToast({
-          message: 'Ruta cerrada',
-          duration: 2000,
-          position: 'bottom',
-          color: 'success'
-        })
-        this.getRutas();
-      }
-    })
-
+      }))
+      .subscribe({
+        next: ({ rutas }) => {
+          this.empresaSvc.setRutas(rutas);
+        },
+        error: (err) => {
+          this.utilsSvc.presentToast({
+            message: 'Error al obtener las rutas',
+            duration: 2000,
+            position: 'bottom',
+            color: 'danger'
+          });
+        }
+      });
   }
 
-  async confirmacion(ruta: Ruta) {
+  trackByRutaId(index: number, ruta: Ruta): string {
+    return ruta.id;
+  }
 
-    let message: string = ruta.status ? '¿Cerrar Ruta?' : '¿Abrir Ruta?';
+  async confirmToggle(ruta: Ruta): Promise<void> {
+    const message = ruta.status ? '¿Cerrar ruta?' : '¿Abrir ruta?';
+    const header = 'Confirmación';
 
     await this.utilsSvc.presentAlert({
-      header: 'Confirmacion',
+      header,
       message,
       buttons: [
         {
-          text: 'Si',
-          handler: () => this.openAndCloseRuta(ruta)
+          text: 'Sí',
+          handler: () => this.toggleRutaStatus(ruta)
         },
         {
           text: 'No',
           role: 'cancel'
         }
       ]
-    })
-
+    });
   }
 
+  async toggleRutaStatus(ruta: Ruta): Promise<void> {
+    const loadingMessage = ruta.status ? 'Cerrando ruta...' : 'Abriendo ruta...';
+    const loading = await this.utilsSvc.loading({ message: loadingMessage });
+    await loading.present();
+
+    const request = ruta.status
+      ? this.rutaSvc.closeCaja(ruta.id)
+      : this.rutaSvc.newCaja(ruta.id);
+
+    request.subscribe({
+      next: () => {
+        loading.dismiss();
+        if (ruta.status) {
+          this.utilsSvc.presentToast({
+            message: 'Ruta cerrada correctamente',
+            duration: 2000,
+            position: 'bottom',
+            color: 'success'
+          });
+        }
+        this.loadRutas();
+      },
+      error: (err) => {
+        loading.dismiss();
+        this.utilsSvc.presentToast({
+          message: `Error al ${ruta.status ? 'cerrar' : 'abrir'} la ruta`,
+          duration: 2000,
+          position: 'bottom',
+          color: 'danger'
+        });
+      }
+    });
+  }
 }
