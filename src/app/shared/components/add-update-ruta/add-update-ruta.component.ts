@@ -24,7 +24,7 @@ export class AddUpdateRutaComponent {
     pais: new FormControl('', [Validators.required]),
     ciudad: new FormControl('', [Validators.required]),
     autoOpen: new FormControl(false, [Validators.required]),
-    empresa: new FormControl(this.empresaSvc.empresa().id),
+    empresa: new FormControl(this.empresaSvc.empresa()?.id),
     timeZone: new FormControl('', [Validators.required])
   })
 
@@ -35,8 +35,8 @@ export class AddUpdateRutaComponent {
   }
 
   initComponent() {
-    if(!!this.ruta){
-      this.form.patchValue({...this.ruta});
+    if (!!this.ruta) {
+      this.form.patchValue({ ...this.ruta });
     }
   }
 
@@ -49,7 +49,7 @@ export class AddUpdateRutaComponent {
       .subscribe({
         next: () => {
           loading.dismiss();
-          this.utilsSvc.dismissModal({success: true});
+          this.utilsSvc.dismissModal({ success: true });
         },
         error: err => {
           loading.dismiss()
@@ -67,11 +67,11 @@ export class AddUpdateRutaComponent {
     const loading = await this.utilsSvc.loading();
     loading.present();
 
-    this.rutaSvc.addRuta(this.form.value, this.empresaSvc.empresa().id)
+    this.rutaSvc.addRuta(this.form.value, this.empresaSvc.empresa()?.id)
       .subscribe({
         next: ruta => {
-          this.empresaSvc.setEmpresa(this.empresaSvc.empresa().id)
-          this.utilsSvc.dismissModal({success: true});
+          this.empresaSvc.setEmpresa(this.empresaSvc.empresa()?.id)
+          this.utilsSvc.dismissModal({ success: true });
           loading.dismiss();
         },
         error: err => {
@@ -87,7 +87,7 @@ export class AddUpdateRutaComponent {
 
   async submit() {
 
-    if(!!this.ruta) {
+    if (!!this.ruta) {
       return this.updateRuta();
     }
 

@@ -32,10 +32,10 @@ export class RutasPage implements OnInit {
     }, 2000);
   }
 
-  getRutas(){
+  getRutas() {
     this.loading = true;
     this.rutaSvc.getRutasByEmpresa().subscribe({
-      next: ({rutas}) => {
+      next: ({ rutas }) => {
         this.rutas = rutas;
         this.loading = false;
       },
@@ -67,17 +67,17 @@ export class RutasPage implements OnInit {
 
   }
 
-  async viewRuta(ruta?: Ruta){
+  async viewRuta(ruta?: Ruta) {
     await this.utilsSvc.presentModal({
       component: RutaModalComponent,
       cssClass: 'add-update-modal',
-      componentProps: {ruta}
+      componentProps: { ruta }
     })
   }
 
-  async addUpdateRuta(ruta?: Ruta){
+  async addUpdateRuta(ruta?: Ruta) {
 
-    if(this.utilsSvc.getFromLocalStorage('user').rol !== 'ADMIN') {
+    if (this.utilsSvc.getFromLocalStorage('user').rol !== 'ADMIN') {
       this.utilsSvc.presentToast({
         message: 'Usted no tiene permisos para realizar esta operacion',
         duration: 3500,
@@ -92,7 +92,7 @@ export class RutasPage implements OnInit {
       componentProps: { ruta }
     })
 
-    if(success) {
+    if (success) {
       this.getRutas();
     }
   }

@@ -7,8 +7,10 @@
   </ion-refresher>
 
   <!-- aqui pondre el skeleton -->
-  <ion-list *ngIf="loading">
-    <ion-item class="product-item" *ngFor="let product of [1,1,1,1,1,1]">
+  @if(loading){
+  <ion-list>
+    @for(product of [1,1,1,1,1,1]; track $index){
+    <ion-item class="product-item">
       <ion-label>
         <ion-grid>
           <ion-row>
@@ -22,11 +24,14 @@
         </ion-grid>
       </ion-label>
     </ion-item>
+    }
   </ion-list>
+  }
 
-  <ion-list *ngIf="!loading && rutas.length > 0">
-    <ion-item
-      *ngFor="let ruta of rutas">
+  @if(!loading && rutas.length > 0){
+  <ion-list>
+    @for(ruta of rutas; track $index){
+    <ion-item>
       <ion-label>
         <ion-grid>
           <ion-row>
@@ -44,7 +49,9 @@
         </ion-grid>
       </ion-label>
     </ion-item>
+    }
   </ion-list>
+  }
 
   <ion-fab slot="fixed" vertical="bottom" horizontal="end">
     <ion-fab-button>
