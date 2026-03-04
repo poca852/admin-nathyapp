@@ -96,9 +96,8 @@ export class DetailClientePage {
   }
 
   async viewMap(): Promise<void> {
-    const cliente = this.clienteSvc.currentCliente();
 
-    if (!cliente || cliente.ubication.length === 0) {
+    if (!this.cliente() || this.cliente()?.ubication.length === 0) {
       return this.utilsSvc.presentAlert({
         header: 'Información',
         message: 'Este cliente aún no tiene la ubicación',
@@ -109,7 +108,7 @@ export class DetailClientePage {
     await this.utilsSvc.presentModal({
       component: MapModalComponent,
       cssClass: 'map',
-      componentProps: { lngLat: cliente.ubication },
+      componentProps: { lngLat: this.cliente()?.ubication },
     });
   }
 
@@ -131,7 +130,7 @@ export class DetailClientePage {
       .getClienteById(this.idCliente)
       .pipe(
         tap((resp) => {
-          console.log(resp.credito);
+          console.log(resp.cliente)
           this.cliente.set(resp.cliente);
           this.creditoActual.set(resp.credito);
         }),
