@@ -34,15 +34,18 @@
                 "glob": "**/*.svg",
                 "input": "node_modules/ionicons/dist/ionicons/svg",
                 "output": "./svg"
+              },
+              {
+                "glob": "favicon.ico",
+                "input": "src/assets/icon",
+                "output": "/"
               }
             ],
             "styles": [
               "src/theme/variables.scss",
               "src/global.scss"
             ],
-            "scripts": [],
-            "serviceWorker": true,
-            "ngswConfigPath": "ngsw-config.json"
+            "scripts": []
           },
           "configurations": {
             "production": {
