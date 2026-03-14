@@ -1,143 +1,106 @@
-import { Injectable, computed, signal } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { UtilsService } from './utils.service';
 import { Empresa, Ruta, User } from '../models';
-import { Observable, map } from 'rxjs';
+import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { RutaService } from './ruta.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class EmpresaService {
 
+  private readonly http = inject(HttpClient);
+  private readonly utilsSvc = inject(UtilsService);
   private readonly baseUrl: string = environment.baseUrl;
 
-  private _empresa = signal<Empresa|null>(null);
-  public empresa = computed(() => this._empresa());
+  // --- Signals (State Management) ---
+  private readonly _empresa = signal<Empresa | null>(null);
+  public readonly empresa = computed(() => this._empresa());
 
-  private _ruta = signal<Ruta|null>(null);
-  public ruta = computed(() => this._ruta());
+  private readonly _ruta = signal<Ruta | null>(null);
+  public readonly ruta = computed(() => this._ruta());
 
-  private _rutas = signal<Ruta[]>([]);
-  public rutas = computed(() => this._rutas());
+  private readonly _rutas = signal<Ruta[]>([]);
+  public readonly rutas = computed(() => this._rutas());
 
-  private _employes = signal<User[]>([]);
-  public employes = computed(() => this._employes());
+  private readonly _employes = signal<User[]>([]);
+  public readonly employes = computed(() => this._employes());
 
-  constructor(
-    private http: HttpClient,
-    private utilsSvc: UtilsService,
-  ) {}
-
+  // --- Getters ---
   get user(): User {
     return this.utilsSvc.getFromLocalStorage('user') as User;
   }
 
+  // --- State Mutators ---
   setRuta(ruta: Ruta) {
     this._ruta.set(ruta);
   }
 
-  removeRuta(){
+  removeRuta() {
     this._ruta.set(null);
-  }
-
-  removeRutas(){
-    this._rutas.set([]);
   }
 
   setRutas(rutas: Ruta[]) {
     this._rutas.set(rutas);
   }
 
-  setEmpresa(id: string) {
-    this.getEmpresa(id).subscribe({
-      next: empresa => {
-        this._empresa.set(empresa);
-        this._rutas.set(empresa.rutas);
-        this._employes.set(empresa.employes)
-      },
-      error: (err) => {
-        console.log('Error al obtener la empresa', err);
-      }
-    })
+  removeRutas() {
+    this._rutas.set([]);
   }
 
-  getEmpresa(id: string): Observable<Empresa>{
-    const url: string = `${this.baseUrl}/empresa/${id}`;
-    const headers = new HttpHeaders()
-      .append('authorization', `Bearer ${this.user.token}`);
+  /**
+   * Fetches company data and updates internal state (rutas and employees).
+   */
+  setEmpresa(id: string) {
+    this.getEmpresa(id).subscribe({
+      next: (empresa) => {
+        this._empresa.set(empresa);
+        this.setRutas(empresa.rutas || []);
+        this._employes.set(empresa.employes || []);
+      },
+      error: (err) => console.error('Error al obtener la empresa:', err)
+    });
+  }
 
-    return this.http.get<Empresa>(url, {headers})
+  // --- HTTP Requests ---
+  // Note: AuthInterceptor handles 'authorization' header automatically.
 
+  getEmpresa(id: string): Observable<Empresa> {
+    return this.http.get<Empresa>(`${this.baseUrl}/empresa/${id}`);
   }
 
   getEmpleados(): Observable<User[]> {
-    const url: string = `${this.baseUrl}/empresa/get-empleados`;
-    const headers = new HttpHeaders()
-      .append('authorization', `Bearer ${this.user.token}`);
-
-    const params = new HttpParams().append('empresa', this.user.empresa)
-
-    return this.http.get<User[]>(url, {headers, params})
+    const params = new HttpParams().append('empresa', this.user.empresa);
+    return this.http.get<User[]>(`${this.baseUrl}/empresa/get-empleados`, { params });
   }
 
   addEmpleado(empleado: any): Observable<boolean> {
-
-    empleado.empresa = this.empresa().id;
-
-    const url: string = `${this.baseUrl}/empresa/add-empleado`;
-    const headers = new HttpHeaders()
-      .append('authorization', `Bearer ${this.user.token}`);
-
-    return this.http.post<boolean>(url, empleado, {headers})
+    const body = { ...empleado, empresa: this.empresa()?.id };
+    return this.http.post<boolean>(`${this.baseUrl}/empresa/add-empleado`, body);
   }
 
   deleteEmpleado(idEmpleado: string): Observable<boolean> {
-    const url: string = `${this.baseUrl}/empresa/remove-empleado`;
-    const headers = new HttpHeaders()
-      .append('authorization', `Bearer ${this.user.token}`);
-
     const params = new HttpParams()
-      .append('empresa', this.empresa().id)
-      .append('empleado', idEmpleado)
+      .append('empresa', this._empresa()?.id || '')
+      .append('empleado', idEmpleado);
 
-    return this.http.delete<boolean>(url, {headers, params})
+    return this.http.delete<boolean>(`${this.baseUrl}/empresa/remove-empleado`, { params });
   }
 
-  editEmpresa(idEmpresa: string, empresa: any): Observable<boolean> {
-
-    const url: string = `${this.baseUrl}/empresa/update/${idEmpresa}`;
-
-    const headers = new HttpHeaders()
-      .append('authorization', `Bearer ${this.user.token}`);
-
-    return this.http.patch<boolean>(url, empresa, {headers});
-
+  editEmpresa(idEmpresa: string, empresa: Partial<Empresa>): Observable<boolean> {
+    return this.http.patch<boolean>(`${this.baseUrl}/empresa/update/${idEmpresa}`, empresa);
   }
 
   getBackUp(idEmpresa: string): Observable<ArrayBuffer> {
-
-    const url: string = `${this.baseUrl}/reports/backup`;
-    const headers = new HttpHeaders()
-      .append('authorization', `Bearer ${this.user.token}`);
-
-    const params = new HttpParams()
-      .append('empresa', idEmpresa)
-
-    return this.http.get(url, {headers, params, responseType: 'arraybuffer'})
+    const params = new HttpParams().append('empresa', idEmpresa);
+    return this.http.get(`${this.baseUrl}/reports/backup`, { params, responseType: 'arraybuffer' });
   }
 
   sendBackup(idEmpresa: string, email?: string): Observable<boolean> {
+    let params = new HttpParams().append('empresa', idEmpresa);
+    if (email) params = params.append('to', email);
 
-    const url: string = `${this.baseUrl}/reports/send-backup`;
-    const headers = new HttpHeaders()
-      .append('authorization', `Bearer ${this.user.token}`);
-
-    const params = new HttpParams()
-      .append('empresa', idEmpresa)
-      .append('to', email)
-
-    return this.http.get<boolean>(url, {headers, params})
+    return this.http.get<boolean>(`${this.baseUrl}/reports/send-backup`, { params });
   }
 }

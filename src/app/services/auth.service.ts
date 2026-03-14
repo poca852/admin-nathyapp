@@ -20,20 +20,19 @@ export class AuthService {
   empresaSvc = inject(EmpresaService);
 
   private baseUrl: string = environment.baseUrl;
-  private _currentUser = signal<User|null>(null);
+  private _currentUser = signal<User | null>(null);
   private _authStatus = signal<AuthStatus>(AuthStatus.checking);
   public currentUser = computed(() => this._currentUser());
   public authStatus = computed(() => this._authStatus());
 
-  constructor(){
+  constructor() {
   }
 
   private setAuthentication(user: User, token: string): boolean {
-    if(!this.esADmin(user.rol)) return false;
-
+    if (!this.esADmin(user.rol)) return false;
     this._currentUser.set(user);
     this._authStatus.set(AuthStatus.authenticated);
-    this.utilsSvc.saveInLocalStorage('user', {...user, token});
+    this.utilsSvc.saveInLocalStorage('user', { ...user, token });
     this.empresaSvc.setEmpresa(user.empresa)
 
     return true;
@@ -47,22 +46,22 @@ export class AuthService {
 
   login(username: string, password: string): Observable<boolean> {
     const url: string = `${this.baseUrl}/auth/login`;
-    const body = {username, password};
+    const body = { username, password };
 
     const params = new HttpParams()
       .set('admin', true)
 
-    return this.http.post<LoginResponse>(url, body, {params})
+    return this.http.post<LoginResponse>(url, body, { params })
       .pipe(
-        map(({user, token}) => this.setAuthentication(user, token))
+        map(({ user, token }) => this.setAuthentication(user, token))
       )
   }
 
-  revalidarToken(): Observable<boolean>{
+  revalidarToken(): Observable<boolean> {
 
     const url: string = `${this.baseUrl}/auth/revalidar`;
     const user = this.utilsSvc.getFromLocalStorage('user');
-    if(!user){
+    if (!user) {
       this._authStatus.set(AuthStatus.noAuthenticated);
       return of(false);
     }
@@ -70,9 +69,9 @@ export class AuthService {
     const headers = new HttpHeaders()
       .set('authorization', `Bearer ${user.token}`)
 
-    return this.http.get<LoginResponse>(url, {headers})
+    return this.http.get<LoginResponse>(url, { headers })
       .pipe(
-        map(({user, token}) => this.setAuthentication(user, token)),
+        map(({ user, token }) => this.setAuthentication(user, token)),
         catchError((err) => {
           this._authStatus.set(AuthStatus.noAuthenticated);
           this.logout();
@@ -81,7 +80,7 @@ export class AuthService {
       )
   }
 
-  logout(){
+  logout() {
     this.notificacionesSvc.notificarLogout();
     this._authStatus.set(AuthStatus.noAuthenticated);
     this._currentUser.set(null);

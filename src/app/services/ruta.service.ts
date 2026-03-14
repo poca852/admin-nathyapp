@@ -4,8 +4,6 @@ import { Observable, map } from 'rxjs';
 import { Empresa, Ruta, User } from '../models';
 import { environment } from 'src/environments/environment';
 import { UtilsService } from './utils.service';
-import * as moment from 'moment';
-import { MomentService } from '../config/plugins/moment.plugin';
 
 @Injectable({
   providedIn: 'root'
@@ -14,10 +12,8 @@ export class RutaService {
 
   private http = inject(HttpClient);
   private utilsSvc = inject(UtilsService);
-  momentSvc = inject(MomentService)
 
   private readonly baseUrl: string = environment.baseUrl;
-  public readonly today: string = this.momentSvc.nowWithFormat('DD/MM/YYYY');
 
   constructor() { }
 
@@ -85,10 +81,7 @@ export class RutaService {
     const headers = new HttpHeaders()
       .append('authorization', `Bearer ${this.user.token}`)
 
-    const params = new HttpParams()
-      .set('fecha', this.today)
-
-    return this.http.patch<boolean>(url, {}, { headers, params })
+    return this.http.patch<boolean>(url, {}, { headers })
   }
 
   getRutasByEmpresa(): Observable<Empresa> {
@@ -98,6 +91,15 @@ export class RutaService {
       .append('authorization', `Bearer ${this.user.token}`);
 
     return this.http.get<Empresa>(url, { headers })
+  }
+
+  deleteRuta(idRuta: string): Observable<boolean> {
+    const url: string = `${this.baseUrl}/ruta/${idRuta}`;
+
+    const headers = new HttpHeaders()
+      .append('authorization', `Bearer ${this.user.token}`)
+
+    return this.http.delete<boolean>(url, { headers })
   }
 
 }
