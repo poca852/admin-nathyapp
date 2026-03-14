@@ -130,7 +130,6 @@ export class DetailClientePage {
       .getClienteById(this.idCliente)
       .pipe(
         tap((resp) => {
-          console.log(resp.cliente)
           this.cliente.set(resp.cliente);
           this.creditoActual.set(resp.credito);
         }),

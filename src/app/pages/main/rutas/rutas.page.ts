@@ -55,6 +55,10 @@ export class RutasPage implements OnInit {
           handler: () => this.addUpdateRuta(ruta)
         },
         {
+          text: 'Eliminar Ruta',
+          handler: () => this.deleteRuta(ruta.id!)
+        },
+        {
           text: 'Ver detalle',
           handler: () => this.viewRuta(ruta)
         },
@@ -95,6 +99,45 @@ export class RutasPage implements OnInit {
     if (success) {
       this.getRutas();
     }
+  }
+
+  deleteRuta(idRuta: string) {
+
+    this.utilsSvc.presentAlert({
+      header: 'Eliminar Ruta',
+      message: '¿Estás seguro de que quieres eliminar esta ruta? Esta acción es irreversible.',
+      mode: 'ios',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+        }, {
+          text: 'Si, eliminar',
+          handler: () => {
+            this.rutaSvc.deleteRuta(idRuta).subscribe({
+              next: (resp) => {
+                this.utilsSvc.presentToast({
+                  message: 'Ruta eliminada correctamente',
+                  duration: 2500,
+                  color: 'success'
+                })
+                this.getRutas();
+              },
+              error: err => {
+                console.log(err);
+                this.utilsSvc.presentToast({
+                  message: 'Error al eliminar la ruta',
+                  duration: 3500,
+                  color: 'danger'
+                })
+              }
+            })
+          }
+        }
+      ]
+    })
+
+
   }
 
 }
