@@ -17,4 +17,5 @@ export interface Ruta {
    clientes_activos: number;
    ganancia_total: number;
    timeZone: string;
+   currency: string;
 }

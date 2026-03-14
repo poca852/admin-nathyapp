@@ -6,6 +6,7 @@ import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 import { OfflineInterceptor } from './interceptors/offline.interceptor';
+import { AuthInterceptor } from './interceptors/auth.interceptor';
 
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { provideStorage, getStorage } from '@angular/fire/storage';
@@ -35,7 +36,8 @@ const config: SocketIoConfig = { url: environment.socketUrl, options: {} };
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     { provide: LOCALE_ID, useValue: 'es' },
-    { provide: HTTP_INTERCEPTORS, useClass: OfflineInterceptor, multi: true }
+    { provide: HTTP_INTERCEPTORS, useClass: OfflineInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
   ],
   bootstrap: [AppComponent],
 })
