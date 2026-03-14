@@ -6,31 +6,19 @@
 
     <custom-input [control]="form.controls.nombre" type="text" label="Nombre" autocomplete="off" />
 
-    <custom-input [control]="form.controls.pais" type="text" label="Pais" autocomplete="off" />
+    <ion-item class="custom-input" lines="none">
+      <ion-select label="Pais" interface="popover" formControlName="pais">
+        <ion-select-option value="Colombia">Colombia</ion-select-option>
+        <ion-select-option value="Guatemala">Guatemala</ion-select-option>
+        <ion-select-option value="Brasil">Brasil</ion-select-option>
+      </ion-select>
+    </ion-item>
 
     <custom-input [control]="form.controls.ciudad" type="text" label="Ciudad" autocomplete="off" />
 
     <ion-item class="custom-input" lines="none">
       <ion-toggle [enableOnOffLabels]="true" formControlName="autoOpen">Apertura de caja automatico</ion-toggle>
     </ion-item>
-
-    <ion-item class="custom-input" lines="none">
-      <ion-select label="Zona Horaria" label-placement="stacked" interface="popover"
-        placeholder="Selecciona la zona horaria de la ruta" formControlName="timeZone">
-        <ion-select-option value="America/Bogota">
-          Colombia (Bogotá - GMT-5)
-        </ion-select-option>
-        <ion-select-option value="America/Guatemala">
-          Guatemala (Ciudad de Guatemala - GMT-6)
-        </ion-select-option>
-        <ion-select-option value="America/Sao_Paulo">
-          Brasil (São Paulo - GMT-3)
-        </ion-select-option>
-      </ion-select>
-    </ion-item>
-    <ion-note class="ion-padding-horizontal" style="display: block; margin-top: -15px; margin-bottom: 20px;">
-      Esto asegura que las horas de la ruta coincidan con la hora local del lugar.
-    </ion-note>
 
     <ion-button mode="ios" type="submit" expand="block" [disabled]="form.invalid">
       {{ruta ? 'Actualizar Ruta' : 'Agregar Ruta'}}

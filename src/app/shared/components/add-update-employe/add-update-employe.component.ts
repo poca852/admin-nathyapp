@@ -83,19 +83,21 @@ export class AddUpdateEmployeComponent implements OnInit {
     const loading = await this.utilsSvc.loading();
     loading.present();
 
-    if(!this.form.controls.ruta.value) {
-      delete this.form.controls.ruta;
+    const payload = { ...this.form.value };
+
+    if (!payload.ruta) {
+      delete payload.ruta;
     }
 
-    if(!!this.form.controls.rutas.value) {
-      delete this.form.controls.rutas;
+    if (!payload.rutas || payload.rutas.length === 0) {
+      delete payload.rutas;
     }
 
-    this.empresaSvc.addEmpleado(this.form.value)
+    this.empresaSvc.addEmpleado(payload)
       .subscribe({
         next: user => {
           loading.dismiss();
-          this.utilsSvc.dismissModal({success: true})
+          this.utilsSvc.dismissModal({ success: true })
         },
         error: err => {
           loading.dismiss();

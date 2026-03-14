@@ -25,13 +25,32 @@ export class AddUpdateRutaComponent {
     ciudad: new FormControl('', [Validators.required]),
     autoOpen: new FormControl(false, [Validators.required]),
     empresa: new FormControl(this.empresaSvc.empresa()?.id),
-    timeZone: new FormControl('', [Validators.required])
+    timeZone: new FormControl('', [Validators.required]),
+    currency: new FormControl('', [Validators.required])
   })
 
   constructor() { }
 
   ionViewWillEnter() {
     this.initComponent();
+    this.setupCountryChange();
+  }
+
+  setupCountryChange() {
+    this.form.controls.pais.valueChanges.subscribe(pais => {
+      const countryData = {
+        'Colombia': { timeZone: 'America/Bogota', currency: 'COP' },
+        'Guatemala': { timeZone: 'America/Guatemala', currency: 'GTQ' },
+        'Brasil': { timeZone: 'America/Sao_Paulo', currency: 'BRL' }
+      }
+
+      if (pais && countryData[pais]) {
+        this.form.patchValue({
+          timeZone: countryData[pais].timeZone,
+          currency: countryData[pais].currency
+        });
+      }
+    });
   }
 
   initComponent() {

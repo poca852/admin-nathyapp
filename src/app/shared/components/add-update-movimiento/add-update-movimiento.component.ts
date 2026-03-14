@@ -105,7 +105,6 @@ export class AddUpdateMovimientoComponent implements OnInit {
 
   private updateMovimiento(loading: HTMLIonLoadingElement) {
     const { id, monto, concepto, comentario, categoriaGasto } = this.form.value;
-    console.log(this.form.value);
     const data: any = {
       monto,
       concepto,
