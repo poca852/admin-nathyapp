@@ -1,0 +1,24 @@
+<app-header title="Novedades" [isModal]="true" />
+
+<ion-content [fullscreen]="true" class="ion-padding">
+    <div class="update-container">
+        <div class="version-badge">
+            <ion-icon name="rocket-outline" color="primary"></ion-icon>
+            <h2>v{{ version }}</h2>
+        </div>
+
+        <div class="notes-list">
+            @for (note of notes; track note) {
+            <div class="note-item">
+                <ion-icon name="checkmark-circle" color="success"></ion-icon>
+                <span>{{ note }}</span>
+            </div>
+            }
+        </div>
+
+        <ion-button expand="block" color="primary" (click)="dismiss()" class="continue-btn">
+            <ion-icon slot="start" name="checkmark-done-outline"></ion-icon>
+            Continuar
+        </ion-button>
+    </div>
+</ion-content>

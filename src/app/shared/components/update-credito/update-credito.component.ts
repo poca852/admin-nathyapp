@@ -4,18 +4,17 @@ import { Credito, FrecuenciaCobro, NuevoCredito } from 'src/app/models';
 import { UtilsService } from '../../../services/utils.service';
 import { CreditosService } from '../../../services/creditos.service';
 import { Subject, takeUntil } from 'rxjs';
-import { AutomaticCreditStrategy } from './helpers/automatic-credit-strategy';
-import { ManualCreditStrategy } from './helpers/manual-credit-strategy';
+import { RenovacionDetalle } from 'src/app/pages/main/renovaciones/interfaces/renovacion-report.interface';
 
 @Component({
   selector: 'app-update-credito',
   templateUrl: './update-credito.component.html',
   styleUrls: ['./update-credito.component.scss'],
 })
-export class UpdateCreditoComponent  implements OnInit {
+export class UpdateCreditoComponent implements OnInit {
 
   @Input()
-  credito: Credito;
+  credito: RenovacionDetalle;
 
   ngUnsubscribe = new Subject<void>();
 
@@ -26,7 +25,6 @@ export class UpdateCreditoComponent  implements OnInit {
     valor_cuota: new FormControl({ value: null, disabled: true }),
     esAutomatico: new FormControl(true, [Validators.required]),
     frecuencia_cobro: new FormControl(FrecuenciaCobro.DIARIO, [Validators.required]),
-    se_cobran_domingos: new FormControl(false, [Validators.required]),
   })
 
   constructor(
@@ -34,7 +32,7 @@ export class UpdateCreditoComponent  implements OnInit {
     private creditoSvc: CreditosService,
   ) { }
 
-  ngOnInit() {}
+  ngOnInit() { }
 
   ionViewWillEnter() {
     this.setupFormValueChanges();
@@ -98,15 +96,9 @@ export class UpdateCreditoComponent  implements OnInit {
   }
 
   async editarCredito() {
-    
-    const creditStrategy = this.form.controls.esAutomatico.value
-      ? new AutomaticCreditStrategy()
-      : new ManualCreditStrategy();
-
     const loading = await this.utilsSvc.loading();
     await loading.present();
-
-    this.creditoSvc.updateCredito(this.credito._id, creditStrategy.createCredit(this.form.value as NuevoCredito)).subscribe({
+    this.creditoSvc.updateCredito(this.credito.creditoId, { ...this.form.value, rutaId: this.credito.rutaId }).subscribe({
       next: (credito) => {
         loading.dismiss();
         this.utilsSvc.presentToast({
@@ -114,16 +106,17 @@ export class UpdateCreditoComponent  implements OnInit {
           message: 'Credito Actualizado Correctamente',
           duration: 3000
         })
-        this.utilsSvc.dismissModal({success: true});
+        this.utilsSvc.dismissModal({ success: true });
       },
       error: err => {
+        console.log(err.error)
         loading.dismiss();
         this.utilsSvc.presentAlert({
           header: 'Error',
           message: 'Error al actualizar credito, hable con el administrador del sistema',
           buttons: ['OK']
         })
-        this.utilsSvc.dismissModal({success: false})
+        this.utilsSvc.dismissModal({ success: false })
       }
     })
 

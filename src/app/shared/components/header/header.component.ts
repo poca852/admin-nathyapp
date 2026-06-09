@@ -1,6 +1,8 @@
-import { Component, Input, OnInit, inject } from '@angular/core';
+import { Component, Input, OnInit, inject, computed } from '@angular/core';
 import { UtilsService } from 'src/app/services/utils.service';
 import { PwaInstallService } from 'src/app/services/pwa-install.service';
+import { PeticionesService } from 'src/app/services/peticiones.service';
+import { NotificacionesModalComponent } from '../notificaciones-modal/notificaciones-modal.component';
 
 @Component({
   selector: 'app-header',
@@ -19,6 +21,9 @@ export class HeaderComponent implements OnInit {
 
   utilsSvc = inject(UtilsService);
   pwaInstallSvc = inject(PwaInstallService);
+  peticionesSvc = inject(PeticionesService);
+
+  cantidadPendientes = computed(() => this.peticionesSvc.cantidadPendientes());
 
   constructor() { }
 
@@ -34,5 +39,12 @@ export class HeaderComponent implements OnInit {
     } catch (error) {
       console.warn('PWA install prompt failed', error);
     }
+  }
+
+  abrirNotificaciones() {
+    this.utilsSvc.presentModal({
+      component: NotificacionesModalComponent,
+      componentProps: {}
+    });
   }
 }

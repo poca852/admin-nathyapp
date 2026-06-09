@@ -1,0 +1,110 @@
+<app-header title="Peticiones de Ubicación" [isModal]="true" />
+
+<ion-content [fullscreen]="true">
+  <div class="container">
+    <!-- Lista de peticiones pendientes -->
+    @if(!peticionSeleccionada){
+    <div class="peticiones-list">
+      <h2>Peticiones Pendientes ({{peticiones.length}})</h2>
+
+      @if(peticiones.length === 0){
+      <div class="empty-state">
+        <ion-icon name="checkmark-circle-outline" color="success"></ion-icon>
+        <p>No hay peticiones pendientes</p>
+      </div>
+      }
+
+      <ion-list>
+        @for(peticion of peticiones; track peticion.id){
+        <ion-item button (click)="seleccionarPeticion(peticion)">
+          <ion-label>
+            <h3>{{peticion.cliente.nombre | titlecase}} ({{peticion.cliente.alias | titlecase}})</h3>
+            <p><strong>Cobrador:</strong> {{peticion.cobrador.nombre | titlecase}}</p>
+            <p><strong>Ruta:</strong> {{peticion.ruta.nombre | titlecase}}</p>
+            <p><strong>Solicitado:</strong> {{peticion.fecha_solicitud | date:'short'}}</p>
+          </ion-label>
+          <ion-badge slot="end" color="warning">Pendiente</ion-badge>
+        </ion-item>
+        }
+      </ion-list>
+    </div>
+    }
+
+    <!-- Detalle de petición seleccionada -->
+    @if(peticionSeleccionada){
+    <div class="peticion-detail">
+      <div class="detail-header">
+        <ion-button fill="clear" (click)="peticionSeleccionada = null">
+          <ion-icon name="arrow-back"></ion-icon>
+          Volver
+        </ion-button>
+        <h2>Detalle de Petición</h2>
+      </div>
+
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>{{peticionSeleccionada.cliente.nombre | titlecase}}
+            ({{peticionSeleccionada.cliente.alias | titlecase}})</ion-card-title>
+          <ion-card-subtitle>Ruta: {{peticionSeleccionada.ruta.nombre | titlecase}}</ion-card-subtitle>
+        </ion-card-header>
+
+        <ion-card-content>
+          <div class="info-grid">
+            <div class="info-item">
+              <strong>Cobrador:</strong>
+              <p>{{peticionSeleccionada.cobrador.nombre | titlecase}}</p>
+            </div>
+            <div class="info-item">
+              <strong>Empresa:</strong>
+              <p>{{peticionSeleccionada.empresa.nombre | titlecase}}</p>
+            </div>
+            <div class="info-item">
+              <strong>Solicitado:</strong>
+              <p>{{peticionSeleccionada.fecha_solicitud | date:'medium'}}</p>
+            </div>
+          </div>
+
+          <div class="ubicaciones-section">
+            <h3>Ubicaciones</h3>
+            <div class="ubicaciones-grid">
+              <div class="ubicacion-card">
+                <h4>Ubicación Actual</h4>
+                <p>Lat: {{peticionSeleccionada.old_ubicacion[1] | number:'1.4-4'}}</p>
+                <p>Lng: {{peticionSeleccionada.old_ubicacion[0] | number:'1.4-4'}}</p>
+                <ion-button expand="block" color="medium" (click)="abrirMapaViejo()" [disabled]="mostrarMapaViejo">
+                  <ion-icon slot="start" name="map-outline"></ion-icon>
+                  Ver Mapa
+                </ion-button>
+              </div>
+
+              <div class="ubicacion-card">
+                <h4>Nueva Ubicación</h4>
+                <p>Lat: {{peticionSeleccionada.new_ubicacion[1] | number:'1.4-4'}}</p>
+                <p>Lng: {{peticionSeleccionada.new_ubicacion[0] | number:'1.4-4'}}</p>
+                <ion-button expand="block" color="primary" (click)="abrirMapaNuevo()" [disabled]="mostrarMapaNuevo">
+                  <ion-icon slot="start" name="map-outline"></ion-icon>
+                  Ver Mapa
+                </ion-button>
+              </div>
+            </div>
+          </div>
+
+          <div class="actions-section">
+            <h3>Acciones</h3>
+            <div class="actions-grid">
+              <ion-button expand="block" color="success" (click)="aprobarPeticion(peticionSeleccionada.id)">
+                <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
+                Aprobar
+              </ion-button>
+              <ion-button expand="block" color="danger" (click)="rechazarPeticion(peticionSeleccionada.id)">
+                <ion-icon slot="start" name="close-circle-outline"></ion-icon>
+                Rechazar
+              </ion-button>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+    }
+  </div>
+</ion-content>

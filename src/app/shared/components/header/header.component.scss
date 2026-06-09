@@ -1,3 +1,20 @@
 .admin {
    font-size: 13px;
 }
+
+.notification-badge {
+   position: absolute;
+   top: 0;
+   right: 0;
+   font-size: 10px;
+   min-width: 16px;
+   height: 16px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   transform: translate(25%, -25%);
+}
+
+ion-button {
+   position: relative;
+}

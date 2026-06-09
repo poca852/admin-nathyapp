@@ -11,7 +11,7 @@ import { ClienteService } from 'src/app/services/cliente.service';
 import { RutaService } from 'src/app/services/ruta.service';
 import { format } from 'date-fns';
 import { Ruta } from 'src/app/models';
-import { EmpresaReport } from './interfaces/renovacion-report.interface';
+import { EmpresaReport, RenovacionDetalle } from './interfaces/renovacion-report.interface';
 
 @Component({
   selector: 'app-renovaciones',
@@ -49,7 +49,6 @@ export class RenovacionesPage implements OnInit {
       })
     ).subscribe({
       next: report => {
-        console.log(report);
         this.report.set(report || null);
         this.loading.set(false);
       },
@@ -82,7 +81,6 @@ export class RenovacionesPage implements OnInit {
     this.creditoSvc.getRenovaciones(dateFormatted, rId)
       .subscribe({
         next: report => {
-          console.log(report);
           this.report.set(report[0] || null);
           this.loading.set(false);
         },
@@ -121,7 +119,7 @@ export class RenovacionesPage implements OnInit {
     if (success) this.getRenovaciones();
   }
 
-  async deleteCredito(credito: Credito) {
+  async deleteCredito(credito: RenovacionDetalle) {
 
     if (this.utilsSvc.getFromLocalStorage('user').rol !== 'ADMIN') {
       this.utilsSvc.presentToast({
@@ -132,7 +130,7 @@ export class RenovacionesPage implements OnInit {
       return;
     }
 
-    this.creditoSvc.deleteCredito(credito._id).subscribe({
+    this.creditoSvc.deleteCredito(credito.creditoId, credito.movimientoId).subscribe({
       next: () => {
         this.utilsSvc.presentToast({
           color: 'success',
@@ -145,7 +143,6 @@ export class RenovacionesPage implements OnInit {
   }
 
   async presentAcionSheet(credito: any) {
-    console.log(credito)
     await this.utilsSvc.presentActionSheet({
       buttons: [
         {

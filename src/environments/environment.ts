@@ -4,6 +4,11 @@
 
 export const environment = {
   production: false,
+  version: '1.6.4',
+  updateNotes: [
+    'Edicion y eliminacion de creditos',
+    'Correcciones generales y mejoras de rendimiento.',
+  ],
   baseUrl: import.meta.env.NG_APP_DEV_API,
   socketUrl: import.meta.env.NG_APP_URL_DEV_SOCKET,
   mapbox_token: import.meta.env.NG_APP_MAP_BOX,

@@ -4,6 +4,8 @@ import { UtilsService } from '../../../services/utils.service';
 import { Ruta } from '../../../models';
 import { EmpresaService } from 'src/app/services/empresa.service';
 import { finalize } from 'rxjs';
+import { environment } from 'src/environments/environment';
+import { UpdateNotesModalComponent } from 'src/app/shared/components/update-notes-modal/update-notes-modal.component';
 
 @Component({
   selector: 'app-home',
@@ -20,7 +22,19 @@ export class HomePage {
   ) { }
 
   ionViewWillEnter(): void {
+    this.checkUpdateNotes();
     this.loadRutas();
+  }
+
+  private checkUpdateNotes(): void {
+    const seenVersion = this.utilsSvc.getFromLocalStorage('app_version_seen');
+    if (seenVersion !== environment.version) {
+      this.utilsSvc.presentModal({
+        component: UpdateNotesModalComponent,
+        cssClass: 'update-notes-modal',
+      });
+      this.utilsSvc.saveInLocalStorage('app_version_seen', environment.version);
+    }
   }
 
   loadRutas(event?: any): void {

@@ -25,6 +25,8 @@ import { environment } from 'src/environments/environment';
 import { UpdateUserComponent } from './components/update-user/update-user.component';
 import { ModalHistorialPagosComponent } from './components/modal-historial-pagos/modal-historial-pagos.component';
 import { AddUpdateMovimientoComponent } from './components/add-update-movimiento/add-update-movimiento.component';
+import { NotificacionesModalComponent } from './components/notificaciones-modal/notificaciones-modal.component';
+import { UpdateNotesModalComponent } from './components/update-notes-modal/update-notes-modal.component';
 
 mapboxgl.accessToken = environment.mapbox_token;
 
@@ -52,6 +54,9 @@ mapboxgl.accessToken = environment.mapbox_token;
     UpdateUserComponent,
     ModalHistorialPagosComponent,
     AddUpdateMovimientoComponent,
+    NotificacionesModalComponent,
+    UpdateNotesModalComponent,
+    UpdateNotesModalComponent,
   ],
   exports: [
     ReactiveFormsModule,
@@ -76,6 +81,7 @@ mapboxgl.accessToken = environment.mapbox_token;
     UpdateUserComponent,
     ModalHistorialPagosComponent,
     AddUpdateMovimientoComponent,
+    NotificacionesModalComponent,
   ],
   imports: [
     CommonModule,

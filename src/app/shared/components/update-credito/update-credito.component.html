@@ -21,10 +21,6 @@
       (ionInput)="onInputChange($event, form.controls.valor_cuota)" label="Valor de la cuota" />
 
     <ion-item class="custom-input" lines="none">
-      <ion-toggle [enableOnOffLabels]="true" formControlName="se_cobran_domingos">Cobrar Domingos</ion-toggle>
-    </ion-item>
-
-    <ion-item class="custom-input" lines="none">
       <ion-radio-group formControlName="frecuencia_cobro" value="diario">
         <ion-radio value="diario">Diario</ion-radio>
         <ion-radio value="semanal">Semanal</ion-radio>

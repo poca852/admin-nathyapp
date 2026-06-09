@@ -51,19 +51,19 @@ export class CreditosService {
   }
 
   updateCredito(id: string, credito: any) {
-    const url: string = `${this.baseUrl}/credito/${id}`;
+
+    delete credito.esAutomatico
+
+    const url: string = `${this.baseUrl}/movimiento-caja/update-credito/${id}`;
 
     const headers = new HttpHeaders()
       .append('authorization', `Bearer ${this.user.token}`);
 
-    const params = new HttpParams()
-      .set('fecha', this.moment.nowWithFormat('YYYY-MM-DD'));
-
-    return this.http.patch<Credito>(url, credito, { headers, params });
+    return this.http.patch<boolean>(url, credito, { headers });
   }
 
-  deleteCredito(id: string) {
-    const url: string = `${this.baseUrl}/credito/${id}`;
+  deleteCredito(creditoId: string, movimientoId: string) {
+    const url: string = `${this.baseUrl}/movimiento-caja/delete-credito/${creditoId}/${movimientoId}`;
 
     const headers = new HttpHeaders()
       .append('authorization', `Bearer ${this.user.token}`);

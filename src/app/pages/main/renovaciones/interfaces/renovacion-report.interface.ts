@@ -5,6 +5,9 @@ export interface RenovacionDetalle {
   alias?: string;
   monto: number;
   fecha: Date;
+  creditoId: string;
+  movimientoId: string;
+  rutaId: string;
 }
 
 export interface RutaReport {
