@@ -114,7 +114,28 @@
         <ion-item>
           <ion-label>Interés</ion-label>
           <ion-note slot="end" class="credit-value">
-            {{ credito.interes | currency:'USD':'symbol':'':'en' }}
+            {{ credito.interes | interesPercent:'1.0-2':'en' }}
+          </ion-note>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Ganancia</ion-label>
+          <ion-note slot="end" class="credit-value">
+            {{ gananciaCredito(credito) | currency:'USD':'symbol':'':'en' }}
+          </ion-note>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Ganancia cobrada</ion-label>
+          <ion-note slot="end" class="credit-value">
+            {{ gananciaCobrada(credito) | currency:'USD':'symbol':'':'en' }}
+          </ion-note>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Ganancia pendiente</ion-label>
+          <ion-note slot="end" class="credit-value">
+            {{ gananciaPendiente(credito) | currency:'USD':'symbol':'':'en' }}
           </ion-note>
         </ion-item>
 
@@ -129,6 +150,13 @@
           <ion-label>Total de cuotas</ion-label>
           <ion-note slot="end" class="credit-value">
             {{ credito.total_cuotas }}
+          </ion-note>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Cuotas pagadas</ion-label>
+          <ion-note slot="end" class="credit-value">
+            {{ cuotasPagadas(credito) }} de {{ credito.total_cuotas }}
           </ion-note>
         </ion-item>
 
@@ -154,6 +182,13 @@
         </ion-item>
 
         <ion-item>
+          <ion-label>Frecuencia de cobro</ion-label>
+          <ion-note slot="end" class="credit-value">
+            {{ frecuenciaCobroLabel(credito.frecuencia_cobro) }}
+          </ion-note>
+        </ion-item>
+
+        <ion-item>
           <ion-label>Fecha de inicio</ion-label>
           <ion-note slot="end" class="credit-value">
             {{ credito.fecha_inicio | date:'dd/MM/yyyy' }}
@@ -164,6 +199,17 @@
           <ion-label>Fecha límite de pago</ion-label>
           <ion-note slot="end" class="credit-value">
             {{ credito.dueDate | date:'dd/MM/yyyy' }}
+          </ion-note>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Último pago</ion-label>
+          <ion-note slot="end" class="credit-value">
+            @if (credito.ultimo_pago) {
+              {{ credito.ultimo_pago | date:'dd/MM/yyyy' }}
+            } @else {
+              Sin pagos
+            }
           </ion-note>
         </ion-item>
 
@@ -182,6 +228,15 @@
             {{ credito.daysOverdue }}
           </ion-note>
         </ion-item>
+
+        @if (credito.notas) {
+        <ion-item class="notas-item">
+          <ion-label>
+            <p>Notas</p>
+            <h3 class="notas-text">{{ credito.notas }}</h3>
+          </ion-label>
+        </ion-item>
+        }
       </ion-list>
 
       <ion-button expand="block" fill="outline" color="primary" class="pagos-btn"

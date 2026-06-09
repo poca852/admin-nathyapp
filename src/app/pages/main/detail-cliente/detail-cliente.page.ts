@@ -2,7 +2,7 @@ import { Component, inject, Input, signal } from '@angular/core';
 import { switchMap, tap } from 'rxjs';
 import { UtilsService } from '../../../services/utils.service';
 import { ClienteService } from 'src/app/services/cliente.service';
-import { Cliente, Credito, HistorialCredito, TipoDeCliente } from 'src/app/models';
+import { Cliente, Credito, FrecuenciaCobro, HistorialCredito, TipoDeCliente } from 'src/app/models';
 import { ViewImageComponent } from 'src/app/shared/components/view-image/view-image.component';
 import { UpdateClienteComponent } from 'src/app/shared/components/update-cliente/update-cliente.component';
 import { ModalHistorialCreditoComponent } from 'src/app/shared/components/modal-historial-credito/modal-historial-credito.component';
@@ -10,6 +10,7 @@ import { EmpresaService } from '../../../services/empresa.service';
 import { MapModalComponent } from 'src/app/shared/components/map-modal/map-modal.component';
 import { ModalHistorialPagosComponent } from 'src/app/shared/components/modal-historial-pagos/modal-historial-pagos.component';
 import { CreditosService } from 'src/app/services/creditos.service';
+import { calcularCuotasPagadas, calcularGananciaCredito, calcularGananciaCobrada, calcularGananciaPendiente } from 'src/app/shared/utils/interes.util';
 
 @Component({
   selector: 'app-detail-cliente',
@@ -110,6 +111,27 @@ export class DetailClientePage {
       cssClass: 'map',
       componentProps: { lngLat: this.cliente()?.ubication },
     });
+  }
+
+  gananciaCredito(credito: Credito): number {
+    return calcularGananciaCredito(credito.total_pagar, credito.valor_credito);
+  }
+
+  gananciaCobrada(credito: Credito): number {
+    const ganancia = this.gananciaCredito(credito);
+    return calcularGananciaCobrada(ganancia, credito.abonos, credito.total_pagar);
+  }
+
+  gananciaPendiente(credito: Credito): number {
+    return calcularGananciaPendiente(this.gananciaCredito(credito), this.gananciaCobrada(credito));
+  }
+
+  cuotasPagadas(credito: Credito): number {
+    return calcularCuotasPagadas(credito.abonos, credito.valor_cuota, credito.total_cuotas);
+  }
+
+  frecuenciaCobroLabel(frecuencia: FrecuenciaCobro | string): string {
+    return frecuencia === FrecuenciaCobro.DIARIO ? 'Diario' : 'Semanal';
   }
 
   async openHistorialPagos(credito: Credito): Promise<void> {
