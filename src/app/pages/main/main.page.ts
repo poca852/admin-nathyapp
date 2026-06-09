@@ -28,10 +28,11 @@ export class MainPage implements OnInit {
     { title: 'Empresa', url: '/main/empresa', icon: 'business-outline' },
     { title: 'Caja', url: '/main/caja', icon: 'calculator-outline' },
     { title: 'Pagos', url: '/main/pagos', icon: 'cash-outline' },
-    { title: 'Empleados', url: '/main/empleados', icon: 'people-outline' },
+    { title: 'Empleados', url: '/main/empleados', icon: 'people-outline', adminOnly: true },
     { title: 'Clientes', url: '/main/clientes', icon: 'people-circle-outline' },
     { title: 'Renovaciones', url: '/main/renovaciones', icon: 'refresh-outline' },
     { title: 'Oficina', url: '/main/oficina', icon: 'briefcase-outline' },
+    { title: 'Reportes', url: '/main/reportes', icon: 'bar-chart-outline', adminOnly: true },
   ]
 
   ngOnInit() {

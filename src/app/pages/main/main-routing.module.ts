@@ -52,6 +52,10 @@ const routes: Routes = [
         path: 'caja',
         loadChildren: () => import('./caja/caja.module').then(m => m.CajaPageModule)
       },
+      {
+        path: 'reportes',
+        loadChildren: () => import('./reportes/reportes.module').then(m => m.ReportesPageModule)
+      },
     ]
   },
 
