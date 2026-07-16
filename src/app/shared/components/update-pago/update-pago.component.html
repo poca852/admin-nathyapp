@@ -3,16 +3,27 @@
 <ion-content class="ion-padding">
 
   <form [formGroup]="form" (ngSubmit)="updatePago()">
-    <custom-input 
-      [control]="form.controls.valor"
+    <custom-input
+      [control]="form.controls.monto"
       type="text"
-      label="Valor"
+      label="Monto"
       (ionInput)="setNumberInput()"
     />
-    <ion-button type="submit" expand="block" mode="ios">
+    <ion-button type="submit" expand="block" mode="ios" [disabled]="form.invalid">
       Actualizar
     </ion-button>
-  </form>
 
+    <ion-button
+      type="button"
+      expand="block"
+      mode="ios"
+      fill="outline"
+      color="danger"
+      class="ion-margin-top"
+      (click)="confirmDelete()"
+    >
+      Eliminar pago
+    </ion-button>
+  </form>
 
 </ion-content>

@@ -39,13 +39,22 @@ export class PagosService {
     return this.http.get<MovimientoCaja[]>(url, { headers, params });
   }
 
-  updatePago(idPago: string, body: any): Observable<boolean> {
-    const url: string = `${this.baseUrl}/pago/${idPago}`;
+  updatePago(movimientoId: string, body: { monto: number }): Observable<boolean> {
+    const url: string = `${this.baseUrl}/movimiento-caja/update-pago/${movimientoId}`;
 
     const headers = new HttpHeaders()
-      .append('authorization', `Bearer ${this.user.token}`)
+      .append('authorization', `Bearer ${this.user.token}`);
 
-    return this.http.patch<boolean>(url, body, { headers })
+    return this.http.patch<boolean>(url, body, { headers });
+  }
+
+  deletePago(movimientoId: string): Observable<boolean> {
+    const url: string = `${this.baseUrl}/movimiento-caja/delete-pago/${movimientoId}`;
+
+    const headers = new HttpHeaders()
+      .append('authorization', `Bearer ${this.user.token}`);
+
+    return this.http.delete<boolean>(url, { headers });
   }
 }
 

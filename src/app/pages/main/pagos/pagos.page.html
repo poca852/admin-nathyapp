@@ -44,7 +44,7 @@
 
     <div class="payments-list">
       <div class="payment-card animate__animated animate__fadeInUp" *ngFor="let pago of pagos(); let i = index"
-        [style.animation-delay]="i * 50 + 'ms'" (click)="updatePago(pago)">
+        [style.animation-delay]="i * 50 + 'ms'" (click)="presentAcciones(pago)">
 
         <div class="avatar-icon">
           <ion-icon name="person-outline"></ion-icon>

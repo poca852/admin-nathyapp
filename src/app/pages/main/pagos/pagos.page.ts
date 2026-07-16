@@ -5,6 +5,7 @@ import { PagosService } from '../../../services/pagos.service';
 import { IonModal } from '@ionic/angular';
 import { EmpresaService } from '../../../services/empresa.service';
 import { MovimientoCaja } from 'src/app/models/movimiento-caja.interface';
+import { UpdatePagoComponent } from 'src/app/shared/components/update-pago/update-pago.component';
 
 @Component({
   selector: 'app-pagos',
@@ -81,23 +82,112 @@ export class PagosPage implements OnInit {
     this.fetchPagos();
   }
 
-  async updatePago(pago: MovimientoCaja) {
+  private isAdmin(): boolean {
     const user = this.utilsSvc.getFromLocalStorage('user');
-    if (user?.rol !== 'ADMIN') {
-      this.utilsSvc.presentToast({
-        message: 'No tienes permisos necesarios',
-        duration: 3500,
+    if (user?.rol === 'ADMIN' || user?.rol === 'SUPERADMIN') return true;
+
+    this.utilsSvc.presentToast({
+      message: 'No tienes permisos necesarios',
+      duration: 3500,
+      color: 'danger',
+      icon: 'lock-closed-outline'
+    });
+    return false;
+  }
+
+  async presentAcciones(pago: MovimientoCaja) {
+    if (!this.isAdmin()) return;
+
+    await this.utilsSvc.presentActionSheet({
+      header: 'Acciones del pago',
+      buttons: [
+        {
+          text: 'Actualizar',
+          handler: () => {
+            setTimeout(() => this.updatePago(pago), 200);
+          }
+        },
+        {
+          text: 'Eliminar',
+          handler: () => {
+            setTimeout(() => this.confirmDeletePago(pago), 200);
+          }
+        },
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        }
+      ]
+    });
+  }
+
+  async updatePago(pago: MovimientoCaja) {
+    const success = await this.utilsSvc.presentModal({
+      component: UpdatePagoComponent,
+      cssClass: 'add-update-modal',
+      componentProps: { pago }
+    });
+
+    if (success) {
+      this.fetchPagos();
+    }
+  }
+
+  async confirmDeletePago(pago: MovimientoCaja) {
+    await this.utilsSvc.presentAlert({
+      header: 'Eliminar pago',
+      message: '¿Estás seguro de que quieres eliminar este pago? Esta acción es irreversible.',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Sí, eliminar',
+          handler: () => {
+            this.deletePago(pago);
+          }
+        }
+      ]
+    });
+  }
+
+  private async deletePago(pago: MovimientoCaja) {
+    const movimientoId = pago?.id || (pago as any)?._id;
+
+    if (!movimientoId) {
+      await this.utilsSvc.presentToast({
+        message: 'No se encontró el identificador del pago',
+        duration: 3000,
         color: 'danger',
-        icon: 'lock-closed-outline'
+        icon: 'alert-circle-outline'
       });
       return;
     }
 
-    // TODO: Implementar actualización de pago cuando esté listo el componente
-    this.utilsSvc.presentToast({
-      message: 'Funcionalidad de edición próximamente disponible',
-      duration: 2000,
-      color: 'secondary'
+    const loading = await this.utilsSvc.loading();
+    await loading.present();
+
+    this.pagosSvc.deletePago(movimientoId).subscribe({
+      next: () => {
+        loading.dismiss();
+        this.utilsSvc.presentToast({
+          message: 'Pago eliminado correctamente',
+          duration: 2500,
+          color: 'success',
+          icon: 'checkmark-outline'
+        });
+        this.fetchPagos();
+      },
+      error: (err) => {
+        loading.dismiss();
+        this.utilsSvc.presentToast({
+          message: err.error?.message || 'Error al eliminar el pago',
+          duration: 3500,
+          color: 'danger',
+          icon: 'alert-circle-outline'
+        });
+      }
     });
   }
 
