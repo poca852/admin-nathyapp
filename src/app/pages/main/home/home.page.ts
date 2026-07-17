@@ -6,6 +6,7 @@ import { EmpresaService } from 'src/app/services/empresa.service';
 import { finalize } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { UpdateNotesModalComponent } from 'src/app/shared/components/update-notes-modal/update-notes-modal.component';
+import { WsService } from 'src/app/services/ws.service';
 
 @Component({
   selector: 'app-home',
@@ -18,7 +19,8 @@ export class HomePage {
   constructor(
     private rutaSvc: RutaService,
     public utilsSvc: UtilsService,
-    public empresaSvc: EmpresaService
+    public empresaSvc: EmpresaService,
+    private ws: WsService,
   ) { }
 
   ionViewWillEnter(): void {
@@ -50,7 +52,7 @@ export class HomePage {
         next: ({ rutas }) => {
           this.empresaSvc.setRutas(rutas);
         },
-        error: (err) => {
+        error: () => {
           this.utilsSvc.presentToast({
             message: 'Error al obtener las rutas',
             duration: 2000,
@@ -86,36 +88,58 @@ export class HomePage {
   }
 
   async toggleRutaStatus(ruta: Ruta): Promise<void> {
-    const loadingMessage = ruta.status ? 'Cerrando ruta...' : 'Abriendo ruta...';
-    const loading = await this.utilsSvc.loading({ message: loadingMessage });
+    if (ruta.status) {
+      this.ws.closeCaja(ruta.id);
+      return;
+    }
+
+    const loading = await this.utilsSvc.loading({ message: 'Abriendo ruta...' });
     await loading.present();
 
-    const request = ruta.status
-      ? this.rutaSvc.closeCaja(ruta.id)
-      : this.rutaSvc.newCaja(ruta.id);
-
-    request.subscribe({
+    this.rutaSvc.newCaja(ruta.id).subscribe({
       next: () => {
         loading.dismiss();
-        if (ruta.status) {
-          this.utilsSvc.presentToast({
-            message: 'Ruta cerrada correctamente',
-            duration: 2000,
-            position: 'bottom',
-            color: 'success'
-          });
-        }
         this.loadRutas();
       },
-      error: (err) => {
+      error: () => {
         loading.dismiss();
         this.utilsSvc.presentToast({
-          message: `Error al ${ruta.status ? 'cerrar' : 'abrir'} la ruta`,
+          message: 'Error al abrir la ruta',
           duration: 2000,
           position: 'bottom',
           color: 'danger'
         });
       }
     });
+  }
+
+  async confirmToggleLock(ruta: Ruta): Promise<void> {
+    const willLock = !ruta.isLocked;
+    const message = willLock
+      ? `¿Bloquear la caja de ${ruta.nombre}?`
+      : `¿Desbloquear la caja de ${ruta.nombre}?`;
+
+    await this.utilsSvc.presentAlert({
+      header: 'Confirmación',
+      message,
+      buttons: [
+        {
+          text: 'Sí',
+          handler: () => this.toggleRutaLock(ruta)
+        },
+        {
+          text: 'No',
+          role: 'cancel'
+        }
+      ]
+    });
+  }
+
+  toggleRutaLock(ruta: Ruta): void {
+    if (ruta.isLocked) {
+      this.ws.unblockCaja(ruta.id);
+    } else {
+      this.ws.blockCaja(ruta.id);
+    }
   }
 }

@@ -102,6 +102,10 @@ ion-content {
       border: 1px solid rgba(var(--ion-color-danger-rgb), 0.1);
    }
 
+   &.card-locked {
+      border-color: rgba(var(--ion-color-warning-rgb), 0.45);
+   }
+
    ion-card-header {
       padding-bottom: 8px;
    }
@@ -216,6 +220,10 @@ ion-content {
 
       ion-icon {
          font-size: 1.2rem;
+      }
+
+      &.lock-button {
+         border-top: 1px solid var(--ion-color-light-shade);
       }
    }
 }

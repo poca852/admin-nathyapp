@@ -2,7 +2,8 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { NotificacionesService } from './services/notificaciones.service';
 import { Subscription } from 'rxjs';
 import { EmpresaService } from './services/empresa.service';
-import { WsService } from './services/ws.service';
+import { CajaCloseEvent, CajaLockEvent, WsService } from './services/ws.service';
+import { UtilsService } from './services/utils.service';
 
 @Component({
   selector: 'app-root',
@@ -11,23 +12,68 @@ import { WsService } from './services/ws.service';
 })
 export class AppComponent implements OnInit, OnDestroy {
 
-  private logOutSubs: Subscription;
+  private subscriptions = new Subscription();
 
   constructor(
     private notificacionesSvc: NotificacionesService,
     private empresaSvc: EmpresaService,
     private ws: WsService,
+    private utilsSvc: UtilsService,
   ) {}
 
   ngOnDestroy(): void {
-    this.logOutSubs.unsubscribe()
+    this.subscriptions.unsubscribe();
   }
 
   ngOnInit(): void {
-    this.logOutSubs = this.notificacionesSvc.logOut$.subscribe(( ) => {
-      this.empresaSvc.removeRuta();
-      this.empresaSvc.removeRutas();
-    })
+    this.subscriptions.add(
+      this.notificacionesSvc.logOut$.subscribe(() => {
+        this.empresaSvc.removeRuta();
+        this.empresaSvc.removeRutas();
+      })
+    );
+
+    this.listenCajaEvents();
   }
 
+  private listenCajaEvents(): void {
+    this.subscriptions.add(
+      this.ws.onBlockCaja().subscribe((event: CajaLockEvent) => {
+        if (!event?.ruta || !event.isLocked) return;
+        this.empresaSvc.updateRutaLock(event.ruta, true);
+        this.utilsSvc.presentToast({
+          message: 'Ruta bloqueada',
+          duration: 2000,
+          position: 'bottom',
+          color: 'warning',
+        });
+      })
+    );
+
+    this.subscriptions.add(
+      this.ws.onUnblockCaja().subscribe((event: CajaLockEvent) => {
+        if (!event?.ruta || event.isLocked) return;
+        this.empresaSvc.updateRutaLock(event.ruta, false);
+        this.utilsSvc.presentToast({
+          message: 'Ruta desbloqueada',
+          duration: 2000,
+          position: 'bottom',
+          color: 'success',
+        });
+      })
+    );
+
+    this.subscriptions.add(
+      this.ws.onCloseCaja().subscribe((event: CajaCloseEvent) => {
+        if (!event?.ruta) return;
+        this.empresaSvc.updateRutaStatus(event.ruta, false);
+        this.utilsSvc.presentToast({
+          message: 'Ruta cerrada correctamente',
+          duration: 2000,
+          position: 'bottom',
+          color: 'success',
+        });
+      })
+    );
+  }
 }

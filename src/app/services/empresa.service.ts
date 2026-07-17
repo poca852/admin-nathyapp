@@ -45,6 +45,36 @@ export class EmpresaService {
     this._rutas.set(rutas);
   }
 
+  updateRutaLock(rutaId: string, isLocked: boolean): void {
+    this._rutas.update(rutas =>
+      rutas.map(ruta =>
+        ruta.id === rutaId || ruta._id === rutaId
+          ? { ...ruta, isLocked }
+          : ruta
+      )
+    );
+
+    const current = this._ruta();
+    if (current && (current.id === rutaId || current._id === rutaId)) {
+      this._ruta.set({ ...current, isLocked });
+    }
+  }
+
+  updateRutaStatus(rutaId: string, status: boolean): void {
+    this._rutas.update(rutas =>
+      rutas.map(ruta =>
+        ruta.id === rutaId || ruta._id === rutaId
+          ? { ...ruta, status }
+          : ruta
+      )
+    );
+
+    const current = this._ruta();
+    if (current && (current.id === rutaId || current._id === rutaId)) {
+      this._ruta.set({ ...current, status });
+    }
+  }
+
   removeRutas() {
     this._rutas.set([]);
   }
