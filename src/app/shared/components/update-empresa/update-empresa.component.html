@@ -1,38 +1,176 @@
-<app-header title="Actualizar datos" [isModal]="true" />
+<app-header title="Actualizar empresa" [isModal]="true" />
 
-<ion-content class="ion-padding">
+<ion-content class="ion-padding empresa-modal">
 
   <form [formGroup]="form" (ngSubmit)="editEmpresa()">
 
-    <custom-input 
-      [control]="form.controls.name"
-      label="Nombre"
-      type="text"
-    />
+    <section class="form-section">
+      <header class="section-header">
+        <div class="section-icon">
+          <ion-icon name="business-outline"></ion-icon>
+        </div>
+        <div>
+          <h2>Datos generales</h2>
+          <p>Información básica de la empresa</p>
+        </div>
+      </header>
 
-    <custom-input 
-      [control]="form.controls.email"
-      label="Email"
-      type="email"
-    />
+      <div class="section-body">
+        <custom-input
+          [control]="form.controls.name"
+          label="Nombre"
+          type="text"
+          icon="storefront-outline"
+        />
 
-     <ion-item class="custom-input" lines="none">
-      <ion-select
-        aria-label="Pais" 
-        interface="popover"
-        formControlName="country"
-        placeholder="Selecciona pais">
-        <ion-select-option
-          *ngFor="let pais of paises"
-          [value]="pais.name"
-        >
-          {{pais.name| titlecase}}
-        </ion-select-option>
-      </ion-select>
-    </ion-item>
+        <custom-input
+          [control]="form.controls.email"
+          label="Email"
+          type="email"
+          icon="mail-outline"
+        />
 
-    <ion-button type="submit" expand="block">
-      Actualizar
+        <ion-item class="field-select" lines="none">
+          <ion-icon name="globe-outline" slot="start" color="primary"></ion-icon>
+          <ion-select
+            aria-label="País"
+            interface="popover"
+            formControlName="country"
+            label="País"
+            labelPlacement="stacked"
+            placeholder="Selecciona un país">
+            @for (pais of paises; track pais) {
+              <ion-select-option [value]="pais">{{ pais }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+      </div>
+    </section>
+
+    <section class="form-section mora-section">
+      <header class="section-header">
+        <div class="section-icon accent">
+          <ion-icon name="time-outline"></ion-icon>
+        </div>
+        <div>
+          <h2>Configuración de mora</h2>
+          <p>Reglas para atraso y cobro de mora</p>
+        </div>
+      </header>
+
+      <div class="section-body">
+        <div class="toggle-row">
+          <div class="toggle-copy">
+            <div class="label-with-tip">
+              <span>Cobrar mora</span>
+              <button type="button" class="tip-btn" id="tip-cobra-mora" aria-label="Ayuda cobrar mora">
+                <ion-icon name="help-circle-outline"></ion-icon>
+              </button>
+            </div>
+            <small>Habilita mora en créditos de la empresa</small>
+          </div>
+          <ion-toggle formControlName="cobraMora" [enableOnOffLabels]="true"></ion-toggle>
+        </div>
+
+        <ion-popover trigger="tip-cobra-mora" triggerAction="click" side="bottom" alignment="start">
+          <ng-template>
+            <div class="tip-content">{{ tips.cobraMora }}</div>
+          </ng-template>
+        </ion-popover>
+
+        @if (cobraMora) {
+          <div class="mora-options">
+            <div class="toggle-row">
+              <div class="toggle-copy">
+                <div class="label-with-tip">
+                  <span>Permitir mora a voluntad</span>
+                  <button type="button" class="tip-btn" id="tip-mora-voluntaria" aria-label="Ayuda mora a voluntad">
+                    <ion-icon name="help-circle-outline"></ion-icon>
+                  </button>
+                </div>
+                <small>El cobrador puede aplicar mora al cobrar</small>
+              </div>
+              <ion-toggle formControlName="permiteMoraVoluntaria" [enableOnOffLabels]="true"></ion-toggle>
+            </div>
+
+            <ion-popover trigger="tip-mora-voluntaria" triggerAction="click" side="bottom" alignment="start">
+              <ng-template>
+                <div class="tip-content">{{ tips.permiteMoraVoluntaria }}</div>
+              </ng-template>
+            </ion-popover>
+
+            <div class="field-block">
+              <div class="label-with-tip field-label">
+                <span>% de mora</span>
+                <button type="button" class="tip-btn" id="tip-porcentaje-mora" aria-label="Ayuda porcentaje mora">
+                  <ion-icon name="help-circle-outline"></ion-icon>
+                </button>
+              </div>
+              <custom-input
+                [control]="form.controls.porcentajeMora"
+                label="Porcentaje"
+                type="number"
+                icon="stats-chart-outline"
+              />
+            </div>
+
+            <ion-popover trigger="tip-porcentaje-mora" triggerAction="click" side="bottom" alignment="start">
+              <ng-template>
+                <div class="tip-content">{{ tips.porcentajeMora }}</div>
+              </ng-template>
+            </ion-popover>
+
+            <div class="field-block">
+              <div class="label-with-tip field-label">
+                <span>Base de cálculo</span>
+                <button type="button" class="tip-btn" id="tip-base-mora" aria-label="Ayuda base de cálculo">
+                  <ion-icon name="help-circle-outline"></ion-icon>
+                </button>
+              </div>
+
+              <ion-item class="field-select" lines="none">
+                <ion-icon name="calculator-outline" slot="start" color="primary"></ion-icon>
+                <ion-select
+                  aria-label="Base de cálculo"
+                  interface="popover"
+                  formControlName="baseCalculoMora"
+                  label="Base"
+                  labelPlacement="stacked"
+                  placeholder="Selecciona la base">
+                  @for (base of basesCalculo; track base.value) {
+                    <ion-select-option [value]="base.value">{{ base.label }}</ion-select-option>
+                  }
+                </ion-select>
+              </ion-item>
+            </div>
+
+            <ion-popover trigger="tip-base-mora" triggerAction="click" side="bottom" alignment="start">
+              <ng-template>
+                <div class="tip-content">
+                  <p>{{ tips.baseCalculoMora }}</p>
+                  <ul>
+                    @for (base of basesCalculo; track base.value) {
+                      <li><strong>{{ base.label }}:</strong> {{ base.tip }}</li>
+                    }
+                  </ul>
+                </div>
+              </ng-template>
+            </ion-popover>
+          </div>
+        }
+      </div>
+    </section>
+
+    <ion-button
+      type="submit"
+      expand="block"
+      class="submit-btn"
+      [disabled]="form.invalid || saving">
+      @if (saving) {
+        <ion-spinner name="crescent"></ion-spinner>
+      } @else {
+        Guardar cambios
+      }
     </ion-button>
 
   </form>

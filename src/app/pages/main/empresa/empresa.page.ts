@@ -95,7 +95,8 @@ export class EmpresaPage implements OnInit {
 
   async editEmpresa() {
 
-    if(this.utilsSvc.getFromLocalStorage('user').rol !== 'ADMIN') return;
+    const rol = this.utilsSvc.getFromLocalStorage('user').rol;
+    if (rol !== 'ADMIN' && rol !== 'SUPERADMIN') return;
 
     let success = await this.utilsSvc.presentModal({
       component: UpdateEmpresaComponent,
@@ -103,8 +104,8 @@ export class EmpresaPage implements OnInit {
       componentProps: {empresa: this.empresa}
     })
 
-    if(success) {
-      // TODO: pendiente de implementar
+    if (success) {
+      this.empresaSvc.setEmpresa(this.empresa.id);
     }
   }
 

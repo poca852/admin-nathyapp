@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable, computed, signal } from '@angular/core';
 import { environment } from 'src/environments/environment';
-import { Credito, HistorialCredito, User } from '../models';
+import { Credito, HistorialCredito, MoraActionBody, MoraActionResponse, User } from '../models';
 import { UtilsService } from './utils.service';
 import { Observable } from 'rxjs';
 import { MomentService } from '../config/plugins/moment.plugin';
@@ -93,6 +93,20 @@ export class CreditosService {
 
     return this.http.get<CajaMovimiento[]>(url, { headers, params })
 
+  }
+
+  aplicarMora(creditoId: string, body: MoraActionBody): Observable<MoraActionResponse> {
+    return this.http.post<MoraActionResponse>(
+      `${this.baseUrl}/credito/${creditoId}/aplicar-mora`,
+      body
+    );
+  }
+
+  perdonarMora(creditoId: string, body: MoraActionBody): Observable<MoraActionResponse> {
+    return this.http.post<MoraActionResponse>(
+      `${this.baseUrl}/credito/${creditoId}/perdonar-mora`,
+      body
+    );
   }
 
 }

@@ -57,6 +57,12 @@
         <h2><strong>Pretendido: </strong>{{currentCaja.pretendido | currency:'USD':'symbol':'':'en'}}</h2>
       </ion-text>
 
+      @if (currentCaja.cobraMora) {
+        <ion-text>
+          <h2><strong>Mora por cobrar: </strong>{{(currentCaja.moraPorCobrar || 0) | currency:'USD':'symbol':'':'en'}}</h2>
+        </ion-text>
+      }
+
       <ion-text>
         <h2><strong>Clientes: </strong>{{currentCaja.total_clientes}}</h2>
       </ion-text>
@@ -64,6 +70,12 @@
       <ion-text>
         <h2><strong>Cobro: </strong>{{currentCaja.cobro | currency:'USD':'symbol':'':'en'}}</h2>
       </ion-text>
+
+      @if (currentCaja.cobraMora) {
+        <ion-text>
+          <h2><strong>Mora cobrada: </strong>{{(currentCaja.moraCobrada || 0) | currency:'USD':'symbol':'':'en'}}</h2>
+        </ion-text>
+      }
 
       <ion-text>
         <h2><strong>Prestamo: </strong>{{currentCaja.prestamo | currency:'USD':'symbol':'':'en'}}</h2>

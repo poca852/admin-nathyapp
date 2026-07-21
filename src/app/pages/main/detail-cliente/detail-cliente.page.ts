@@ -11,6 +11,7 @@ import { MapModalComponent } from 'src/app/shared/components/map-modal/map-modal
 import { ModalHistorialPagosComponent } from 'src/app/shared/components/modal-historial-pagos/modal-historial-pagos.component';
 import { CreditosService } from 'src/app/services/creditos.service';
 import { calcularCuotasPagadas, calcularGananciaCredito, calcularGananciaCobrada, calcularGananciaPendiente } from 'src/app/shared/utils/interes.util';
+import { AplicarPerdonarMoraComponent, MoraModalMode } from 'src/app/shared/components/aplicar-perdonar-mora/aplicar-perdonar-mora.component';
 
 @Component({
   selector: 'app-detail-cliente',
@@ -143,6 +144,27 @@ export class DetailClientePage {
         rutaId: credito.ruta
       },
     });
+  }
+
+  async openMoraModal(credito: Credito, mode: MoraModalMode): Promise<void> {
+    if (!credito.cobraMora) {
+      this.utilsSvc.presentToast({
+        message: 'La empresa no tiene habilitado el cobro de mora',
+        duration: 3000,
+        color: 'warning',
+      });
+      return;
+    }
+
+    const success = await this.utilsSvc.presentModal({
+      component: AplicarPerdonarMoraComponent,
+      cssClass: 'add-update-modal',
+      componentProps: { credito, mode },
+    });
+
+    if (success) {
+      this.getCliente();
+    }
   }
 
   private getCliente(): void {

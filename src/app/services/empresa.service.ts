@@ -1,7 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { UtilsService } from './utils.service';
-import { Empresa, Ruta, User } from '../models';
+import { Empresa, MoraConfig, Ruta, User } from '../models';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
@@ -120,6 +120,10 @@ export class EmpresaService {
 
   editEmpresa(idEmpresa: string, empresa: Partial<Empresa>): Observable<boolean> {
     return this.http.patch<boolean>(`${this.baseUrl}/empresa/update/${idEmpresa}`, empresa);
+  }
+
+  updateMoraConfig(idEmpresa: string, config: MoraConfig): Observable<Empresa> {
+    return this.http.patch<Empresa>(`${this.baseUrl}/empresa/${idEmpresa}/mora-config`, config);
   }
 
   getBackUp(idEmpresa: string): Observable<ArrayBuffer> {

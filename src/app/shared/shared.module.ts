@@ -27,6 +27,7 @@ import { ModalHistorialPagosComponent } from './components/modal-historial-pagos
 import { AddUpdateMovimientoComponent } from './components/add-update-movimiento/add-update-movimiento.component';
 import { NotificacionesModalComponent } from './components/notificaciones-modal/notificaciones-modal.component';
 import { UpdateNotesModalComponent } from './components/update-notes-modal/update-notes-modal.component';
+import { AplicarPerdonarMoraComponent } from './components/aplicar-perdonar-mora/aplicar-perdonar-mora.component';
 import { InteresPercentPipe } from './pipes/interes-percent.pipe';
 
 mapboxgl.accessToken = environment.mapbox_token;
@@ -57,7 +58,7 @@ mapboxgl.accessToken = environment.mapbox_token;
     AddUpdateMovimientoComponent,
     NotificacionesModalComponent,
     UpdateNotesModalComponent,
-    UpdateNotesModalComponent,
+    AplicarPerdonarMoraComponent,
   ],
   exports: [
     ReactiveFormsModule,
@@ -83,6 +84,7 @@ mapboxgl.accessToken = environment.mapbox_token;
     ModalHistorialPagosComponent,
     AddUpdateMovimientoComponent,
     NotificacionesModalComponent,
+    AplicarPerdonarMoraComponent,
     InteresPercentPipe,
   ],
   imports: [

@@ -1,63 +1,132 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { Country, Empresa } from 'src/app/models';
+import { BaseCalculoMora, Empresa, MoraConfig } from 'src/app/models';
 import { UtilsService } from '../../../services/utils.service';
 import { EmpresaService } from '../../../services/empresa.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { CountriesService } from '../../../services/countries.service';
+import { PAISES_SOPORTADOS } from '../../../services/countries.service';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-update-empresa',
   templateUrl: './update-empresa.component.html',
   styleUrls: ['./update-empresa.component.scss'],
 })
-export class UpdateEmpresaComponent  implements OnInit {
+export class UpdateEmpresaComponent implements OnInit {
 
   @Input() empresa: Empresa;
 
-  paises: Country[] = []
+  readonly paises = PAISES_SOPORTADOS;
+
+  readonly basesCalculo: { value: BaseCalculoMora; label: string; tip: string }[] = [
+    {
+      value: 'VALOR_CUOTA',
+      label: 'Valor de la cuota',
+      tip: 'La mora se calcula como un % sobre el valor de la cuota.',
+    },
+    {
+      value: 'SALDO',
+      label: 'Saldo',
+      tip: 'La mora se calcula como un % sobre el saldo pendiente del crédito.',
+    },
+    {
+      value: 'VALOR_CREDITO',
+      label: 'Valor del crédito',
+      tip: 'La mora se calcula como un % sobre el valor original del crédito.',
+    },
+  ];
+
+  readonly tips = {
+    cobraMora:
+      'Activa el cobro de mora en toda la empresa. Si está desactivado, no se podrá aplicar, perdonar ni cobrar mora en ningún crédito.',
+    permiteMoraVoluntaria:
+      'Si está activo, el cobrador puede decidir aplicar mora en el momento del cobro, además de la mora ya registrada en el crédito.',
+    porcentajeMora:
+      'Porcentaje usado para calcular la mora sugerida según la base seleccionada (cuota, saldo o valor del crédito).',
+    baseCalculoMora:
+      'Define sobre qué monto se aplica el porcentaje de mora para obtener el valor sugerido.',
+  };
 
   form = new FormGroup({
     name: new FormControl('', [Validators.required]),
     email: new FormControl('', [Validators.required, Validators.email]),
     country: new FormControl('', [Validators.required]),
-  })
+    cobraMora: new FormControl(false),
+    permiteMoraVoluntaria: new FormControl(false),
+    porcentajeMora: new FormControl(0, [Validators.min(0)]),
+    baseCalculoMora: new FormControl<BaseCalculoMora>('VALOR_CUOTA'),
+  });
+
+  saving = false;
 
   constructor(
     private utilsSvc: UtilsService,
     private empresaSvc: EmpresaService,
-    private countrySvc: CountriesService,
   ) { }
 
   ngOnInit() {
-
-    if(!!this.empresa){
-      this.form.patchValue(this.empresa);
+    if (this.empresa) {
+      this.form.patchValue({
+        name: this.empresa.name,
+        email: this.empresa.email,
+        country: this.empresa.country,
+        cobraMora: this.empresa.cobraMora ?? false,
+        permiteMoraVoluntaria: this.empresa.permiteMoraVoluntaria ?? false,
+        porcentajeMora: this.empresa.porcentajeMora ?? 0,
+        baseCalculoMora: this.empresa.baseCalculoMora ?? 'VALOR_CUOTA',
+      });
     }
-
-    this.getPaises();
-
   }
 
-  getPaises() {
-    this.countrySvc.getPaises().subscribe({
-      next: (paises) => this.paises = paises,
-      error: () => this.utilsSvc.dismissModal({success: false})
-    })
+  get cobraMora(): boolean {
+    return !!this.form.controls.cobraMora.value;
   }
 
   editEmpresa() {
-    this.empresaSvc.editEmpresa(this.empresa.id, this.form.value).subscribe({
+    if (this.form.invalid || this.saving) return;
+
+    const {
+      name,
+      email,
+      country,
+      cobraMora,
+      permiteMoraVoluntaria,
+      porcentajeMora,
+      baseCalculoMora,
+    } = this.form.getRawValue();
+
+    const moraConfig: MoraConfig = {
+      cobraMora: !!cobraMora,
+      permiteMoraVoluntaria: cobraMora ? !!permiteMoraVoluntaria : false,
+      porcentajeMora: cobraMora ? Number(porcentajeMora ?? 0) : 0,
+      baseCalculoMora: (baseCalculoMora ?? 'VALOR_CUOTA') as BaseCalculoMora,
+    };
+
+    this.saving = true;
+
+    forkJoin({
+      empresa: this.empresaSvc.editEmpresa(this.empresa.id, { name, email, country }),
+      mora: this.empresaSvc.updateMoraConfig(this.empresa.id, moraConfig),
+    }).subscribe({
       next: () => {
-        this.utilsSvc.dismissModal({success: true})
+        this.saving = false;
+        this.utilsSvc.presentToast({
+          message: 'Empresa actualizada correctamente',
+          duration: 2500,
+          color: 'success',
+          icon: 'checkmark-circle-outline',
+        });
+        this.utilsSvc.dismissModal({ success: true });
       },
       error: err => {
-        this.utilsSvc.presentAlert({
-          header: 'Error',
-          message: err.error.message,
-          buttons: ['OK']
-        })
+        this.saving = false;
+        this.utilsSvc.presentToast({
+          message: err.error?.message || 'No se pudo actualizar la empresa',
+          duration: 3500,
+          color: 'danger',
+          icon: 'alert-circle-outline',
+        });
       }
-    })
+    });
   }
 
 }

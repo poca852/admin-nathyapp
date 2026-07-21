@@ -182,6 +182,27 @@
         </ion-item>
 
         <ion-item>
+          <ion-label>Mora adeudada</ion-label>
+          <ion-note slot="end" class="credit-value highlight">
+            {{ (credito.mora_adeudada || 0) | currency:'USD':'symbol':'':'en' }}
+          </ion-note>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Mora cobrada</ion-label>
+          <ion-note slot="end" class="credit-value">
+            {{ (credito.mora_cobrada || 0) | currency:'USD':'symbol':'':'en' }}
+          </ion-note>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Mora sugerida</ion-label>
+          <ion-note slot="end" class="credit-value">
+            {{ (credito.moraSugerida || 0) | currency:'USD':'symbol':'':'en' }}
+          </ion-note>
+        </ion-item>
+
+        <ion-item>
           <ion-label>Frecuencia de cobro</ion-label>
           <ion-note slot="end" class="credit-value">
             {{ frecuenciaCobroLabel(credito.frecuencia_cobro) }}
@@ -244,6 +265,21 @@
         <ion-icon name="receipt-outline" slot="start"></ion-icon>
         Ver historial de pagos
       </ion-button>
+
+      @if (credito.cobraMora) {
+        <ion-button expand="block" color="warning" class="pagos-btn"
+          (click)="openMoraModal(credito, 'aplicar')">
+          <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+          Aplicar mora
+        </ion-button>
+
+        <ion-button expand="block" fill="outline" color="medium" class="pagos-btn"
+          (click)="openMoraModal(credito, 'perdonar')"
+          [disabled]="!(credito.mora_adeudada > 0)">
+          <ion-icon name="remove-circle-outline" slot="start"></ion-icon>
+          Perdonar mora
+        </ion-button>
+      }
     </ion-card-content>
   </ion-card>
   }

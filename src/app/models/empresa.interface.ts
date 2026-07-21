@@ -1,5 +1,14 @@
 import { Ruta, User } from "./";
 
+export type BaseCalculoMora = 'VALOR_CUOTA' | 'SALDO' | 'VALOR_CREDITO';
+
+export interface MoraConfig {
+  cobraMora: boolean;
+  permiteMoraVoluntaria: boolean;
+  porcentajeMora: number;
+  baseCalculoMora: BaseCalculoMora;
+}
+
 export interface Empresa {
    id: string;
    name: string;
@@ -9,6 +18,10 @@ export interface Empresa {
    owner?: User;
    employes: User[];
    rutas: Ruta[];
+   cobraMora?: boolean;
+   permiteMoraVoluntaria?: boolean;
+   porcentajeMora?: number;
+   baseCalculoMora?: BaseCalculoMora;
 }
 
 export interface ResponseBackup {

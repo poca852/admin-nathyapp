@@ -1,4 +1,5 @@
-import { Pago, Cliente, Ruta } from "./";
+import { Pago, Cliente } from "./";
+import { BaseCalculoMora } from "./empresa.interface";
 
 export enum TipoDeCliente {
   BUENO = 'BUENO',
@@ -36,6 +37,25 @@ export interface Credito {
   turno: number;
   state?: TipoDeCliente;
   daysOverdue?: number;
+  mora_adeudada?: number;
+  mora_cobrada?: number;
+  moraSugerida?: number;
+  cobraMora?: boolean;
+  permiteMoraVoluntaria?: boolean;
+  porcentajeMora?: number;
+  baseCalculoMora?: BaseCalculoMora;
+}
+
+export interface MoraActionBody {
+  monto: number;
+  motivo?: string;
+}
+
+export interface MoraActionResponse {
+  creditoId: string;
+  mora_adeudada: number;
+  montoAplicado?: number;
+  montoPerdonado?: number;
 }
 
 export interface NuevoCredito {
