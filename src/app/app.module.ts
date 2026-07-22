@@ -20,7 +20,14 @@ import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { environment } from 'src/environments/environment';
 
-const config: SocketIoConfig = { url: environment.socketUrl, options: {} };
+const config: SocketIoConfig = {
+  url: environment.socketUrl,
+  options: {
+    autoConnect: false,
+    reconnection: true,
+    reconnectionAttempts: 10,
+  },
+};
 
 @NgModule({
   declarations: [AppComponent],

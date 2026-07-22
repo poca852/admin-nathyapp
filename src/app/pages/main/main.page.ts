@@ -25,6 +25,7 @@ export class MainPage implements OnInit {
   pages = [
     { title: 'Inicio', url: '/main/home', icon: 'home-outline' },
     { title: 'Rutas', url: '/main/rutas', icon: 'layers-outline' },
+    { title: 'Seguimiento', url: '/main/seguimiento', icon: 'navigate-outline' },
     { title: 'Empresa', url: '/main/empresa', icon: 'business-outline' },
     { title: 'Caja', url: '/main/caja', icon: 'calculator-outline' },
     { title: 'Pagos', url: '/main/pagos', icon: 'cash-outline' },

@@ -12,6 +12,44 @@ export interface CajaCloseEvent {
   status?: boolean;
 }
 
+export interface CobradorPresenceEvent {
+  cobradorId: string;
+  nombre: string;
+  rutaId?: string;
+  online: boolean;
+  at: string;
+}
+
+export interface CobradorLocationEvent {
+  cobradorId: string;
+  nombre: string;
+  rutaId?: string;
+  lng: number;
+  lat: number;
+  at: string;
+}
+
+export interface TrackingPuntoDto {
+  lng: number;
+  lat: number;
+  at: string;
+  accuracy?: number;
+}
+
+export interface CobradorTrackingHoy {
+  cobradorId: string;
+  nombre: string;
+  rutaId?: string;
+  online: boolean;
+  ultimaUbicacion?: TrackingPuntoDto;
+  puntos: TrackingPuntoDto[];
+}
+
+export interface TrackingSnapshotEvent {
+  empresaId: string;
+  cobradores: CobradorTrackingHoy[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -19,8 +57,37 @@ export class WsService {
 
   constructor(private socket: Socket) { }
 
+  connect(token?: string): void {
+    if (token) {
+      (this.socket.ioSocket as { auth?: { token?: string } }).auth = { token };
+    }
+
+    if (this.socket.ioSocket?.connected) {
+      this.socket.disconnect();
+    }
+    this.socket.connect();
+  }
+
+  disconnect(): void {
+    if (this.socket.ioSocket?.connected) {
+      this.socket.disconnect();
+    }
+  }
+
+  get connected(): boolean {
+    return !!this.socket.ioSocket?.connected;
+  }
+
   emit(event: string, payload?: any, callback?: Function) {
-    this.socket.emit(event, payload, callback);
+    if (typeof callback === 'function') {
+      this.socket.emit(event, payload, callback);
+      return;
+    }
+    if (payload !== undefined) {
+      this.socket.emit(event, payload);
+      return;
+    }
+    this.socket.emit(event);
   }
 
   listen<T = any>(event: string): Observable<T> {
@@ -49,5 +116,21 @@ export class WsService {
 
   onCloseCaja(): Observable<CajaCloseEvent> {
     return this.listen<CajaCloseEvent>('close-caja');
+  }
+
+  requestTrackingSnapshot(): void {
+    this.emit('tracking:subscribe');
+  }
+
+  onCobradorPresence(): Observable<CobradorPresenceEvent> {
+    return this.listen<CobradorPresenceEvent>('cobrador:presence');
+  }
+
+  onCobradorLocation(): Observable<CobradorLocationEvent> {
+    return this.listen<CobradorLocationEvent>('cobrador:location');
+  }
+
+  onTrackingSnapshot(): Observable<TrackingSnapshotEvent> {
+    return this.listen<TrackingSnapshotEvent>('tracking:snapshot');
   }
 }

@@ -1,0 +1,182 @@
+.seguimiento-content {
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+}
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: calc(100vh - 56px);
+}
+
+.lista {
+  flex: 0 0 auto;
+  max-height: 38%;
+  overflow: auto;
+  background: var(--ion-background-color, #fff);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  z-index: 2;
+}
+
+.lista-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px 4px;
+
+  h2 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 2px 0 0;
+    font-size: 0.8rem;
+    color: var(--ion-color-medium);
+  }
+}
+
+.lista ion-item.selected {
+  --background: rgba(37, 99, 235, 0.08);
+}
+
+.empty {
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.mapa-wrap {
+  flex: 1 1 auto;
+  min-height: 280px;
+  position: relative;
+}
+
+.mapa {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+:host ::ng-deep .cobrador-marker {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+
+    &.online {
+      background: #16a34a;
+    }
+
+    &.offline {
+      background: #94a3b8;
+    }
+  }
+}
+
+:host ::ng-deep .pago-marker {
+  width: auto;
+  min-width: 26px;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+  pointer-events: auto;
+
+  .pago-marker-label {
+    max-width: 88px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(17, 24, 39, 0.85);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+    pointer-events: none;
+  }
+
+  .dot-pago {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    border-radius: 3px;
+    background: #f59e0b; // fallback; el color real va inline por pago
+    border: 2px solid #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* Popup de pago: Ionic suele heredar color claro y deja el texto invisible */
+:host ::ng-deep .pago-map-popup .mapboxgl-popup-content {
+  color: #111827 !important;
+  background: #ffffff !important;
+  padding: 10px 12px !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-size: 13px;
+  line-height: 1.35;
+  min-width: 140px;
+}
+
+:host ::ng-deep .pago-map-popup .mapboxgl-popup-close-button {
+  color: #374151 !important;
+  font-size: 18px;
+  padding: 2px 6px;
+}
+
+:host ::ng-deep .pago-popup-title {
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+:host ::ng-deep .pago-popup-line {
+  color: #374151;
+}
+
+.lista-actions {
+  padding: 0 8px 8px;
+}
+
+.toggle-pagos {
+  --min-height: 40px;
+  font-size: 0.85rem;
+}
+
+@media (min-width: 900px) {
+  .layout {
+    flex-direction: row;
+  }
+
+  .lista {
+    flex: 0 0 320px;
+    max-height: none;
+    height: 100%;
+    border-bottom: none;
+    border-right: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  .mapa-wrap {
+    min-height: auto;
+  }
+}

@@ -92,6 +92,12 @@
   color: var(--ion-text-color);
 }
 
+.pago-end {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 ion-label {
   h3 {
     font-size: 0.9rem;

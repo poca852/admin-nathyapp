@@ -1,0 +1,64 @@
+<app-header title="Seguimiento" [showMenu]="true" />
+
+<ion-content [fullscreen]="true" class="seguimiento-content">
+  <div class="layout">
+    <aside class="lista">
+      <div class="lista-header">
+        <ion-text>
+          <h2>Cobradores</h2>
+          <p>{{ onlineCount }} en línea · {{ cobradores.length }} total</p>
+        </ion-text>
+        <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
+      </div>
+
+      <div class="lista-actions">
+        <ion-item lines="none" class="toggle-pagos">
+          <ion-toggle
+            [(ngModel)]="showPagosDia"
+            (ionChange)="syncPagoMarkersFromToggle()"
+            labelPlacement="start"
+          >
+            Mostrar pagos del día ({{ pagosDia.length }})
+          </ion-toggle>
+        </ion-item>
+      </div>
+
+      <ion-list *ngIf="cobradores.length; else emptyList" lines="full">
+        <ion-item
+          *ngFor="let c of cobradores"
+          button
+          detail="false"
+          [class.selected]="selectedId === c.cobradorId"
+          (click)="selectCobrador(c)"
+        >
+          <ion-label>
+            <h3>{{ c.nombre | titlecase }}</h3>
+            <p *ngIf="c.ultimaUbicacion">
+              {{ c.ultimaUbicacion.at | date: 'shortTime' }}
+            </p>
+            <p *ngIf="!c.ultimaUbicacion">Sin ubicación hoy</p>
+          </ion-label>
+          <ion-badge
+            slot="end"
+            [color]="c.online ? 'success' : 'medium'"
+            mode="ios"
+          >
+            {{ c.online ? 'Online' : 'Offline' }}
+          </ion-badge>
+        </ion-item>
+      </ion-list>
+
+      <ng-template #emptyList>
+        <div class="empty" *ngIf="!loading">
+          <ion-text color="medium">
+            No hay cobradores con actividad hoy.
+          </ion-text>
+        </div>
+      </ng-template>
+    </aside>
+
+    <div class="mapa-wrap">
+      <div #mapContainer class="mapa"></div>
+    </div>
+  </div>
+</ion-content>

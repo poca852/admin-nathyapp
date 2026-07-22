@@ -1,6 +1,9 @@
 import { Component, inject, Input, OnInit, signal } from '@angular/core';
+import { LngLat } from 'mapbox-gl';
 import { CajaMovimiento } from 'src/app/models/caja-movimiento.interface';
 import { CreditosService } from 'src/app/services/creditos.service';
+import { UtilsService } from 'src/app/services/utils.service';
+import { MapModalComponent } from '../map-modal/map-modal.component';
 
 @Component({
   selector: 'app-modal-historial-pagos',
@@ -10,6 +13,7 @@ import { CreditosService } from 'src/app/services/creditos.service';
 export class ModalHistorialPagosComponent implements OnInit {
 
   private readonly creditosSvc = inject(CreditosService);
+  private readonly utilsSvc = inject(UtilsService);
 
   @Input() creditoId!: string;
   @Input() rutaId!: string;
@@ -19,6 +23,25 @@ export class ModalHistorialPagosComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadPagos();
+  }
+
+  async verUbicacion(pago: CajaMovimiento): Promise<void> {
+    if (!pago.ubication || pago.ubication.length < 2) {
+      this.utilsSvc.presentToast({
+        message: 'Este pago no tiene ubicación registrada',
+        color: 'warning',
+        duration: 2200,
+      });
+      return;
+    }
+
+    await this.utilsSvc.presentModal({
+      component: MapModalComponent,
+      cssClass: 'add-update-modal',
+      componentProps: {
+        lngLat: new LngLat(pago.ubication[0], pago.ubication[1]),
+      },
+    });
   }
 
   private loadPagos(): void {

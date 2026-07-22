@@ -43,9 +43,22 @@
         <h3>{{ pago.concepto || 'Abono' }}</h3>
         <p>{{ pago.createdAt | date:'dd/MM/yyyy - hh:mm a' }}</p>
       </ion-label>
-      <ion-note slot="end" class="pago-monto">
-        {{ pago.monto | currency:'USD':'symbol':'':'en' }}
-      </ion-note>
+      <div slot="end" class="pago-end">
+        @if (pago.ubication?.length === 2) {
+        <ion-button
+          fill="clear"
+          size="small"
+          color="primary"
+          (click)="verUbicacion(pago); $event.stopPropagation()"
+          aria-label="Ver ubicación del pago"
+        >
+          <ion-icon slot="icon-only" name="location-outline"></ion-icon>
+        </ion-button>
+        }
+        <ion-note class="pago-monto">
+          {{ pago.monto | currency:'USD':'symbol':'':'en' }}
+        </ion-note>
+      </div>
     </ion-item>
     }
   </ion-list>

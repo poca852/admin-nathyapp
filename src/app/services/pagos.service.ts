@@ -39,6 +39,25 @@ export class PagosService {
     return this.http.get<MovimientoCaja[]>(url, { headers, params });
   }
 
+  getPagosConUbicacionEmpresa(
+    empresaId: string,
+    fecha?: Date,
+  ): Observable<Array<{
+    _id: string;
+    monto: number;
+    ubication: number[];
+    createdAt?: string;
+    fecha?: string;
+    cliente?: { id?: string; nombre?: string; alias?: string };
+  }>> {
+    const url = `${this.baseUrl}/movimiento-caja/pagos-ubicacion`;
+    let params = new HttpParams().append('empresaId', empresaId);
+    if (fecha) {
+      params = params.append('fecha', fecha.toISOString());
+    }
+    return this.http.get<any[]>(url, { params });
+  }
+
   updatePago(movimientoId: string, body: { monto: number }): Observable<boolean> {
     const url: string = `${this.baseUrl}/movimiento-caja/update-pago/${movimientoId}`;
 

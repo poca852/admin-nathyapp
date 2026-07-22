@@ -30,10 +30,11 @@ export class AuthService {
 
   private setAuthentication(user: User, token: string): boolean {
     if (!this.esADmin(user.rol)) return false;
-    this._currentUser.set(user);
+    this._currentUser.set({ ...user, token });
     this._authStatus.set(AuthStatus.authenticated);
     this.utilsSvc.saveInLocalStorage('user', { ...user, token });
-    this.empresaSvc.setEmpresa(user.empresa)
+    this.empresaSvc.setEmpresa(user.empresa);
+    this.ws.connect(token);
 
     return true;
   }
@@ -82,6 +83,7 @@ export class AuthService {
 
   logout() {
     this.notificacionesSvc.notificarLogout();
+    this.ws.disconnect();
     this._authStatus.set(AuthStatus.noAuthenticated);
     this._currentUser.set(null);
     localStorage.removeItem('user');

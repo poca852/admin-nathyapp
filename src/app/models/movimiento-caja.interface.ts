@@ -21,4 +21,6 @@ export interface MovimientoCaja {
   };
   credito?: string;
   categoriaGasto?: CategoriaGasto;
+  /** [lng, lat] del cobrador al registrar el pago */
+  ubication?: number[];
 }
