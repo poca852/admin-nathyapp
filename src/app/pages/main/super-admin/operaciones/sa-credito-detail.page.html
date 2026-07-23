@@ -1,0 +1,65 @@
+<app-header
+  title="Crédito"
+  [backButton]="'/main/super-admin/operaciones'" />
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div *ngIf="!credito()" class="sa-empty">
+    <ion-icon name="card-outline"></ion-icon>
+    <p>No hay datos del crédito. Vuelve a la lista e intenta de nuevo.</p>
+  </div>
+
+  <ng-container *ngIf="credito() as c">
+    <section class="sa-hero">
+      <div class="sa-hero-icon">
+        <ion-icon name="card-outline"></ion-icon>
+      </div>
+      <div class="sa-hero-copy">
+        <h1>{{ titulo() }}</h1>
+        <p>Estado: {{ c.status ? 'Activo' : 'Pagado' }}</p>
+      </div>
+    </section>
+
+    <div class="sa-summary">
+      <div class="item">
+        <span>Saldo</span>
+        <strong>{{ c.saldo || c.valor_credito }}</strong>
+      </div>
+      <div class="item">
+        <span>Cuota</span>
+        <strong>{{ c.valor_cuota || '—' }}</strong>
+      </div>
+      <div class="item">
+        <span>Cuotas</span>
+        <strong>{{ c.total_cuotas || '—' }}</strong>
+      </div>
+      <div class="item">
+        <span>Interés</span>
+        <strong>{{ c.interes ?? '—' }}</strong>
+      </div>
+    </div>
+
+    <div class="sa-actions">
+      <button type="button" class="sa-action-card" (click)="editCredito()">
+        <div class="icon">
+          <ion-icon name="create-outline"></ion-icon>
+        </div>
+        <div class="copy">
+          <h2>Editar crédito</h2>
+          <p>Monto, cuotas, fechas e interés</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="chevron"></ion-icon>
+      </button>
+
+      <button type="button" class="sa-action-card" (click)="confirmDelete()">
+        <div class="icon danger">
+          <ion-icon name="trash-outline"></ion-icon>
+        </div>
+        <div class="copy">
+          <h2>Eliminar crédito</h2>
+          <p>Acción irreversible</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="chevron"></ion-icon>
+      </button>
+    </div>
+  </ng-container>
+</ion-content>

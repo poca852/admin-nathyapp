@@ -1,0 +1,46 @@
+<app-header
+  title="Pago"
+  [backButton]="'/main/super-admin/operaciones'" />
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div *ngIf="!pago()" class="sa-empty">
+    <ion-icon name="cash-outline"></ion-icon>
+    <p>No hay datos del pago. Vuelve a la lista e intenta de nuevo.</p>
+  </div>
+
+  <ng-container *ngIf="pago() as p">
+    <section class="sa-hero">
+      <div class="sa-hero-icon">
+        <ion-icon name="cash-outline"></ion-icon>
+      </div>
+      <div class="sa-hero-copy">
+        <h1>{{ p.monto | money }}</h1>
+        <p>{{ concepto() }}</p>
+      </div>
+    </section>
+
+    <div class="sa-actions">
+      <button type="button" class="sa-action-card" (click)="editPago()">
+        <div class="icon">
+          <ion-icon name="create-outline"></ion-icon>
+        </div>
+        <div class="copy">
+          <h2>Editar pago</h2>
+          <p>Monto, concepto y detalles</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="chevron"></ion-icon>
+      </button>
+
+      <button type="button" class="sa-action-card" (click)="confirmDelete()">
+        <div class="icon danger">
+          <ion-icon name="trash-outline"></ion-icon>
+        </div>
+        <div class="copy">
+          <h2>Eliminar pago</h2>
+          <p>Acción irreversible</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="chevron"></ion-icon>
+      </button>
+    </div>
+  </ng-container>
+</ion-content>

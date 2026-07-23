@@ -1,0 +1,48 @@
+<app-header title="Empresas" [showMenu]="true" />
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="sa-toolbar">
+    <ion-searchbar
+      class="sa-search"
+      debounce="250"
+      placeholder="Buscar empresa"
+      (ionInput)="onSearch($event)">
+    </ion-searchbar>
+    <ion-button fill="solid" aria-label="Nueva empresa" (click)="createEmpresa()">
+      <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+    </ion-button>
+  </div>
+
+  <div *ngIf="loading()" class="skeleton-block">
+    <ion-skeleton-text animated style="width: 100%; height: 64px; border-radius: 12px;"></ion-skeleton-text>
+  </div>
+
+  <div *ngIf="!loading() && loadError()" class="sa-empty">
+    <ion-icon name="cloud-offline-outline"></ion-icon>
+    <p>No se pudieron cargar las empresas</p>
+    <ion-button (click)="refresh()">Reintentar</ion-button>
+  </div>
+
+  <ion-list *ngIf="!loading() && !loadError()">
+    <ion-item
+      *ngFor="let empresa of filtered(); trackBy: trackById"
+      button
+      detail
+      (click)="openDetail(empresa)">
+      <ion-icon slot="start" name="business-outline" color="primary"></ion-icon>
+      <ion-label>
+        <h2>{{ empresa.name }}</h2>
+        <p>{{ empresa.country }} · {{ empresa.rutas?.length || 0 }} rutas · {{ empresa.employes?.length || 0 }} empleados</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <div *ngIf="!loading() && !loadError() && filtered().length === 0" class="sa-empty">
+    <ion-icon name="business-outline"></ion-icon>
+    <p>No hay empresas</p>
+  </div>
+</ion-content>

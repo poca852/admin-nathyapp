@@ -1,16 +1,11 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, inject } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { Ruta, User } from 'src/app/models';
+import { Roles } from 'src/app/models/roles.enum';
 import { UtilsService } from '../../../services/utils.service';
 import { EmpleadosService } from 'src/app/services/empleados.service';
 import { EmpresaService } from '../../../services/empresa.service';
-
-export enum Roles {
-  admin = 'ADMIN',
-  cobrador = 'COBRADOR',
-  supervisor = 'SUPERVISOR',
-}
 
 @Component({
   selector: 'app-add-update-employe',
@@ -18,8 +13,17 @@ export enum Roles {
   styleUrls: ['./add-update-employe.component.scss'],
 })
 export class AddUpdateEmployeComponent implements OnInit {
-  @Input()
-  employe: User;
+  @Input() employe: User;
+  /** Si true, permite asignar rol SUPERADMIN (solo Super Admin UI). */
+  @Input() allowSuperAdmin = false;
+  /** Empresa destino al crear (Super Admin multi-empresa). */
+  @Input() empresaId: string | null = null;
+  /** Lista de rutas a mostrar (si no, usa EmpresaService.rutas). */
+  @Input() rutasOverride: Ruta[] | null = null;
+
+  private readonly utilsSvc = inject(UtilsService);
+  private readonly employeSvc = inject(EmpleadosService);
+  private readonly empresaSvc = inject(EmpresaService);
 
   form = new FormGroup({
     nombre: new FormControl('', [Validators.required]),
@@ -32,13 +36,11 @@ export class AddUpdateEmployeComponent implements OnInit {
 
   public roles: Roles[] = [Roles.admin, Roles.cobrador, Roles.supervisor];
 
-  constructor(
-    private utilsSvc: UtilsService,
-    private employeSvc: EmpleadosService,
-    private empresaSvc: EmpresaService,
-  ) {}
-
   ngOnInit() {
+    if (this.allowSuperAdmin) {
+      this.roles = [Roles.superAdmin, Roles.admin, Roles.cobrador, Roles.supervisor];
+    }
+
     if (this.employe) {
       const rutasIds = this.extractRutaIds(this.employe.rutas);
       this.form.patchValue({
@@ -63,11 +65,13 @@ export class AddUpdateEmployeComponent implements OnInit {
   }
 
   get rutas(): Ruta[] {
-    return this.empresaSvc.rutas();
+    return this.rutasOverride ?? this.empresaSvc.rutas();
   }
 
   rolLabel(rol: Roles | string): string {
     switch (rol) {
+      case Roles.superAdmin:
+        return 'Super Admin';
       case Roles.admin:
         return 'Administrador';
       case Roles.cobrador:
@@ -95,8 +99,9 @@ export class AddUpdateEmployeComponent implements OnInit {
     await loading.present();
 
     const payload = this.buildPayload();
+    const id = this.employe._id || this.employe.id;
 
-    this.employeSvc.updateEmploye(this.employe._id, payload).subscribe({
+    this.employeSvc.updateEmploye(id, payload).subscribe({
       next: () => {
         loading.dismiss();
         this.utilsSvc.dismissModal({ success: true });
@@ -117,8 +122,9 @@ export class AddUpdateEmployeComponent implements OnInit {
     await loading.present();
 
     const payload = this.buildPayload();
+    const empresaId = this.empresaId || this.empresaSvc.empresa()?.id;
 
-    this.empresaSvc.addEmpleado(payload).subscribe({
+    this.empresaSvc.addEmpleado(payload, empresaId).subscribe({
       next: () => {
         loading.dismiss();
         this.utilsSvc.dismissModal({ success: true });

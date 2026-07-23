@@ -1,0 +1,51 @@
+<app-header title="Usuarios" [showMenu]="true" />
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="sa-toolbar">
+    <ion-select
+      class="sa-filter-select"
+      interface="alert"
+      placeholder="Todas las empresas"
+      [value]="selectedEmpresaId()"
+      (ionChange)="onEmpresaChange($event)"
+      [interfaceOptions]="{ header: 'Seleccionar empresa', cssClass: 'sa-select-alert' }">
+      <ion-select-option [value]="null">Todas</ion-select-option>
+      <ion-select-option *ngFor="let e of ctx.empresas()" [value]="e.id">
+        {{ e.name }}
+      </ion-select-option>
+    </ion-select>
+    <ion-button fill="solid" aria-label="Nuevo usuario" (click)="addUpdate()">
+      <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+    </ion-button>
+  </div>
+
+  <ion-searchbar
+    class="sa-search"
+    debounce="250"
+    placeholder="Buscar usuario"
+    (ionInput)="onSearch($event)">
+  </ion-searchbar>
+
+  <div *ngIf="loading()" class="skeleton-block">
+    <ion-skeleton-text animated style="width: 100%; height: 56px; border-radius: 12px;"></ion-skeleton-text>
+  </div>
+
+  <ion-list *ngIf="!loading()">
+    <ion-item *ngFor="let user of filtered()" button detail (click)="openDetail(user)">
+      <ion-icon
+        slot="start"
+        [name]="user.estado ? 'person-outline' : 'ban-outline'"
+        [color]="user.estado ? 'primary' : 'danger'">
+      </ion-icon>
+      <ion-label>
+        <h2>{{ user.nombre }}</h2>
+        <p>{{ user.username }} · {{ user.rol }} · {{ empresaName(user) }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <div *ngIf="!loading() && filtered().length === 0" class="sa-empty">
+    <ion-icon name="people-outline"></ion-icon>
+    <p>No hay usuarios</p>
+  </div>
+</ion-content>

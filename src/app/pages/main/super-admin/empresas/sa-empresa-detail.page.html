@@ -1,0 +1,169 @@
+<app-header
+  title="Empresa"
+  [backButton]="'/main/super-admin/empresas'" />
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-refresher slot="fixed" (ionRefresh)="load($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div *ngIf="loading()" class="skeleton-block">
+    <ion-skeleton-text animated style="width: 100%; height: 96px; border-radius: 16px;"></ion-skeleton-text>
+    <ion-skeleton-text animated style="width: 100%; height: 64px; border-radius: 16px; margin-top: 12px;"></ion-skeleton-text>
+  </div>
+
+  <div *ngIf="!loading() && loadError()" class="sa-empty">
+    <ion-icon name="cloud-offline-outline"></ion-icon>
+    <p>No se pudo cargar la empresa</p>
+    <ion-button (click)="load()">Reintentar</ion-button>
+  </div>
+
+  <ng-container *ngIf="!loading() && empresa() as emp">
+    <section class="sa-hero">
+      <div class="sa-hero-icon">
+        <ion-icon name="business-outline"></ion-icon>
+      </div>
+      <div class="sa-hero-copy">
+        <h1>{{ emp.name }}</h1>
+        <p>
+          {{ resumen().country || '—' }}
+          <ng-container *ngIf="resumen().email"> · {{ resumen().email }}</ng-container>
+        </p>
+        <ion-badge [color]="resumen().cobraMora ? 'warning' : 'medium'" mode="md">
+          Mora {{ resumen().cobraMora ? (resumen().porcentajeMora + '%') : 'OFF' }}
+        </ion-badge>
+      </div>
+    </section>
+
+    <!-- Dueño / owner -->
+    <section class="sa-section">
+      <div class="sa-section-head">
+        <h2>Dueño</h2>
+      </div>
+
+      <ion-list *ngIf="owner() as o" lines="none" class="sa-entity-list">
+        <ion-item button detail (click)="openOwner()">
+          <ion-icon
+            slot="start"
+            name="shield-checkmark-outline"
+            color="primary">
+          </ion-icon>
+          <ion-label>
+            <h3>{{ o.nombre || 'Sin nombre' }}</h3>
+            <p>
+              {{ o.username || '—' }}
+              <ng-container *ngIf="o.rol"> · {{ o.rol }}</ng-container>
+              · {{ o.estado ? 'Activo' : 'Bloqueado' }}
+            </p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+
+      <p *ngIf="!owner()" class="sa-section-empty">Esta empresa no tiene dueño asignado</p>
+    </section>
+
+    <div class="sa-summary">
+      <div class="item">
+        <span>Rutas</span>
+        <strong>{{ resumen().rutas }}</strong>
+      </div>
+      <div class="item">
+        <span>Empleados</span>
+        <strong>{{ resumen().empleados }}</strong>
+      </div>
+      <div class="item" *ngIf="resumen().phone">
+        <span>Teléfono</span>
+        <strong>{{ resumen().phone }}</strong>
+      </div>
+      <div class="item" *ngIf="resumen().dayOfPay !== null && resumen().dayOfPay !== undefined">
+        <span>Día pago</span>
+        <strong>{{ resumen().dayOfPay }}</strong>
+      </div>
+    </div>
+
+    <!-- Rutas de la empresa -->
+    <section class="sa-section">
+      <div class="sa-section-head">
+        <h2>Rutas</h2>
+        <ion-button fill="clear" size="small" (click)="createRuta()">
+          <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+        </ion-button>
+      </div>
+
+      <ion-list *ngIf="rutas().length > 0" lines="none" class="sa-entity-list">
+        <ion-item
+          *ngFor="let ruta of rutas(); trackBy: trackRuta"
+          button
+          detail
+          (click)="openRuta(ruta)">
+          <ion-icon
+            slot="start"
+            name="layers-outline"
+            [color]="ruta.status ? 'success' : 'medium'">
+          </ion-icon>
+          <ion-label>
+            <h3>{{ ruta.nombre }}</h3>
+            <p>
+              {{ ruta.ciudad || '—' }}, {{ ruta.pais || '—' }}
+              · {{ ruta.currency || '—' }}
+              · {{ ruta.status ? 'Abierta' : 'Cerrada' }}
+            </p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+
+      <p *ngIf="rutas().length === 0" class="sa-section-empty">Sin rutas en esta empresa</p>
+    </section>
+
+    <!-- Empleados -->
+    <section class="sa-section">
+      <div class="sa-section-head">
+        <h2>Empleados</h2>
+      </div>
+
+      <ion-list *ngIf="empleados().length > 0" lines="none" class="sa-entity-list">
+        <ion-item
+          *ngFor="let user of empleados(); trackBy: trackUser"
+          button
+          detail
+          (click)="openUsuario(user)">
+          <ion-icon
+            slot="start"
+            [name]="user.estado ? 'person-outline' : 'ban-outline'"
+            [color]="user.estado ? 'primary' : 'danger'">
+          </ion-icon>
+          <ion-label>
+            <h3>{{ user.nombre }}</h3>
+            <p>{{ user.username }} · {{ user.rol }}</p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+
+      <p *ngIf="empleados().length === 0" class="sa-section-empty">Sin empleados</p>
+    </section>
+
+    <div class="sa-actions">
+      <button type="button" class="sa-action-card" (click)="editEmpresa()">
+        <div class="icon">
+          <ion-icon name="create-outline"></ion-icon>
+        </div>
+        <div class="copy">
+          <h2>Editar empresa</h2>
+          <p>Nombre, contacto, país y mora</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="chevron"></ion-icon>
+      </button>
+
+      <button type="button" class="sa-action-card" (click)="confirmDelete()">
+        <div class="icon danger">
+          <ion-icon name="trash-outline"></ion-icon>
+        </div>
+        <div class="copy">
+          <h2>Eliminar empresa</h2>
+          <p>Cascada: rutas, clientes, créditos, pagos, cajas y empleados</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="chevron"></ion-icon>
+      </button>
+    </div>
+  </ng-container>
+</ion-content>

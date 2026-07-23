@@ -35,6 +35,11 @@ export class CreditosService {
     this._currentCredito.set(null);
   }
 
+  getCreditosByRuta(rutaId: string): Observable<Credito[]> {
+    const params = new HttpParams().set('rutaId', rutaId);
+    return this.http.get<Credito[]>(`${this.baseUrl}/credito/get-creditos-by-ruta`, { params });
+  }
+
   getRenovaciones(fecha: string, ruta?: string): Observable<EmpresaReport> {
     const url: string = `${this.baseUrl}/renovacion/diaria`;
 
@@ -69,6 +74,12 @@ export class CreditosService {
       .append('authorization', `Bearer ${this.user.token}`);
 
     return this.http.delete<boolean>(url, { headers });
+  }
+
+  deleteCreditoAsSuperAdmin(creditoId: string) {
+    return this.http.delete<boolean>(
+      `${this.baseUrl}/movimiento-caja/delete-credito-sa/${creditoId}`,
+    );
   }
 
   getHistorialCreditos(clienteId: string) {

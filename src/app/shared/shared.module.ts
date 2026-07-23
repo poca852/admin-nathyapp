@@ -28,8 +28,10 @@ import { AddUpdateMovimientoComponent } from './components/add-update-movimiento
 import { NotificacionesModalComponent } from './components/notificaciones-modal/notificaciones-modal.component';
 import { UpdateNotesModalComponent } from './components/update-notes-modal/update-notes-modal.component';
 import { AplicarPerdonarMoraComponent } from './components/aplicar-perdonar-mora/aplicar-perdonar-mora.component';
+import { UpdateCajaComponent } from './components/update-caja/update-caja.component';
 import { InteresPercentPipe } from './pipes/interes-percent.pipe';
 import { MoneyPipe } from './pipes/money.pipe';
+import { HasRoleDirective } from './directives/has-role.directive';
 
 mapboxgl.accessToken = environment.mapbox_token;
 
@@ -60,6 +62,7 @@ mapboxgl.accessToken = environment.mapbox_token;
     NotificacionesModalComponent,
     UpdateNotesModalComponent,
     AplicarPerdonarMoraComponent,
+    UpdateCajaComponent,
   ],
   exports: [
     ReactiveFormsModule,
@@ -86,8 +89,10 @@ mapboxgl.accessToken = environment.mapbox_token;
     AddUpdateMovimientoComponent,
     NotificacionesModalComponent,
     AplicarPerdonarMoraComponent,
+    UpdateCajaComponent,
     InteresPercentPipe,
     MoneyPipe,
+    HasRoleDirective,
   ],
   imports: [
     CommonModule,
@@ -95,6 +100,7 @@ mapboxgl.accessToken = environment.mapbox_token;
     ReactiveFormsModule,
     InteresPercentPipe,
     MoneyPipe,
+    HasRoleDirective,
   ]
 })
 export class SharedModule { }

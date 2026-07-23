@@ -1,8 +1,9 @@
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, computed, inject, signal, effect } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { PeticionUbicacion, AuthStatus } from '../models';
-import { Observable, interval, switchMap, tap, Subscription } from 'rxjs';
+import { Roles } from '../models/roles.enum';
+import { Observable, interval, of, switchMap, tap, Subscription } from 'rxjs';
 import { UtilsService } from './utils.service';
 import { AuthService } from './auth.service';
 
@@ -35,17 +36,38 @@ export class PeticionesService {
     }, { allowSignalWrites: true });
   }
 
-  private getEmpresaId(): string {
+  /** Empresa del usuario tenant. SUPERADMIN no tiene (ni debe tener) empresa. */
+  private getEmpresaId(): string | null {
     const user = this.authService.currentUser();
-    return user?.empresa || '';
+    if (!user || user.rol === Roles.superAdmin) return null;
+
+    const empresa = user.empresa as unknown;
+    if (!empresa) return null;
+    if (typeof empresa === 'string') return empresa || null;
+    if (typeof empresa === 'object') {
+      const id = (empresa as { id?: string; _id?: string }).id
+        || (empresa as { _id?: string })._id;
+      return id || null;
+    }
+    return null;
   }
 
   getPeticionesPendientes(): Observable<PeticionUbicacion[]> {
     const url = `${this.baseUrl}/peticiones-ubicacion`;
+    const user = this.authService.currentUser();
+    const empresaId = this.getEmpresaId();
 
-    const params = new HttpParams()
-      .set('estado', 'pendiente')
-      .set('id_empresa', this.getEmpresaId());
+    // ADMIN/SUPERVISOR sin empresa: no consultar (evita 400 por id_empresa vacío)
+    if (user?.rol !== Roles.superAdmin && !empresaId) {
+      this._peticionesPendientes.set([]);
+      return of([]);
+    }
+
+    let params = new HttpParams().set('estado', 'pendiente');
+    // SUPERADMIN: sin id_empresa → ve pendientes de todas las empresas
+    if (empresaId) {
+      params = params.set('id_empresa', empresaId);
+    }
 
     return this.http.get<PeticionUbicacion[]>(url, { params }).pipe(
       tap(peticiones => {
@@ -60,7 +82,6 @@ export class PeticionesService {
 
     return this.http.patch<boolean>(url, body).pipe(
       tap(() => {
-        // Remover la petición aprobada de la lista local
         this._peticionesPendientes.update(peticiones =>
           peticiones.filter(p => p.id !== id)
         );
@@ -74,7 +95,6 @@ export class PeticionesService {
 
     return this.http.patch<boolean>(url, body).pipe(
       tap(() => {
-        // Remover la petición rechazada de la lista local
         this._peticionesPendientes.update(peticiones =>
           peticiones.filter(p => p.id !== id)
         );
@@ -83,16 +103,13 @@ export class PeticionesService {
   }
 
   startPolling(): void {
-    // Detener polling existente
     this.stopPolling();
 
-    // Cargar inmediatamente
-    this.getPeticionesPendientes().subscribe();
+    this.getPeticionesPendientes().subscribe({ error: () => { /* silenciar 400 en UI */ } });
 
-    // Configurar intervalo
     this.pollingSubscription = interval(this.pollingInterval).pipe(
       switchMap(() => this.getPeticionesPendientes())
-    ).subscribe();
+    ).subscribe({ error: () => { /* silenciar */ } });
   }
 
   stopPolling(): void {
@@ -102,8 +119,7 @@ export class PeticionesService {
     }
   }
 
-  // Método para forzar una actualización manual
   refreshPeticiones(): void {
-    this.getPeticionesPendientes().subscribe();
+    this.getPeticionesPendientes().subscribe({ error: () => { /* silenciar */ } });
   }
 }

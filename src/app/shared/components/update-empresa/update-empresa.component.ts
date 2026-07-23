@@ -14,6 +14,8 @@ import { forkJoin } from 'rxjs';
 export class UpdateEmpresaComponent implements OnInit {
 
   @Input() empresa: Empresa;
+  /** Si true y no hay empresa, crea una nueva. */
+  @Input() createMode = false;
 
   readonly paises = PAISES_SOPORTADOS;
 
@@ -122,6 +124,40 @@ export class UpdateEmpresaComponent implements OnInit {
     };
 
     this.saving = true;
+
+    if (this.createMode || !this.empresa?.id) {
+      this.empresaSvc
+        .createEmpresa({
+          name: name!,
+          country: country!,
+          email: email || undefined,
+          phone: phone?.trim() || undefined,
+          dayOfPay: empresaPayload.dayOfPay,
+          ...moraConfig,
+        } as any)
+        .subscribe({
+          next: () => {
+            this.saving = false;
+            this.utilsSvc.presentToast({
+              message: 'Empresa creada correctamente',
+              duration: 2500,
+              color: 'success',
+              icon: 'checkmark-circle-outline',
+            });
+            this.utilsSvc.dismissModal({ success: true });
+          },
+          error: (err) => {
+            this.saving = false;
+            this.utilsSvc.presentToast({
+              message: err.error?.message || 'No se pudo crear la empresa',
+              duration: 3500,
+              color: 'danger',
+              icon: 'alert-circle-outline',
+            });
+          },
+        });
+      return;
+    }
 
     forkJoin({
       empresa: this.empresaSvc.editEmpresa(this.empresa.id, empresaPayload),

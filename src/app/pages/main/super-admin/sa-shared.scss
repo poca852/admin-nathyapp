@@ -1,0 +1,214 @@
+/* Shared Super-Admin list/detail styles */
+
+.sa-search {
+  padding: 0;
+  margin-bottom: 10px;
+  --background: var(--ion-color-step-50, var(--ion-item-background, #fff));
+  --color: var(--ion-text-color);
+  --icon-color: var(--ion-color-medium);
+  --placeholder-color: var(--ion-color-medium-shade, var(--ion-color-medium));
+  --clear-button-color: var(--ion-color-medium);
+  --border-radius: 14px;
+  --box-shadow: none;
+  border: 1px solid rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.12);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+@media (prefers-color-scheme: dark) {
+  .sa-search {
+    --background: var(--ion-color-step-150, rgba(255, 255, 255, 0.1));
+    --color: var(--ion-text-color, #f4f5f8);
+    --icon-color: #c5c9d0;
+    --placeholder-color: #a8adb6;
+    --clear-button-color: #c5c9d0;
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+}
+
+html.dark .sa-search,
+html.ion-palette-dark .sa-search,
+body.dark .sa-search {
+  --background: var(--ion-color-step-150, rgba(255, 255, 255, 0.1));
+  --color: var(--ion-text-color, #f4f5f8);
+  --icon-color: #c5c9d0;
+  --placeholder-color: #a8adb6;
+  --clear-button-color: #c5c9d0;
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.sa-toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.sa-toolbar ion-searchbar {
+  flex: 1;
+  min-width: 0;
+}
+
+.sa-toolbar ion-select {
+  flex: 1;
+  min-width: 0;
+}
+
+.sa-empty {
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--ion-color-medium);
+
+  ion-icon {
+    font-size: 48px;
+    margin-bottom: 8px;
+  }
+}
+
+.sa-hero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(var(--ion-color-primary-rgb), 0.08);
+  border: 1px solid rgba(var(--ion-color-primary-rgb), 0.14);
+}
+
+.sa-hero-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: rgba(var(--ion-color-primary-rgb), 0.16);
+
+  ion-icon {
+    font-size: 1.55rem;
+    color: var(--ion-color-primary);
+  }
+}
+
+.sa-hero-copy {
+  min-width: 0;
+  flex: 1;
+
+  h1 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--ion-text-color);
+  }
+
+  p {
+    margin: 6px 0 0;
+    font-size: 0.84rem;
+    color: var(--ion-color-medium);
+  }
+}
+
+.sa-summary {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 18px;
+
+  .item {
+    background: var(--ion-card-background, var(--ion-item-background, #fff));
+    border: 1px solid rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.08);
+    border-radius: 14px;
+    padding: 12px 10px;
+    text-align: center;
+
+    span {
+      display: block;
+      font-size: 0.72rem;
+      color: var(--ion-color-medium);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    strong {
+      font-size: 1rem;
+      color: var(--ion-text-color);
+      word-break: break-word;
+    }
+  }
+}
+
+.sa-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 24px;
+}
+
+.sa-action-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 12px;
+  border: 1px solid rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.1);
+  border-radius: 14px;
+  background: var(--ion-card-background, var(--ion-item-background, #fff));
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: rgba(var(--ion-color-primary-rgb), 0.12);
+
+    ion-icon {
+      font-size: 1.25rem;
+      color: var(--ion-color-primary);
+    }
+
+    &.danger {
+      background: rgba(var(--ion-color-danger-rgb), 0.12);
+      ion-icon { color: var(--ion-color-danger); }
+    }
+
+    &.warning {
+      background: rgba(var(--ion-color-warning-rgb), 0.16);
+      ion-icon { color: var(--ion-color-warning-shade); }
+    }
+  }
+
+  .copy {
+    flex: 1;
+    min-width: 0;
+
+    h2 {
+      margin: 0;
+      font-size: 0.98rem;
+      font-weight: 600;
+    }
+
+    p {
+      margin: 4px 0 0;
+      font-size: 0.8rem;
+      color: var(--ion-color-medium);
+    }
+  }
+
+  .chevron {
+    color: var(--ion-color-medium);
+    font-size: 1.1rem;
+  }
+}

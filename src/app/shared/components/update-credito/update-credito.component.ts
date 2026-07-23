@@ -15,6 +15,8 @@ import { UtilsService } from '../../../services/utils.service';
 })
 export class UpdateCreditoComponent implements OnInit, OnDestroy {
   @Input() credito!: RenovacionDetalle;
+  /** Super Admin: permite editar créditos de cualquier día. */
+  @Input() allowAnyDate = false;
 
   private readonly utilsSvc = inject(UtilsService);
   private readonly creditoSvc = inject(CreditosService);
@@ -39,6 +41,27 @@ export class UpdateCreditoComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.setupFormValueChanges();
+    if (this.credito) {
+      // RenovacionDetalle no trae campos de crédito; el form se llena al editar renovaciones
+      // desde valores por defecto. Si vienen campos extendidos, los aplicamos.
+      const extended = this.credito as RenovacionDetalle & {
+        valor_credito?: number;
+        interes?: number;
+        total_cuotas?: number;
+        valor_cuota?: number;
+        frecuencia_cobro?: string;
+      };
+      if (extended.valor_credito != null) {
+        this.form.patchValue({
+          valor_credito: extended.valor_credito,
+          interes: extended.interes ?? null,
+          total_cuotas: extended.total_cuotas ?? null,
+          valor_cuota: extended.valor_cuota ?? null,
+          frecuencia_cobro: (extended.frecuencia_cobro as any) || FrecuenciaCobro.DIARIO,
+          esAutomatico: extended.interes != null,
+        });
+      }
+    }
   }
 
   ngOnDestroy(): void {
@@ -86,7 +109,7 @@ export class UpdateCreditoComponent implements OnInit, OnDestroy {
   async editarCredito(): Promise<void> {
     if (this.form.invalid || this.submitting || !this.credito?.creditoId) return;
 
-    if (!this.esDelDiaActual()) {
+    if (!this.allowAnyDate && !this.esDelDiaActual()) {
       await this.utilsSvc.presentAlert({
         header: 'No permitido',
         message:

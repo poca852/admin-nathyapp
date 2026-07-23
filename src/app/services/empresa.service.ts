@@ -92,6 +92,7 @@ export class EmpresaService {
    * Fetches company data and updates internal state (rutas and employees).
    */
   setEmpresa(id: string) {
+    if (!id) return;
     this.getEmpresa(id).subscribe({
       next: (empresa) => this.applyEmpresa(empresa),
       error: (err) => console.error('Error al obtener la empresa:', err)
@@ -110,8 +111,8 @@ export class EmpresaService {
     return this.http.get<User[]>(`${this.baseUrl}/empresa/get-empleados`, { params });
   }
 
-  addEmpleado(empleado: any): Observable<boolean> {
-    const body = { ...empleado, empresa: this.empresa()?.id };
+  addEmpleado(empleado: any, empresaId?: string): Observable<boolean> {
+    const body = { ...empleado, empresa: empresaId || this.empresa()?.id };
     return this.http.post<boolean>(`${this.baseUrl}/empresa/add-empleado`, body);
   }
 
@@ -141,5 +142,43 @@ export class EmpresaService {
     if (email) params = params.append('to', email);
 
     return this.http.get<boolean>(`${this.baseUrl}/reports/send-backup`, { params });
+  }
+
+  getAllEmpresas(): Observable<Empresa[]> {
+    return this.http.get<Empresa[]>(`${this.baseUrl}/empresa/all`);
+  }
+
+  createEmpresa(payload: Partial<Empresa> & { name: string; country: string }): Observable<Empresa> {
+    return this.http.post<Empresa>(`${this.baseUrl}/empresa`, payload);
+  }
+
+  deleteEmpresa(id: string): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.baseUrl}/empresa/${id}`);
+  }
+
+  moveEmpleado(body: {
+    empleadoId: string;
+    fromEmpresaId: string;
+    toEmpresaId: string;
+    rutaId?: string;
+  }): Observable<{ message: string }> {
+    return this.http.patch<{ message: string }>(`${this.baseUrl}/empresa/move-empleado`, body);
+  }
+
+  moveRuta(body: {
+    rutaId: string;
+    fromEmpresaId: string;
+    toEmpresaId: string;
+  }): Observable<{ message: string }> {
+    return this.http.patch<{ message: string }>(`${this.baseUrl}/empresa/move-ruta`, body);
+  }
+
+  assignRuta(body: { rutaId: string; empresaId: string }): Observable<{ message: string }> {
+    return this.http.patch<{ message: string }>(`${this.baseUrl}/empresa/assign-ruta`, body);
+  }
+
+  getEmpleadosByEmpresa(empresaId: string): Observable<User[]> {
+    const params = new HttpParams().append('empresa', empresaId);
+    return this.http.get<User[]>(`${this.baseUrl}/empresa/get-empleados`, { params });
   }
 }

@@ -1,0 +1,100 @@
+<app-header title="Transferencias" [showMenu]="true" />
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-segment [value]="segment()" (ionChange)="setSegment($any($event.detail.value))">
+    <ion-segment-button value="empleado">
+      <ion-label>Mover empleado</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="ruta">
+      <ion-label>Mover ruta</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
+  <form *ngIf="segment() === 'empleado'" [formGroup]="empleadoForm" class="form-block" (ngSubmit)="submitEmpleado()">
+    <ion-item>
+      <ion-select
+        label="Empresa origen"
+        label-placement="stacked"
+        formControlName="fromEmpresaId"
+        (ionChange)="onFromEmpresaEmpleado($event)"
+        interface="alert"
+        [interfaceOptions]="{ header: 'Empresa origen', cssClass: 'sa-select-alert' }">
+        <ion-select-option *ngFor="let e of ctx.empresas()" [value]="empresaId(e)">{{ e.name }}</ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <ion-select
+        label="Empleado"
+        label-placement="stacked"
+        formControlName="empleadoId"
+        interface="alert"
+        [interfaceOptions]="{ header: 'Empleado', cssClass: 'sa-select-alert' }">
+        <ion-select-option *ngFor="let u of fromEmpleados()" [value]="userId(u)">
+          {{ u.nombre }} ({{ u.rol }})
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <ion-select
+        label="Empresa destino"
+        label-placement="stacked"
+        formControlName="toEmpresaId"
+        (ionChange)="onToEmpresaEmpleado($event)"
+        interface="alert"
+        [interfaceOptions]="{ header: 'Empresa destino', cssClass: 'sa-select-alert' }">
+        <ion-select-option *ngFor="let e of ctx.empresas()" [value]="empresaId(e)">{{ e.name }}</ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <ion-select
+        label="Ruta destino (opcional)"
+        label-placement="stacked"
+        formControlName="rutaId"
+        interface="alert"
+        [interfaceOptions]="{ header: 'Ruta destino', cssClass: 'sa-select-alert' }">
+        <ion-select-option [value]="null">Sin ruta</ion-select-option>
+        <ion-select-option *ngFor="let r of toRutas()" [value]="rutaId(r)">{{ r.nombre }}</ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-button expand="block" type="submit" [disabled]="empleadoForm.invalid || saving()">
+      Mover empleado
+    </ion-button>
+  </form>
+
+  <form *ngIf="segment() === 'ruta'" [formGroup]="rutaForm" class="form-block" (ngSubmit)="submitRuta()">
+    <ion-item>
+      <ion-select
+        label="Empresa origen"
+        label-placement="stacked"
+        formControlName="fromEmpresaId"
+        (ionChange)="onFromEmpresaRuta($event)"
+        interface="alert"
+        [interfaceOptions]="{ header: 'Empresa origen', cssClass: 'sa-select-alert' }">
+        <ion-select-option *ngFor="let e of ctx.empresas()" [value]="empresaId(e)">{{ e.name }}</ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <ion-select
+        label="Ruta"
+        label-placement="stacked"
+        formControlName="rutaId"
+        interface="alert"
+        [interfaceOptions]="{ header: 'Ruta', cssClass: 'sa-select-alert' }">
+        <ion-select-option *ngFor="let r of fromRutas()" [value]="rutaId(r)">{{ r.nombre }}</ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <ion-select
+        label="Empresa destino"
+        label-placement="stacked"
+        formControlName="toEmpresaId"
+        interface="alert"
+        [interfaceOptions]="{ header: 'Empresa destino', cssClass: 'sa-select-alert' }">
+        <ion-select-option *ngFor="let e of ctx.empresas()" [value]="empresaId(e)">{{ e.name }}</ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-button expand="block" type="submit" [disabled]="rutaForm.invalid || saving()">
+      Mover ruta
+    </ion-button>
+  </form>
+</ion-content>

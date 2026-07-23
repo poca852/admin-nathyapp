@@ -1,0 +1,21 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Editar caja</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="utilsSvc.dismissModal()">Cerrar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <custom-input [control]="form.controls.base" type="number" label="Base" icon="wallet-outline" />
+    <custom-input [control]="form.controls.inversion" type="number" label="Inversión" icon="trending-up-outline" />
+    <custom-input [control]="form.controls.retiro" type="number" label="Retiro" icon="arrow-down-outline" />
+    <custom-input [control]="form.controls.gasto" type="number" label="Gasto" icon="cart-outline" />
+
+    <ion-button expand="block" type="submit" [disabled]="form.invalid || saving" class="ion-margin-top">
+      Guardar
+    </ion-button>
+  </form>
+</ion-content>

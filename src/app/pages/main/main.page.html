@@ -1,51 +1,38 @@
 <ion-menu contentId="menu-content" menuId="menu-content" side="start">
 
-  <app-header title="Menú" />
+  <app-header [title]="menuTitle()" />
 
   <ion-content class="ion-text-center">
 
-    <!-- <ion-avatar>
-      <img *ngIf="user().image" [src]="user()?.image" />
-  
-      <ion-icon *ngIf="!user().image" class="empty-icon" name="person-circle-outline"></ion-icon>
-    </ion-avatar> -->
-    
-    <ion-button 
-      expand="block" 
+    <ion-button
+      expand="block"
       fill="clear"
       size="large"
       class="menu-user-btn"
       (click)="updateUser()">
-      {{user().username | titlecase}}
+      {{ user().username | titlecase }}
       <ion-icon slot="end" name="pencil"></ion-icon>
     </ion-button>
-  
-    <!-- <ion-item [ngClass]="{'active': currentPath === page.url}" [routerLink]="page.url" routerDirection="root" detail>
-      <ion-icon slot="start" [name]="page.icon"></ion-icon>
-      <ion-label>{{page.title}}</ion-label>
-    </ion-item> -->
-    <ion-menu-toggle auto-hide="false" *ngFor="let page of pages">
 
-
-      <ng-container *ngIf="isAdminOrSuperAdmin() || !page.adminOnly">
-        <ion-item [ngClass]="{'active': currentPath === page.url}" [routerLink]="page.url" routerDirection="root" detail>
-          <ion-icon slot="start" [name]="page.icon"></ion-icon>
-          <ion-label>{{page.title}}</ion-label>
-        </ion-item>
-      </ng-container>
-
+    <ion-menu-toggle auto-hide="false" *ngFor="let page of menuPages()">
+      <ion-item
+        [ngClass]="{'active': isActive(page.url)}"
+        [routerLink]="page.url"
+        routerDirection="root"
+        detail>
+        <ion-icon slot="start" [name]="page.icon"></ion-icon>
+        <ion-label>{{ page.title }}</ion-label>
+      </ion-item>
     </ion-menu-toggle>
 
   </ion-content>
 
   <ion-footer class="ion-no-border safe-p-bottom">
     <ion-menu-toggle auto-hide="false">
-
       <ion-item lines="none" (click)="signOut()">
         <ion-icon slot="start" name="log-out-outline"></ion-icon>
         <ion-label>Cerrar Sesión</ion-label>
       </ion-item>
-
     </ion-menu-toggle>
   </ion-footer>
 </ion-menu>

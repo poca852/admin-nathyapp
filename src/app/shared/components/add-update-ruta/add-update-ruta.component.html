@@ -5,7 +5,11 @@
     <custom-input [control]="form.controls.nombre" type="text" label="Nombre" autocomplete="off" />
 
     <ion-item class="custom-input" lines="none">
-      <ion-select label="País" interface="popover" formControlName="pais">
+      <ion-select
+        label="País"
+        interface="alert"
+        formControlName="pais"
+        [interfaceOptions]="{ header: 'País', cssClass: 'sa-select-alert' }">
         <ion-select-option *ngFor="let country of countries" [value]="country">
           {{ country }}
         </ion-select-option>
@@ -20,19 +24,31 @@
       </ion-toggle>
     </ion-item>
 
-    <ion-item class="custom-input derived-field" lines="none">
-      <ion-label>
-        <p>Zona horaria</p>
-        <h3>{{ form.controls.timeZone.value || '—' }}</h3>
-      </ion-label>
+    <ion-item class="custom-input" lines="none">
+      <ion-select
+        label="Zona horaria"
+        interface="alert"
+        formControlName="timeZone"
+        [interfaceOptions]="{ header: 'Zona horaria', cssClass: 'sa-select-alert' }">
+        <ion-select-option *ngFor="let tz of timeZones" [value]="tz">
+          {{ tz }}
+        </ion-select-option>
+      </ion-select>
     </ion-item>
 
-    <ion-item class="custom-input derived-field" lines="none">
-      <ion-label>
-        <p>Moneda</p>
-        <h3>{{ form.controls.currency.value || '—' }}</h3>
-      </ion-label>
+    <ion-item class="custom-input" lines="none">
+      <ion-select
+        label="Moneda"
+        interface="alert"
+        formControlName="currency"
+        [interfaceOptions]="{ header: 'Moneda', cssClass: 'sa-select-alert' }">
+        <ion-select-option *ngFor="let cur of currencies" [value]="cur">
+          {{ cur }}
+        </ion-select-option>
+      </ion-select>
     </ion-item>
+
+    <p class="hint">Al cambiar el país se sugieren zona y moneda; puedes ajustarlas después.</p>
 
     <ion-button mode="md" type="submit" expand="block" [disabled]="form.invalid">
       {{ ruta ? 'Actualizar ruta' : 'Agregar ruta' }}

@@ -1,11 +1,21 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit, inject, computed } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { UtilsService } from '../../services/utils.service';
 import { AuthService } from '../../services/auth.service';
 import { User } from 'src/app/models';
-import { RutaService } from '../../services/ruta.service';
+import { Roles } from 'src/app/models/roles.enum';
 import { EmpresaService } from '../../services/empresa.service';
+import { RoleService } from '../../services/role.service';
 import { UpdateUserComponent } from 'src/app/shared/components/update-user/update-user.component';
+
+type MenuPage = {
+  title: string;
+  url: string;
+  icon: string;
+  /** Solo ADMIN (no SUPERVISOR). */
+  adminOnly?: boolean;
+};
 
 @Component({
   selector: 'app-main',
@@ -17,12 +27,16 @@ export class MainPage implements OnInit {
   utilsSvc = inject(UtilsService);
   authSvc = inject(AuthService);
   empresaSvc = inject(EmpresaService);
-  private rutaSvc = inject(RutaService);
+  roleSvc = inject(RoleService);
   router = inject(Router);
   currentPath: string = '';
 
+  readonly Roles = Roles;
+  readonly isSuperAdmin = computed(() => this.roleSvc.isSuperAdmin());
+  readonly isAdmin = computed(() => this.roleSvc.rol() === Roles.admin);
 
-  pages = [
+  /** Menú de ADMIN / SUPERVISOR (operación de una empresa). */
+  private readonly adminPages: MenuPage[] = [
     { title: 'Inicio', url: '/main/home', icon: 'home-outline' },
     { title: 'Rutas', url: '/main/rutas', icon: 'layers-outline' },
     { title: 'Seguimiento', url: '/main/seguimiento', icon: 'navigate-outline' },
@@ -34,51 +48,71 @@ export class MainPage implements OnInit {
     { title: 'Renovaciones', url: '/main/renovaciones', icon: 'refresh-outline' },
     { title: 'Oficina', url: '/main/oficina', icon: 'briefcase-outline' },
     { title: 'Reportes', url: '/main/reportes', icon: 'bar-chart-outline', adminOnly: true },
-  ]
+  ];
+
+  /** Menú exclusivo de SUPERADMIN (operación global / multi-empresa). */
+  private readonly superAdminPages: MenuPage[] = [
+    { title: 'Empresas', url: '/main/super-admin/empresas', icon: 'business-outline' },
+    { title: 'Usuarios', url: '/main/super-admin/usuarios', icon: 'people-outline' },
+    { title: 'Rutas', url: '/main/super-admin/rutas', icon: 'layers-outline' },
+    { title: 'Transferencias', url: '/main/super-admin/transferencias', icon: 'swap-horizontal-outline' },
+    { title: 'Operaciones', url: '/main/super-admin/operaciones', icon: 'construct-outline' },
+  ];
+
+  readonly menuPages = computed(() => {
+    if (this.isSuperAdmin()) return this.superAdminPages;
+    return this.adminPages.filter((p) => !p.adminOnly || this.isAdmin());
+  });
+
+  readonly menuTitle = computed(() =>
+    this.isSuperAdmin() ? 'Super Admin' : 'Menú',
+  );
 
   ngOnInit() {
-    this.router.events.subscribe((event: any) => {
+    this.router.events
+      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+      .subscribe((event) => {
+        this.currentPath = event.urlAfterRedirects || event.url;
+        this.ensureSuperAdminHome();
+      });
 
-      if(event?.url) this.currentPath = event.url;
-
-    })
+    this.ensureSuperAdminHome();
   }
 
-  ionViewWillEnter() {
-    
+  /** Si un SUPERADMIN aterriza fuera de su panel, lo manda a Empresas. */
+  private ensureSuperAdminHome(): void {
+    if (!this.isSuperAdmin()) return;
+
+    const url = this.router.url || '';
+    if (!url.startsWith('/main/super-admin')) {
+      this.router.navigateByUrl('/main/super-admin/empresas');
+    }
   }
 
   ionViewDidLeave() {
-   this.empresaSvc.removeRuta()
-   this.empresaSvc.removeRutas()
+    this.empresaSvc.removeRuta();
+    this.empresaSvc.removeRutas();
   }
 
   user(): User {
     return this.utilsSvc.getFromLocalStorage('user');
   }
 
-  signOut() {
-    this.authSvc.logout();
-    this.utilsSvc.routerLink('/auth')
+  isActive(url: string): boolean {
+    return this.currentPath === url || this.currentPath.startsWith(url + '/');
   }
 
-  isAdminOrSuperAdmin(): boolean {
-    const user = this.user();
-    return user && (user.rol === 'ADMIN' || user.rol === 'SUPERADMIN');
+  signOut() {
+    this.authSvc.logout();
+    this.utilsSvc.routerLink('/auth');
   }
 
   public updateUser = async () => {
-
-    let success = await this.utilsSvc.presentModal({
+    await this.utilsSvc.presentModal({
       component: UpdateUserComponent,
       cssClass: 'add-update-modal',
-      componentProps: { user: this.user()}
-    })
-
-    if (success) {
-      // El modal ya muestra toast de éxito; el menú se refresca vía localStorage.
-    }
-
-  }
+      componentProps: { user: this.user() },
+    });
+  };
 
 }

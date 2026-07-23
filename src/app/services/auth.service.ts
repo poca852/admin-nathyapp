@@ -33,7 +33,16 @@ export class AuthService {
     this._currentUser.set({ ...user, token });
     this._authStatus.set(AuthStatus.authenticated);
     this.utilsSvc.saveInLocalStorage('user', { ...user, token });
-    this.empresaSvc.setEmpresa(user.empresa);
+
+    const empresaId =
+      typeof user.empresa === 'string'
+        ? user.empresa
+        : (user.empresa as any)?.id || (user.empresa as any)?._id;
+
+    if (empresaId) {
+      this.empresaSvc.setEmpresa(empresaId);
+    }
+
     this.ws.connect(token);
 
     return true;

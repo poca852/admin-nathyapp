@@ -7,13 +7,14 @@
       <ion-icon name="business-outline"></ion-icon>
     </div>
     <div class="form-hero-text">
-      <h2>{{ empresa?.name | titlecase }}</h2>
-      <p>
+      <h2>{{ createMode ? 'Nueva empresa' : (empresa?.name | titlecase) }}</h2>
+      <p *ngIf="!createMode">
         {{ empresa?.country | titlecase }}
         @if (empresa?.email) {
           · {{ empresa.email }}
         }
       </p>
+      <p *ngIf="createMode">Completa los datos para registrar la empresa</p>
     </div>
   </div>
 

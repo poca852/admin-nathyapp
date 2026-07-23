@@ -41,4 +41,13 @@ export class CajaService {
       params,
     });
   }
+
+  updateCaja(
+    cajaId: string,
+    body: { base?: number; inversion?: number; retiro?: number; gasto?: number },
+  ): Observable<Caja> {
+    return this.http.patch<Caja>(`${this.baseUrl}/caja/${cajaId}`, body, {
+      headers: this.authHeaders(),
+    });
+  }
 }

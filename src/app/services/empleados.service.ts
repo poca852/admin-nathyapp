@@ -39,16 +39,15 @@ export class EmpleadosService {
     this._currentEmploye.set(null);
   }
 
-  getEmployes(): Observable<User[]> {
+  getEmployes(empresaId?: string): Observable<User[]> {
     const url: string = `${this.baseUrl}/auth/users`;
 
-    const headers = new HttpHeaders()
-      .append('authorization', `Bearer ${this.user.token}`)
+    let params = new HttpParams();
+    if (empresaId) {
+      params = params.set('empresaId', empresaId);
+    }
 
-    const params = new HttpParams()
-      .set('have_empresa', true);
-
-    return this.http.get<User[]>(url, { headers, params })
+    return this.http.get<User[]>(url, { params });
   }
 
   updateEmploye(idUser: string, empleado: any): Observable<boolean> {
@@ -59,6 +58,11 @@ export class EmpleadosService {
       .pipe(
         map((user) => true)
       )
+  }
+
+  deleteUser(idUser: string): Observable<{ ok?: boolean; id?: string }> {
+    const id = String(idUser || '').trim();
+    return this.http.delete<{ ok?: boolean; id?: string }>(`${this.baseUrl}/auth/${id}`);
   }
 
 }

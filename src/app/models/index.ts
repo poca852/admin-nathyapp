@@ -1,6 +1,7 @@
 export * from "./auth-status.enum";
 export * from "./login-response.interface";
 export * from "./rol.interface";
+export * from "./roles.enum";
 export * from "./user.interface";
 export * from "./empresa.interface";
 export * from './caja.interface';

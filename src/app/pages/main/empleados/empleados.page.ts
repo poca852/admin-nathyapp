@@ -6,6 +6,7 @@ import { UtilsService } from '../../../services/utils.service';
 import { User } from 'src/app/models';
 import { AddUpdateEmployeComponent } from '../../../shared/components/add-update-employe/add-update-employe.component';
 import { EmpresaService } from '../../../services/empresa.service';
+import { RoleService } from 'src/app/services/role.service';
 
 type EmployeFilter = 'all' | 'active' | 'blocked' | 'cobrador' | 'supervisor' | 'admin';
 
@@ -18,6 +19,7 @@ export class EmpleadosPage {
   private readonly employeSvc = inject(EmpleadosService);
   private readonly utilsSvc = inject(UtilsService);
   private readonly empresaSvc = inject(EmpresaService);
+  private readonly roleSvc = inject(RoleService);
 
   readonly loading = signal(false);
   readonly loadError = signal(false);
@@ -63,9 +65,9 @@ export class EmpleadosPage {
   }
 
   get canManage(): boolean {
-    const user = this.utilsSvc.getFromLocalStorage('user') as { rol?: string } | null;
-    return !!user && (user.rol === 'ADMIN' || user.rol === 'SUPERADMIN');
+    return this.roleSvc.isAdminOrSuperAdmin();
   }
+
 
   onSearch(ev: CustomEvent): void {
     this.searchQuery.set(String(ev.detail?.value ?? ''));

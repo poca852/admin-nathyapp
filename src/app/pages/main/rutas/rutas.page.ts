@@ -195,7 +195,7 @@ export class RutasPage {
     const nombre = ruta.nombre || 'esta ruta';
     this.utilsSvc.presentAlert({
       header: 'Eliminar ruta',
-      message: `Se eliminará ${nombre} y también sus clientes, créditos, movimientos y cajas asociados. Esta acción es irreversible.`,
+      message: `Se eliminará ${nombre} y, en cascada, sus clientes, créditos, mora, pagos/movimientos, cajas, peticiones y tracking. Los empleados solo se desasignan. Esta acción es irreversible.`,
       buttons: [
         { text: 'Cancelar', role: 'cancel' },
         {

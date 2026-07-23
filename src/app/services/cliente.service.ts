@@ -66,6 +66,11 @@ export class ClienteService {
     return this.http.patch<boolean>(url, body, { headers });
   }
 
+  deleteCliente(idCliente: string): Observable<{ message: string }> {
+    const url: string = `${this.baseUrl}/cliente/${idCliente}`;
+    return this.http.delete<{ message: string }>(url);
+  }
+
   getClienteById(idCliente: string): Observable<ClienteDetail> {
     const url: string = `${this.baseUrl}/cliente/${idCliente}`;
     const headers = new HttpHeaders()

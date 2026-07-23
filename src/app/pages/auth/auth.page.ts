@@ -43,10 +43,13 @@ export class AuthPage implements OnInit {
           if(isAuth){
 
             let user = this.utilsSvc.getFromLocalStorage('user') as User;
-  
-            this.utilsSvc.routerLink('/main/home');
-  
-  
+            const homeUrl =
+              user?.rol === 'SUPERADMIN'
+                ? '/main/super-admin/empresas'
+                : '/main/home';
+
+            this.utilsSvc.routerLink(homeUrl);
+
             this.utilsSvc.presentToast({
               message: `Te damos la bienvenida ${user.nombre.toLowerCase()}`,
               duration: 1000,

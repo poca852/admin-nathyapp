@@ -1,0 +1,44 @@
+<app-header
+  title="Caja"
+  [backButton]="'/main/super-admin/operaciones'" />
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div *ngIf="!caja()" class="sa-empty">
+    <ion-icon name="wallet-outline"></ion-icon>
+    <p>No hay datos de caja. Vuelve a la lista e intenta de nuevo.</p>
+  </div>
+
+  <ng-container *ngIf="caja() as c">
+    <section class="sa-hero">
+      <div class="sa-hero-icon">
+        <ion-icon name="wallet-outline"></ion-icon>
+      </div>
+      <div class="sa-hero-copy">
+        <h1>Caja del día</h1>
+        <p>Caja final: {{ c.caja_final | money }}</p>
+      </div>
+    </section>
+
+    <div class="sa-summary">
+      <div class="item"><span>Base</span><strong>{{ c.base | money }}</strong></div>
+      <div class="item"><span>Cobro</span><strong>{{ c.cobro | money }}</strong></div>
+      <div class="item"><span>Inversión</span><strong>{{ c.inversion | money }}</strong></div>
+      <div class="item"><span>Retiro</span><strong>{{ c.retiro | money }}</strong></div>
+      <div class="item"><span>Gasto</span><strong>{{ c.gasto | money }}</strong></div>
+      <div class="item"><span>Caja final</span><strong>{{ c.caja_final | money }}</strong></div>
+    </div>
+
+    <div class="sa-actions">
+      <button type="button" class="sa-action-card" (click)="editCaja()">
+        <div class="icon">
+          <ion-icon name="create-outline"></ion-icon>
+        </div>
+        <div class="copy">
+          <h2>Editar caja</h2>
+          <p>Ajustar montos del día</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="chevron"></ion-icon>
+      </button>
+    </div>
+  </ng-container>
+</ion-content>

@@ -1,0 +1,72 @@
+<app-header
+  title="Usuario"
+  [backButton]="'/main/super-admin/usuarios'" />
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div *ngIf="loading()" class="skeleton-block">
+    <ion-skeleton-text animated style="width: 100%; height: 96px; border-radius: 16px;"></ion-skeleton-text>
+  </div>
+
+  <div *ngIf="!loading() && !user()" class="sa-empty">
+    <ion-icon name="person-outline"></ion-icon>
+    <p>Usuario no encontrado</p>
+  </div>
+
+  <ng-container *ngIf="!loading() && user() as u">
+    <section class="sa-hero">
+      <div class="sa-hero-icon">
+        <ion-icon [name]="u.estado ? 'person-outline' : 'ban-outline'"></ion-icon>
+      </div>
+      <div class="sa-hero-copy">
+        <h1>{{ u.nombre }}</h1>
+        <p>{{ u.username }} · {{ u.rol }}</p>
+      </div>
+    </section>
+
+    <div class="sa-summary">
+      <div class="item">
+        <span>Estado</span>
+        <strong>{{ u.estado ? 'Activo' : 'Bloqueado' }}</strong>
+      </div>
+      <div class="item">
+        <span>Empresa</span>
+        <strong>{{ empresaLabel() }}</strong>
+      </div>
+    </div>
+
+    <div class="sa-actions">
+      <button type="button" class="sa-action-card" (click)="editUser()">
+        <div class="icon">
+          <ion-icon name="create-outline"></ion-icon>
+        </div>
+        <div class="copy">
+          <h2>Editar usuario</h2>
+          <p>Datos, rol, empresa y ruta</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="chevron"></ion-icon>
+      </button>
+
+      <button type="button" class="sa-action-card" (click)="toggleBlock()">
+        <div class="icon warning">
+          <ion-icon [name]="u.estado ? 'lock-closed-outline' : 'lock-open-outline'"></ion-icon>
+        </div>
+        <div class="copy">
+          <h2>{{ u.estado ? 'Bloquear' : 'Desbloquear' }}</h2>
+          <p>{{ u.estado ? 'Impide el acceso a la app' : 'Restablece el acceso' }}</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="chevron"></ion-icon>
+      </button>
+
+      <button type="button" class="sa-action-card" (click)="confirmDelete()">
+        <div class="icon danger">
+          <ion-icon name="trash-outline"></ion-icon>
+        </div>
+        <div class="copy">
+          <h2>Eliminar empleado</h2>
+          <p>Quita al usuario del sistema</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="chevron"></ion-icon>
+      </button>
+    </div>
+  </ng-container>
+</ion-content>

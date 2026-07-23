@@ -89,7 +89,6 @@ ion-button {
    text-align: center;
 }
 
-
 .auth-form {
    width: 100%;
    text-align: center;
@@ -137,4 +136,17 @@ ion-button {
    .add-update-modal {
        --height: 100vh;
    }
+}
+
+/* Select alert (listas largas de empresas / rutas) — scroll hasta el final */
+.sa-select-alert {
+  .alert-wrapper {
+    max-height: 80vh;
+  }
+
+  .alert-radio-group,
+  .alert-checkbox-group {
+    max-height: min(60vh, 420px);
+    overflow-y: auto;
+  }
 }

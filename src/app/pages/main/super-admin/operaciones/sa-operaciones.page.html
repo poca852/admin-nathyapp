@@ -1,0 +1,109 @@
+<app-header title="Operaciones" [showMenu]="true" />
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="filters">
+    <ion-select
+      interface="alert"
+      placeholder="Empresa"
+      label="Empresa"
+      label-placement="stacked"
+      [value]="selectedEmpresaId()"
+      (ionChange)="onEmpresaChange($event)"
+      [interfaceOptions]="{ header: 'Seleccionar empresa', cssClass: 'sa-select-alert' }">
+      <ion-select-option *ngFor="let e of ctx.empresas()" [value]="empresaId(e)">
+        {{ e.name }}
+      </ion-select-option>
+    </ion-select>
+
+    <ion-select
+      interface="alert"
+      placeholder="Ruta"
+      label="Ruta"
+      label-placement="stacked"
+      [value]="selectedRutaId()"
+      (ionChange)="onRutaChange($event)"
+      [disabled]="!selectedEmpresaId()"
+      [interfaceOptions]="{ header: 'Seleccionar ruta', cssClass: 'sa-select-alert' }">
+      <ion-select-option *ngFor="let r of rutas()" [value]="rutaId(r)">
+        {{ r.nombre }}
+      </ion-select-option>
+    </ion-select>
+  </div>
+
+  <ion-segment [value]="tab()" (ionChange)="setTab($any($event.detail.value))">
+    <ion-segment-button value="creditos"><ion-label>Créditos</ion-label></ion-segment-button>
+    <ion-segment-button value="clientes"><ion-label>Clientes</ion-label></ion-segment-button>
+    <ion-segment-button value="pagos"><ion-label>Pagos</ion-label></ion-segment-button>
+    <ion-segment-button value="cajas"><ion-label>Cajas</ion-label></ion-segment-button>
+  </ion-segment>
+
+  <ion-item *ngIf="tab() === 'pagos' || tab() === 'cajas'" lines="none">
+    <ion-input
+      type="date"
+      label="Fecha"
+      label-placement="stacked"
+      [value]="selectedDate().slice(0, 10)"
+      (ionChange)="onDateChange($event)">
+    </ion-input>
+  </ion-item>
+
+  <div *ngIf="loading()" class="ion-padding">
+    <ion-spinner name="crescent"></ion-spinner>
+  </div>
+
+  <ng-container *ngIf="!loading() && selectedRutaId()">
+    <ion-list *ngIf="tab() === 'creditos'">
+      <ion-item *ngFor="let c of creditos()" button detail (click)="openCredito(c)">
+        <ion-label>
+          <h2>{{ c.cliente?.nombre || c.cliente?.alias || 'Crédito' }}</h2>
+          <p>Saldo: {{ c.saldo || c.valor_credito }} · Estado: {{ c.status ? 'Activo' : 'Pagado' }}</p>
+        </ion-label>
+      </ion-item>
+      <ion-item *ngIf="creditos().length === 0" lines="none">
+        <ion-label color="medium">Sin créditos</ion-label>
+      </ion-item>
+    </ion-list>
+
+    <ion-list *ngIf="tab() === 'clientes'">
+      <ion-item *ngFor="let c of clientes()" button detail (click)="openCliente(c)">
+        <ion-label>
+          <h2>{{ c.nombre || c.alias }}</h2>
+          <p>{{ c.telefono }} · DPI {{ c.dpi }}</p>
+        </ion-label>
+      </ion-item>
+      <ion-item *ngIf="clientes().length === 0" lines="none">
+        <ion-label color="medium">Sin clientes</ion-label>
+      </ion-item>
+    </ion-list>
+
+    <ion-list *ngIf="tab() === 'pagos'">
+      <ion-item *ngFor="let p of pagos()" button detail (click)="openPago(p)">
+        <ion-label>
+          <h2>{{ p.monto | money }}</h2>
+          <p>{{ p.concepto || p.tipoMovimiento || 'Pago' }}</p>
+        </ion-label>
+      </ion-item>
+      <ion-item *ngIf="pagos().length === 0" lines="none">
+        <ion-label color="medium">Sin pagos</ion-label>
+      </ion-item>
+    </ion-list>
+
+    <div *ngIf="tab() === 'cajas'" class="caja-card">
+      <ng-container *ngIf="caja(); else noCaja">
+        <ion-list>
+          <ion-item button detail (click)="openCaja()">
+            <ion-label>
+              <h2>Caja del día</h2>
+              <p>Final: {{ caja()!.caja_final | money }} · Toca para ver acciones</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ng-container>
+      <ng-template #noCaja>
+        <p class="empty">No hay caja para esa fecha</p>
+      </ng-template>
+    </div>
+  </ng-container>
+
+  <p *ngIf="!selectedRutaId()" class="empty">Selecciona empresa y ruta para operar</p>
+</ion-content>

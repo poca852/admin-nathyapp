@@ -1,0 +1,87 @@
+<app-header
+  title="Ruta"
+  [backButton]="'/main/super-admin/rutas'" />
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div *ngIf="loading()" class="skeleton-block">
+    <ion-skeleton-text animated style="width: 100%; height: 96px; border-radius: 16px;"></ion-skeleton-text>
+  </div>
+
+  <div *ngIf="!loading() && !ruta()" class="sa-empty">
+    <ion-icon name="layers-outline"></ion-icon>
+    <p>Ruta no encontrada</p>
+  </div>
+
+  <ng-container *ngIf="!loading() && ruta() as r">
+    <section class="sa-hero">
+      <div class="sa-hero-icon">
+        <ion-icon name="layers-outline"></ion-icon>
+      </div>
+      <div class="sa-hero-copy">
+        <h1>{{ r.nombre }}</h1>
+        <p>
+          {{ r.ciudad || '—' }}, {{ r.pais || '—' }} · {{ empresaLabel() }}
+          <ion-badge *ngIf="isOrphan()" color="warning" mode="md">Sin empresa</ion-badge>
+        </p>
+      </div>
+    </section>
+
+    <div class="sa-summary">
+      <div class="item">
+        <span>Estado</span>
+        <strong>{{ r.status ? 'Abierta' : 'Cerrada' }}</strong>
+      </div>
+      <div class="item">
+        <span>Bloqueo</span>
+        <strong>{{ r.isLocked ? 'Bloqueada' : 'Libre' }}</strong>
+      </div>
+      <div class="item">
+        <span>Moneda</span>
+        <strong>{{ r.currency || '—' }}</strong>
+      </div>
+      <div class="item">
+        <span>Zona</span>
+        <strong>{{ r.timeZone || '—' }}</strong>
+      </div>
+    </div>
+
+    <div class="sa-actions">
+      <button
+        *ngIf="isOrphan()"
+        type="button"
+        class="sa-action-card"
+        (click)="assignEmpresa()">
+        <div class="icon warning">
+          <ion-icon name="business-outline"></ion-icon>
+        </div>
+        <div class="copy">
+          <h2>Asignar a empresa</h2>
+          <p>Vincula esta ruta huérfana a una empresa</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="chevron"></ion-icon>
+      </button>
+
+      <button type="button" class="sa-action-card" (click)="editRuta()">
+        <div class="icon">
+          <ion-icon name="create-outline"></ion-icon>
+        </div>
+        <div class="copy">
+          <h2>Editar ruta</h2>
+          <p>Nombre, país, ciudad, zona horaria y moneda</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="chevron"></ion-icon>
+      </button>
+
+      <button type="button" class="sa-action-card" (click)="confirmDelete()">
+        <div class="icon danger">
+          <ion-icon name="trash-outline"></ion-icon>
+        </div>
+        <div class="copy">
+          <h2>Eliminar ruta</h2>
+          <p>Cascada: clientes, créditos, pagos, cajas y más</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="chevron"></ion-icon>
+      </button>
+    </div>
+  </ng-container>
+</ion-content>
