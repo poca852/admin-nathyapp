@@ -18,3 +18,12 @@
 ion-button {
    position: relative;
 }
+
+.payment-due-btn {
+  animation: payment-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes payment-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}

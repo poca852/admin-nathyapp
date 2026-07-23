@@ -1,0 +1,154 @@
+<app-header title="Mensajes" [showMenu]="true" />
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="sa-toolbar">
+    <div class="sa-toolbar-meta">
+      <strong>{{ activeCount() }}</strong> activos · {{ items().length }} total
+    </div>
+    <ion-button fill="solid" (click)="openCreate()" aria-label="Nuevo aviso">
+      <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+    </ion-button>
+  </div>
+
+  <section *ngIf="showForm()" class="sa-form-card" [formGroup]="form">
+    <h2>Nuevo aviso</h2>
+
+    <custom-input
+      [control]="form.controls.title"
+      label="Título"
+      type="text"
+      icon="text-outline">
+    </custom-input>
+
+    <ion-item lines="none" class="sa-textarea-item">
+      <ion-textarea
+        formControlName="body"
+        label="Mensaje"
+        labelPlacement="stacked"
+        autoGrow="true"
+        rows="3"
+        placeholder="Texto del aviso">
+      </ion-textarea>
+    </ion-item>
+
+    <ion-item lines="none">
+      <ion-select formControlName="type" label="Tipo" labelPlacement="stacked" interface="popover">
+        <ion-select-option *ngFor="let t of types" [value]="t.value">{{ t.label }}</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item lines="none">
+      <ion-select formControlName="severity" label="Severidad" labelPlacement="stacked" interface="popover">
+        <ion-select-option *ngFor="let s of severities" [value]="s.value">{{ s.label }}</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item lines="none">
+      <ion-select formControlName="scope" label="Alcance" labelPlacement="stacked" interface="popover">
+        <ion-select-option *ngFor="let s of scopes" [value]="s.value">{{ s.label }}</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item *ngIf="form.controls.scope.value === 'EMPRESA'" lines="none">
+      <ion-select
+        formControlName="empresaId"
+        label="Empresa"
+        labelPlacement="stacked"
+        interface="popover"
+        placeholder="Selecciona empresa">
+        <ion-select-option *ngFor="let e of ctx.empresas(); trackBy: trackEmpresa" [value]="e.id">
+          {{ e.name }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item *ngIf="form.controls.scope.value === 'MULTI'" lines="none">
+      <ion-select
+        formControlName="empresaIds"
+        label="Empresas"
+        labelPlacement="stacked"
+        interface="alert"
+        multiple="true"
+        placeholder="Selecciona empresas">
+        <ion-select-option *ngFor="let e of ctx.empresas(); trackBy: trackEmpresa" [value]="e.id">
+          {{ e.name }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item lines="none">
+      <ion-toggle formControlName="dismissible">Se puede cerrar</ion-toggle>
+    </ion-item>
+    <ion-item lines="none">
+      <ion-toggle formControlName="requiresAck">Requiere confirmación</ion-toggle>
+    </ion-item>
+
+    <div class="sa-form-actions">
+      <ion-button fill="outline" color="medium" (click)="cancelForm()" [disabled]="saving()">
+        Cancelar
+      </ion-button>
+      <ion-button
+        fill="solid"
+        (click)="submit()"
+        [disabled]="form.invalid || saving()">
+        Enviar
+      </ion-button>
+    </div>
+  </section>
+
+  <div *ngIf="loading()" class="skeleton-block">
+    <ion-skeleton-text animated style="width: 100%; height: 72px; border-radius: 12px;"></ion-skeleton-text>
+  </div>
+
+  <div *ngIf="!loading() && loadError()" class="sa-empty">
+    <ion-icon name="cloud-offline-outline"></ion-icon>
+    <p>No se pudieron cargar los avisos</p>
+    <ion-button (click)="refresh()">Reintentar</ion-button>
+  </div>
+
+  <ion-list *ngIf="!loading() && !loadError()">
+    <ion-item *ngFor="let item of items(); trackBy: trackById">
+      <ion-label>
+        <h2>
+          {{ item.title }}
+          <ion-badge mode="md" [color]="severityColor(item.severity)">{{ item.severity }}</ion-badge>
+          <ion-badge *ngIf="!item.isActive" mode="md" color="medium">Inactivo</ion-badge>
+        </h2>
+        <p>{{ item.body }}</p>
+        <p>
+          {{ item.type }} · {{ item.scope }}
+          <ng-container *ngIf="item.empresaIds?.length">
+            · {{ item.empresaIds.length }} empresa(s)
+          </ng-container>
+        </p>
+      </ion-label>
+      <ion-button
+        *ngIf="item.isActive"
+        slot="end"
+        fill="clear"
+        color="medium"
+        (click)="confirmDeactivate(item)"
+        aria-label="Desactivar">
+        <ion-icon slot="icon-only" name="eye-off-outline"></ion-icon>
+      </ion-button>
+      <ion-button
+        *ngIf="!item.isActive"
+        slot="end"
+        fill="clear"
+        color="danger"
+        (click)="confirmRemove(item)"
+        aria-label="Eliminar">
+        <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+      </ion-button>
+    </ion-item>
+  </ion-list>
+
+  <div *ngIf="!loading() && !loadError() && items().length === 0" class="sa-empty">
+    <ion-icon name="megaphone-outline"></ion-icon>
+    <p>No hay avisos todavía</p>
+  </div>
+</ion-content>

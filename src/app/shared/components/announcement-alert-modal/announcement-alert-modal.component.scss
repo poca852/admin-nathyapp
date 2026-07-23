@@ -1,0 +1,140 @@
+:host {
+  display: block;
+}
+
+.alert-shell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.alert-card {
+  width: min(420px, 100%);
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--ion-background-color, #fff);
+  border: 1px solid rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.08);
+}
+
+.alert-hero {
+  padding: 28px 22px 18px;
+  text-align: center;
+  background: rgba(var(--ion-color-primary-rgb), 0.08);
+}
+
+.alert-shell[data-severity='warning'] .alert-hero {
+  background: rgba(var(--ion-color-warning-rgb), 0.14);
+}
+
+.alert-shell[data-severity='critical'] .alert-hero {
+  background: rgba(var(--ion-color-danger-rgb), 0.12);
+}
+
+.alert-icon-wrap {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 14px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(var(--ion-color-primary-rgb), 0.16);
+
+  ion-icon {
+    font-size: 32px;
+    color: var(--ion-color-primary);
+  }
+}
+
+.alert-shell[data-severity='warning'] .alert-icon-wrap {
+  background: rgba(var(--ion-color-warning-rgb), 0.22);
+
+  ion-icon {
+    color: var(--ion-color-warning-shade, var(--ion-color-warning));
+  }
+}
+
+.alert-shell[data-severity='critical'] .alert-icon-wrap {
+  background: rgba(var(--ion-color-danger-rgb), 0.18);
+
+  ion-icon {
+    color: var(--ion-color-danger);
+  }
+}
+
+.alert-type {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ion-color-primary);
+  background: rgba(var(--ion-color-primary-rgb), 0.12);
+}
+
+.alert-shell[data-severity='warning'] .alert-type {
+  color: var(--ion-color-warning-shade, #8a6d00);
+  background: rgba(var(--ion-color-warning-rgb), 0.2);
+}
+
+.alert-shell[data-severity='critical'] .alert-type {
+  color: var(--ion-color-danger);
+  background: rgba(var(--ion-color-danger-rgb), 0.14);
+}
+
+.alert-hero h1 {
+  margin: 0;
+  font-size: 1.35rem;
+  line-height: 1.25;
+  font-weight: 750;
+  color: var(--ion-text-color);
+}
+
+.alert-queue {
+  margin: 10px 0 0;
+  font-size: 0.8rem;
+  color: var(--ion-color-medium);
+}
+
+.alert-body {
+  padding: 18px 22px 8px;
+
+  p {
+    margin: 0;
+    font-size: 0.98rem;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    color: var(--ion-text-color);
+    opacity: 0.92;
+  }
+}
+
+.alert-actions {
+  padding: 16px 22px 22px;
+}
+
+.alert-primary {
+  --border-radius: 14px;
+  font-weight: 650;
+  margin: 0;
+}
+
+.alert-shell[data-severity='info'] .alert-primary {
+  --background: var(--ion-color-primary);
+  --color: var(--ion-color-primary-contrast);
+}
+
+.alert-shell[data-severity='warning'] .alert-primary {
+  --background: var(--ion-color-warning);
+  --color: var(--ion-color-warning-contrast, #1a1a1a);
+}
+
+.alert-shell[data-severity='critical'] .alert-primary {
+  --background: var(--ion-color-danger);
+  --color: var(--ion-color-danger-contrast, #fff);
+}

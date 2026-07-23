@@ -18,3 +18,4 @@ export * from './country.interface';
 export * from './categoria-gasto.enum';
 export * from './peticiones-ubicacion.interface';
 export * from './reportes.interface';
+export * from './announcement.interface';

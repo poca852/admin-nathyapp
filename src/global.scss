@@ -150,3 +150,19 @@ ion-button {
     overflow-y: auto;
   }
 }
+
+/* Modal centrado tipo tarjeta para avisos del super admin */
+ion-modal.announcement-alert-modal {
+  --width: min(440px, calc(100% - 32px));
+  --height: auto;
+  --max-height: min(88vh, 640px);
+  --border-radius: 20px;
+  --box-shadow: none;
+  --backdrop-opacity: 0.45;
+  align-items: center;
+
+  &::part(content) {
+    border-radius: 20px;
+    overflow: hidden;
+  }
+}

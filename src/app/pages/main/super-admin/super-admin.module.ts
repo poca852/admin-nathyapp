@@ -21,6 +21,7 @@ import { SaCreditoDetailPage } from './operaciones/sa-credito-detail.page';
 import { SaClienteDetailPage } from './operaciones/sa-cliente-detail.page';
 import { SaPagoDetailPage } from './operaciones/sa-pago-detail.page';
 import { SaCajaDetailPage } from './operaciones/sa-caja-detail.page';
+import { SaMensajesPage } from './mensajes/sa-mensajes.page';
 
 const routes: Routes = [
   {
@@ -36,6 +37,7 @@ const routes: Routes = [
       { path: 'usuarios/:id', component: SaUsuarioDetailPage },
       { path: 'rutas', component: SaRutasPage },
       { path: 'rutas/:id', component: SaRutaDetailPage },
+      { path: 'mensajes', component: SaMensajesPage },
       { path: 'transferencias', component: SaTransferenciasPage },
       { path: 'operaciones', component: SaOperacionesPage },
       { path: 'operaciones/credito/:id', component: SaCreditoDetailPage },
@@ -63,6 +65,7 @@ const routes: Routes = [
     SaUsuarioDetailPage,
     SaRutasPage,
     SaRutaDetailPage,
+    SaMensajesPage,
     SaTransferenciasPage,
     SaOperacionesPage,
     SaCreditoDetailPage,

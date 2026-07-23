@@ -37,4 +37,7 @@
   </ion-footer>
 </ion-menu>
 
-<ion-router-outlet id="menu-content" main></ion-router-outlet>
+<div class="main-shell">
+  <app-announcement-banner *ngIf="!isSuperAdmin()"></app-announcement-banner>
+  <ion-router-outlet id="menu-content" main></ion-router-outlet>
+</div>

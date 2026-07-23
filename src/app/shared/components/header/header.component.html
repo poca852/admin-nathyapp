@@ -21,6 +21,25 @@
     </ion-title>
 
     <ion-buttons slot="end">
+      <ion-button
+        *ngIf="showPaymentDue()"
+        (click)="abrirPagoPendiente()"
+        fill="clear"
+        size="small"
+        class="payment-due-btn"
+        [attr.aria-label]="paymentDueLabel()">
+        <ion-icon name="card-outline" color="warning"></ion-icon>
+        <ion-badge color="warning" class="notification-badge">!</ion-badge>
+      </ion-button>
+      <ion-button
+        *ngIf="showAvisos() && avisosCount() > 0"
+        (click)="abrirAvisos()"
+        fill="clear"
+        size="small"
+        aria-label="Avisos">
+        <ion-icon name="megaphone-outline"></ion-icon>
+        <ion-badge color="warning" class="notification-badge">{{ avisosCount() }}</ion-badge>
+      </ion-button>
       <ion-button *ngIf="cantidadPendientes() > 0" (click)="abrirNotificaciones()" fill="clear" size="small">
         <ion-icon name="notifications-outline"></ion-icon>
         <ion-badge color="danger" class="notification-badge">{{cantidadPendientes()}}</ion-badge>

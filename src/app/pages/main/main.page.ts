@@ -55,6 +55,7 @@ export class MainPage implements OnInit {
     { title: 'Empresas', url: '/main/super-admin/empresas', icon: 'business-outline' },
     { title: 'Usuarios', url: '/main/super-admin/usuarios', icon: 'people-outline' },
     { title: 'Rutas', url: '/main/super-admin/rutas', icon: 'layers-outline' },
+    { title: 'Mensajes', url: '/main/super-admin/mensajes', icon: 'megaphone-outline' },
     { title: 'Transferencias', url: '/main/super-admin/transferencias', icon: 'swap-horizontal-outline' },
     { title: 'Operaciones', url: '/main/super-admin/operaciones', icon: 'construct-outline' },
   ];

@@ -1,0 +1,42 @@
+<app-header title="Avisos" [isModal]="true"></app-header>
+
+<ion-content class="ion-padding inbox-content">
+  <div *ngIf="announcementsSvc.visibleBanners().length === 0" class="empty">
+    <div class="empty-icon">
+      <ion-icon name="megaphone-outline"></ion-icon>
+    </div>
+    <h2>Sin avisos</h2>
+    <p>No tienes mensajes pendientes por ahora</p>
+  </div>
+
+  <div
+    class="inbox-list"
+    *ngIf="announcementsSvc.visibleBanners().length > 0">
+    <button
+      type="button"
+      class="inbox-card"
+      *ngFor="let item of announcementsSvc.visibleBanners(); trackBy: trackById"
+      [attr.data-severity]="severityClass(item.severity)"
+      (click)="openDetail(item)">
+      <div class="inbox-card__icon">
+        <ion-icon [name]="iconName(item.severity)"></ion-icon>
+      </div>
+      <div class="inbox-card__copy">
+        <div class="inbox-card__meta">
+          <span class="inbox-card__type">{{ typeLabel(item.type) }}</span>
+        </div>
+        <h3>{{ item.title }}</h3>
+        <p>{{ item.body }}</p>
+      </div>
+      <ion-button
+        *ngIf="item.dismissible && !item.requiresAck"
+        fill="clear"
+        color="medium"
+        size="small"
+        (click)="dismiss(item, $event)"
+        aria-label="Cerrar aviso">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </button>
+  </div>
+</ion-content>

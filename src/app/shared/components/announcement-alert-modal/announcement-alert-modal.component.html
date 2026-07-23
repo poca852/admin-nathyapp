@@ -1,0 +1,33 @@
+<div class="alert-shell" [attr.data-severity]="severity">
+  <div class="alert-card">
+    <div class="alert-hero">
+      <div class="alert-icon-wrap">
+        <ion-icon [name]="iconName"></ion-icon>
+      </div>
+      <span class="alert-type">{{ typeLabel }}</span>
+      <h1>{{ announcement.title }}</h1>
+      <p *ngIf="showQueue" class="alert-queue">
+        Aviso {{ queueIndex }} de {{ queueTotal }}
+      </p>
+    </div>
+
+    <div class="alert-body">
+      <p>{{ announcement.body }}</p>
+    </div>
+
+    <div class="alert-actions">
+      <ion-button
+        expand="block"
+        mode="md"
+        class="alert-primary"
+        [disabled]="busy"
+        (click)="onPrimary()">
+        <ion-icon
+          slot="start"
+          [name]="announcement.requiresAck ? 'checkmark-done-outline' : 'close-outline'">
+        </ion-icon>
+        {{ primaryLabel }}
+      </ion-button>
+    </div>
+  </div>
+</div>
