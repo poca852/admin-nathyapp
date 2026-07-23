@@ -49,6 +49,11 @@ export class UpdateEmpresaComponent implements OnInit {
   form = new FormGroup({
     name: new FormControl('', [Validators.required]),
     email: new FormControl('', [Validators.required, Validators.email]),
+    phone: new FormControl(''),
+    dayOfPay: new FormControl<number | null>(null, [
+      Validators.min(1),
+      Validators.max(31),
+    ]),
     country: new FormControl('', [Validators.required]),
     cobraMora: new FormControl(false),
     permiteMoraVoluntaria: new FormControl(false),
@@ -68,6 +73,8 @@ export class UpdateEmpresaComponent implements OnInit {
       this.form.patchValue({
         name: this.empresa.name,
         email: this.empresa.email,
+        phone: this.empresa.phone || '',
+        dayOfPay: this.empresa.dayOfPay ?? null,
         country: this.empresa.country,
         cobraMora: this.empresa.cobraMora ?? false,
         permiteMoraVoluntaria: this.empresa.permiteMoraVoluntaria ?? false,
@@ -87,6 +94,8 @@ export class UpdateEmpresaComponent implements OnInit {
     const {
       name,
       email,
+      phone,
+      dayOfPay,
       country,
       cobraMora,
       permiteMoraVoluntaria,
@@ -101,10 +110,21 @@ export class UpdateEmpresaComponent implements OnInit {
       baseCalculoMora: (baseCalculoMora ?? 'VALOR_CUOTA') as BaseCalculoMora,
     };
 
+    const empresaPayload: Partial<Empresa> = {
+      name: name || undefined,
+      email: email || undefined,
+      phone: phone?.trim() || undefined,
+      dayOfPay:
+        dayOfPay != null && Number.isFinite(Number(dayOfPay))
+          ? Number(dayOfPay)
+          : undefined,
+      country: country || undefined,
+    };
+
     this.saving = true;
 
     forkJoin({
-      empresa: this.empresaSvc.editEmpresa(this.empresa.id, { name, email, country }),
+      empresa: this.empresaSvc.editEmpresa(this.empresa.id, empresaPayload),
       mora: this.empresaSvc.updateMoraConfig(this.empresa.id, moraConfig),
     }).subscribe({
       next: () => {

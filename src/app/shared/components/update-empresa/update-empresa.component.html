@@ -2,6 +2,21 @@
 
 <ion-content class="ion-padding empresa-modal">
 
+  <div class="form-hero">
+    <div class="form-hero-icon">
+      <ion-icon name="business-outline"></ion-icon>
+    </div>
+    <div class="form-hero-text">
+      <h2>{{ empresa?.name | titlecase }}</h2>
+      <p>
+        {{ empresa?.country | titlecase }}
+        @if (empresa?.email) {
+          · {{ empresa.email }}
+        }
+      </p>
+    </div>
+  </div>
+
   <form [formGroup]="form" (ngSubmit)="editEmpresa()">
 
     <section class="form-section">
@@ -28,6 +43,20 @@
           label="Email"
           type="email"
           icon="mail-outline"
+        />
+
+        <custom-input
+          [control]="form.controls.phone"
+          label="Teléfono"
+          type="tel"
+          icon="call-outline"
+        />
+
+        <custom-input
+          [control]="form.controls.dayOfPay"
+          label="Día de pago (1-31)"
+          type="number"
+          icon="calendar-outline"
         />
 
         <ion-item class="field-select" lines="none">

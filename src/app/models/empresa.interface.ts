@@ -13,6 +13,7 @@ export interface Empresa {
    id: string;
    name: string;
    email?: string;
+   phone?: string;
    dayOfPay: number;
    country: string;
    owner?: User;

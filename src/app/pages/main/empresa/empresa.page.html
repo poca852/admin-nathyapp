@@ -1,42 +1,132 @@
 <app-header title="Empresa" [showMenu]="true" />
 
-
 <ion-content [fullscreen]="true" class="ion-padding">
-  <ion-card *ngIf="!!empresa">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="chevron-down-circle-outline"
+      refreshingSpinner="crescent">
+    </ion-refresher-content>
+  </ion-refresher>
 
-    <ion-card-header>
-      <ion-card-title>
-        {{ empresa.name | titlecase }}
-      </ion-card-title>
-      <ion-button (click)="getBackup()">
-        Copia de seguridad
+  <div *ngIf="loading()" class="skeleton-block">
+    <ion-skeleton-text animated style="width: 100%; height: 96px; border-radius: 16px;"></ion-skeleton-text>
+    <ion-skeleton-text animated style="width: 100%; height: 64px; border-radius: 16px; margin-top: 12px;"></ion-skeleton-text>
+    <ion-skeleton-text animated style="width: 100%; height: 72px; border-radius: 16px; margin-top: 10px;"></ion-skeleton-text>
+    <ion-skeleton-text animated style="width: 100%; height: 72px; border-radius: 16px; margin-top: 10px;"></ion-skeleton-text>
+  </div>
+
+  <ng-container *ngIf="!loading()">
+    <div *ngIf="loadError() && !empresa()" class="empty-state">
+      <ion-icon name="cloud-offline-outline" class="empty-icon"></ion-icon>
+      <h2>No se pudo cargar</h2>
+      <p>Revisa tu conexión e inténtalo de nuevo.</p>
+      <ion-button fill="solid" color="primary" (click)="refreshEmpresa()">
+        <ion-icon slot="start" name="refresh"></ion-icon>
+        Reintentar
       </ion-button>
-    </ion-card-header>
+    </div>
 
-    <ion-card-content>
+    <div *ngIf="!loadError() && !empresa()" class="empty-state">
+      <ion-icon name="business-outline" class="empty-icon"></ion-icon>
+      <h2>Sin empresa</h2>
+      <p>No hay datos de empresa disponibles para este usuario.</p>
+    </div>
 
-      <ion-text>
+    <ng-container *ngIf="empresa() as emp">
+      <section class="empresa-hero">
+        <div class="hero-icon">
+          <ion-icon name="business-outline"></ion-icon>
+        </div>
+        <div class="hero-copy">
+          <div class="hero-title-row">
+            <h1>{{ emp.name | titlecase }}</h1>
+            <ion-badge [color]="resumen().cobraMora ? 'warning' : 'medium'" mode="md">
+              Mora {{ resumen().cobraMora ? 'ON' : 'OFF' }}
+            </ion-badge>
+          </div>
+          <p>
+            <ion-icon name="globe-outline"></ion-icon>
+            {{ emp.country | titlecase }}
+            <ng-container *ngIf="resumen().email">
+              · {{ resumen().email }}
+            </ng-container>
+          </p>
+        </div>
+      </section>
 
-        <h2><strong>Pais: </strong> {{empresa.country | titlecase}} </h2>
-        
-      </ion-text>
+      <div class="summary-strip" aria-live="polite">
+        <div class="summary-item">
+          <span>Rutas</span>
+          <strong>{{ resumen().rutas }}</strong>
+        </div>
+        <div class="summary-item">
+          <span>Empleados</span>
+          <strong>{{ resumen().empleados }}</strong>
+        </div>
+        <div class="summary-item" *ngIf="resumen().dayOfPay">
+          <span>Día pago</span>
+          <strong>{{ resumen().dayOfPay }}</strong>
+        </div>
+        <div class="summary-item" *ngIf="resumen().phone">
+          <span>Teléfono</span>
+          <strong>{{ resumen().phone }}</strong>
+        </div>
+      </div>
 
-      <ion-text>
-        <h2><strong>N° de Rutas: </strong> {{empresa.rutas.length}} </h2>
-      </ion-text>
+      <div class="actions-grid">
+        <button
+          type="button"
+          class="action-card"
+          *ngIf="canManage"
+          (click)="editEmpresa()">
+          <div class="action-icon edit">
+            <ion-icon name="create-outline"></ion-icon>
+          </div>
+          <div class="action-copy">
+            <h2>Editar datos / mora</h2>
+            <p>Nombre, contacto, país y reglas de mora</p>
+          </div>
+          <ion-icon name="chevron-forward-outline" class="action-chevron"></ion-icon>
+        </button>
 
-    </ion-card-content>
+        <button
+          type="button"
+          class="action-card"
+          [disabled]="backupLoading()"
+          (click)="confirmBackup()">
+          <div class="action-icon backup">
+            <ion-icon name="cloud-download-outline"></ion-icon>
+          </div>
+          <div class="action-copy">
+            <h2>Copia de seguridad</h2>
+            <p>Exportar créditos y clientes en CSV</p>
+          </div>
+          <ion-spinner *ngIf="backupLoading()" name="crescent" class="action-spinner"></ion-spinner>
+          <ion-icon *ngIf="!backupLoading()" name="chevron-forward-outline" class="action-chevron"></ion-icon>
+        </button>
 
-  </ion-card>
+        <button type="button" class="action-card" (click)="goToEmpleados()">
+          <div class="action-icon people">
+            <ion-icon name="people-outline"></ion-icon>
+          </div>
+          <div class="action-copy">
+            <h2>Empleados</h2>
+            <p>Ver y gestionar el equipo</p>
+          </div>
+          <ion-icon name="chevron-forward-outline" class="action-chevron"></ion-icon>
+        </button>
 
-  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-    <ion-fab-button>
-      <ion-icon name="chevron-up-circle"></ion-icon>
-    </ion-fab-button>
-    <ion-fab-list side="top">
-      <ion-fab-button (click)="editEmpresa()">
-        <ion-icon name="pencil"></ion-icon>
-      </ion-fab-button>
-    </ion-fab-list>
-  </ion-fab>
+        <button type="button" class="action-card" (click)="goToRutas()">
+          <div class="action-icon routes">
+            <ion-icon name="map-outline"></ion-icon>
+          </div>
+          <div class="action-copy">
+            <h2>Rutas</h2>
+            <p>Abrir, cerrar y configurar rutas</p>
+          </div>
+          <ion-icon name="chevron-forward-outline" class="action-chevron"></ion-icon>
+        </button>
+      </div>
+    </ng-container>
+  </ng-container>
 </ion-content>

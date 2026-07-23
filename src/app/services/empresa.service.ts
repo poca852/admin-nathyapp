@@ -80,15 +80,20 @@ export class EmpresaService {
   }
 
   /**
+   * Applies company payload into local signals (rutas / empleados).
+   */
+  applyEmpresa(empresa: Empresa): void {
+    this._empresa.set(empresa);
+    this.setRutas(empresa.rutas || []);
+    this._employes.set(empresa.employes || []);
+  }
+
+  /**
    * Fetches company data and updates internal state (rutas and employees).
    */
   setEmpresa(id: string) {
     this.getEmpresa(id).subscribe({
-      next: (empresa) => {
-        this._empresa.set(empresa);
-        this.setRutas(empresa.rutas || []);
-        this._employes.set(empresa.employes || []);
-      },
+      next: (empresa) => this.applyEmpresa(empresa),
       error: (err) => console.error('Error al obtener la empresa:', err)
     });
   }
