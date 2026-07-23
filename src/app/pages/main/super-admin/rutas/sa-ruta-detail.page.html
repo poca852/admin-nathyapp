@@ -51,6 +51,25 @@
       <button
         type="button"
         class="sa-action-card"
+        [disabled]="statusBusy()"
+        (click)="confirmToggleStatus()">
+        <div class="icon" [class.danger]="r.status">
+          <ion-icon [name]="r.status ? 'close-circle-outline' : 'play-circle-outline'"></ion-icon>
+        </div>
+        <div class="copy">
+          <h2>{{ r.status ? 'Cerrar ruta' : 'Abrir ruta' }}</h2>
+          <p>
+            {{ r.status
+              ? 'Cierra la caja del día y corta operaciones'
+              : 'Abre la ruta y crea/reabre la caja del día' }}
+          </p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="chevron"></ion-icon>
+      </button>
+
+      <button
+        type="button"
+        class="sa-action-card"
         [disabled]="lockBusy() || (!r.isLocked && !r.status)"
         (click)="confirmToggleLock()">
         <div class="icon" [class.danger]="!r.isLocked" [class.warning]="r.isLocked">

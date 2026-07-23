@@ -194,6 +194,18 @@
             </p>
           </ion-label>
           <ion-button
+            slot="end"
+            fill="clear"
+            size="small"
+            [color]="ruta.status ? 'danger' : 'success'"
+            [disabled]="statusBusyId() === (ruta.id || ruta._id)"
+            (click)="confirmToggleRutaStatus($event, ruta)">
+            <ion-icon
+              slot="icon-only"
+              [name]="ruta.status ? 'close-circle-outline' : 'play-circle-outline'">
+            </ion-icon>
+          </ion-button>
+          <ion-button
             *ngIf="ruta.status || ruta.isLocked"
             slot="end"
             fill="clear"

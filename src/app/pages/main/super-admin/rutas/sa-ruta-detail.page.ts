@@ -25,6 +25,7 @@ export class SaRutaDetailPage {
   readonly loading = signal(true);
   readonly ruta = signal<Ruta | null>(null);
   readonly lockBusy = signal(false);
+  readonly statusBusy = signal(false);
 
   readonly empresaLabel = computed(() => {
     const r = this.ruta();
@@ -103,6 +104,63 @@ export class SaRutaDetailPage {
       this.ctx.invalidate();
       this.resolveRuta();
     }
+  }
+
+  confirmToggleStatus(): void {
+    const ruta = this.ruta();
+    if (!ruta || this.statusBusy()) return;
+
+    const willOpen = !ruta.status;
+    const nombre = ruta.nombre || 'esta ruta';
+    this.utilsSvc.presentAlert({
+      header: willOpen ? 'Abrir ruta' : 'Cerrar ruta',
+      message: willOpen
+        ? `Se abrirá "${nombre}" y se creará/reabrirá la caja del día.`
+        : `Se cerrará "${nombre}". El cobrador no podrá operar hasta que se vuelva a abrir.`,
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: willOpen ? 'Abrir' : 'Cerrar',
+          role: willOpen ? undefined : 'destructive',
+          handler: () => this.doToggleStatus(ruta, willOpen),
+        },
+      ],
+    });
+  }
+
+  private doToggleStatus(ruta: Ruta, willOpen: boolean): void {
+    const id = ruta.id || (ruta as any)._id;
+    if (!id) return;
+
+    this.statusBusy.set(true);
+    const req$ = willOpen
+      ? this.rutaSvc.newCaja(id)
+      : this.rutaSvc.closeCaja(id);
+
+    req$.subscribe({
+      next: () => {
+        this.ruta.update((current) =>
+          current ? { ...current, status: willOpen } : current,
+        );
+        this.empresaSvc.updateRutaStatus(id, willOpen);
+        this.statusBusy.set(false);
+        this.utilsSvc.presentToast({
+          message: willOpen ? 'Ruta abierta' : 'Ruta cerrada',
+          duration: 2500,
+          color: willOpen ? 'success' : 'medium',
+          icon: willOpen ? 'play-circle-outline' : 'close-circle-outline',
+        });
+      },
+      error: (err) => {
+        this.statusBusy.set(false);
+        this.utilsSvc.presentToast({
+          message: err.error?.message || (willOpen ? 'No se pudo abrir la ruta' : 'No se pudo cerrar la ruta'),
+          duration: 3500,
+          color: 'danger',
+          icon: 'alert-circle-outline',
+        });
+      },
+    });
   }
 
   confirmToggleLock(): void {

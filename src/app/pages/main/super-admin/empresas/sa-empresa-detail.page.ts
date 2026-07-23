@@ -27,6 +27,7 @@ export class SaEmpresaDetailPage {
   readonly empresa = signal<Empresa | null>(null);
   readonly billingBusy = signal(false);
   readonly lockBusyId = signal<string | null>(null);
+  readonly statusBusyId = signal<string | null>(null);
 
   readonly rutas = computed(() => {
     const list = this.empresa()?.rutas || [];
@@ -175,6 +176,70 @@ export class SaEmpresaDetailPage {
     const id = ruta.id || (ruta as any)._id;
     this.ctx.setDetailPayload(ruta);
     this.utilsSvc.routerLink('/main/super-admin/rutas/:id', { id });
+  }
+
+  confirmToggleRutaStatus(event: Event, ruta: Ruta): void {
+    event.stopPropagation();
+    event.preventDefault();
+
+    const id = ruta.id || (ruta as any)._id;
+    if (!id || this.statusBusyId()) return;
+
+    const willOpen = !ruta.status;
+    const nombre = ruta.nombre || 'esta ruta';
+    this.utilsSvc.presentAlert({
+      header: willOpen ? 'Abrir ruta' : 'Cerrar ruta',
+      message: willOpen
+        ? `Se abrirá "${nombre}" y se creará/reabrirá la caja del día.`
+        : `Se cerrará "${nombre}". El cobrador no podrá operar hasta que se vuelva a abrir.`,
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: willOpen ? 'Abrir' : 'Cerrar',
+          role: willOpen ? undefined : 'destructive',
+          handler: () => this.doToggleRutaStatus(id, willOpen),
+        },
+      ],
+    });
+  }
+
+  private doToggleRutaStatus(rutaId: string, willOpen: boolean): void {
+    this.statusBusyId.set(rutaId);
+    const req$ = willOpen
+      ? this.rutaSvc.newCaja(rutaId)
+      : this.rutaSvc.closeCaja(rutaId);
+
+    req$.subscribe({
+      next: () => {
+        this.empresa.update((emp) => {
+          if (!emp) return emp;
+          return {
+            ...emp,
+            rutas: (emp.rutas || []).map((r: any) => {
+              const rid = r.id || r._id;
+              return rid === rutaId ? { ...r, status: willOpen } : r;
+            }),
+          };
+        });
+        this.empresaSvc.updateRutaStatus(rutaId, willOpen);
+        this.statusBusyId.set(null);
+        this.utilsSvc.presentToast({
+          message: willOpen ? 'Ruta abierta' : 'Ruta cerrada',
+          duration: 2500,
+          color: willOpen ? 'success' : 'medium',
+          icon: willOpen ? 'play-circle-outline' : 'close-circle-outline',
+        });
+      },
+      error: (err) => {
+        this.statusBusyId.set(null);
+        this.utilsSvc.presentToast({
+          message: err.error?.message || (willOpen ? 'No se pudo abrir la ruta' : 'No se pudo cerrar la ruta'),
+          duration: 3500,
+          color: 'danger',
+          icon: 'alert-circle-outline',
+        });
+      },
+    });
   }
 
   confirmToggleRutaLock(event: Event, ruta: Ruta): void {
