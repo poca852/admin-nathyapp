@@ -58,11 +58,21 @@ export class WsService {
   constructor(private socket: Socket) { }
 
   connect(token?: string): void {
+    const io = this.socket.ioSocket as {
+      auth?: { token?: string };
+      connected?: boolean;
+    };
+
     if (token) {
-      (this.socket.ioSocket as { auth?: { token?: string } }).auth = { token };
+      // Si ya hay sesión viva con el mismo token, no forzar reconnect
+      // (evita "WebSocket is closed before the connection is established").
+      if (io?.connected && io.auth?.token === token) {
+        return;
+      }
+      io.auth = { token };
     }
 
-    if (this.socket.ioSocket?.connected) {
+    if (io?.connected) {
       this.socket.disconnect();
     }
     this.socket.connect();
