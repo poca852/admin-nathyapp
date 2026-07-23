@@ -1,9 +1,14 @@
 <app-header title="Pagos" [showMenu]="true" />
 
 <ion-content [fullscreen]="true">
-  <div class="pagos-container ion-padding">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="chevron-down-circle-outline"
+      refreshingSpinner="crescent">
+    </ion-refresher-content>
+  </ion-refresher>
 
-    <!-- Controls Section -->
+  <div class="pagos-container ion-padding">
     <div class="controls-card">
       <ion-item lines="none" *ngIf="rutas().length > 0">
         <select-ruta (onEmitRuta)="onChangeRuta($event)" />
@@ -22,64 +27,126 @@
 
         <ion-modal #modalPagos [keepContentsMounted]="true" class="auto-height">
           <ng-template>
-            <ion-datetime mode="ios" id="datetimePagos" #datetimePagos presentation="date"
-              (ionChange)="onChangeDay($event)" locale="es-GT">
+            <ion-datetime
+              mode="md"
+              id="datetimePagos"
+              #datetimePagos
+              presentation="date"
+              locale="es-GT"
+              [value]="dateSelect().toISOString()"
+              (ionChange)="onChangeDay($event)">
               <span slot="title">Selecciona una fecha</span>
               <ion-buttons slot="buttons">
-                <ion-button color="medium" fill="clear" (click)="modalPagos.dismiss()">Cancelar</ion-button>
-                <ion-button color="primary" fill="solid" (click)="datetimePagos.confirm()"
-                  style="--border-radius: 10px;">Confirmar</ion-button>
+                <ion-button color="medium" fill="clear" (click)="modalPagos.dismiss()">
+                  Cancelar
+                </ion-button>
+                <ion-button color="primary" fill="solid" (click)="datetimePagos.confirm()">
+                  Confirmar
+                </ion-button>
               </ion-buttons>
             </ion-datetime>
           </ng-template>
         </ion-modal>
       </ion-item>
-    </div>
 
-    <!-- Results Section -->
-    <div class="list-header" *ngIf="pagos().length > 0">
-      <h2>Listado de Pagos</h2>
-      <p>{{ pagos().length }} movimientos encontrados</p>
-    </div>
-
-    <div class="payments-list">
-      <div class="payment-card animate__animated animate__fadeInUp" *ngFor="let pago of pagos(); let i = index"
-        [style.animation-delay]="i * 50 + 'ms'" (click)="presentAcciones(pago)">
-
-        <div class="avatar-icon">
-          <ion-icon name="person-outline"></ion-icon>
-        </div>
-
-        <div class="payment-info">
-          <h2>{{ (pago.cliente?.nombre || 'Sin nombre') | titlecase }}</h2>
-          <div class="payment-meta">
-            <span>
-              <ion-icon name="trail-sign-outline"></ion-icon>
-              {{ currentRuta()?.nombre || 'Ruta' }}
-            </span>
-          </div>
-          <!-- Reason for No Payment -->
-          <div class="no-payment-reason" *ngIf="pago.monto === 0 && pago.comentario">
-            <ion-icon name="information-circle-outline"></ion-icon>
-            <p>{{ pago.comentario }}</p>
-          </div>
-        </div>
-
-        <div class="payment-amount" [class.no-payment]="pago.monto === 0">
-          <span class="amount">{{ pago.monto | currency:'USD':'symbol':'1.0-0':'en' }}</span>
-          <span class="status-badge">{{ pago.monto > 0 ? 'Recibido' : 'No Pago' }}</span>
-        </div>
+      <div class="controls-actions">
+        <ion-button expand="block" fill="outline" color="primary" (click)="handleRefresh()" [disabled]="loading()">
+          <ion-icon slot="start" name="search-outline"></ion-icon>
+          Buscar
+        </ion-button>
       </div>
     </div>
 
-    <!-- Empty State -->
-    <div class="empty-state animate__animated animate__fadeIn" *ngIf="pagos().length === 0">
+    <div *ngIf="loading()" class="skeleton-block">
+      <ion-skeleton-text animated style="width: 100%; height: 72px; border-radius: 16px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 100%; height: 72px; border-radius: 16px; margin-top: 10px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 100%; height: 72px; border-radius: 16px; margin-top: 10px;"></ion-skeleton-text>
+    </div>
+
+    <ng-container *ngIf="!loading() && searched() && pagos().length > 0">
+      <div class="summary-strip">
+        <div class="summary-item">
+          <span>Total cobrado</span>
+          <strong>{{ totalCobrado() | money }}</strong>
+        </div>
+        <div class="summary-item">
+          <span>Con pago</span>
+          <strong>{{ totalConMonto() }}</strong>
+        </div>
+        <div class="summary-item">
+          <span>Sin pago</span>
+          <strong>{{ totalSinPago() }}</strong>
+        </div>
+      </div>
+
+      <div class="list-header">
+        <h2>Listado de pagos</h2>
+        <p>{{ pagos().length }} movimientos · {{ currentRuta()?.nombre | titlecase }}</p>
+      </div>
+
+      <div class="payments-list">
+        <div
+          class="payment-card"
+          *ngFor="let pago of pagos()"
+          (click)="presentAcciones(pago)">
+          <div class="avatar-icon">
+            <ion-icon name="person-outline"></ion-icon>
+          </div>
+
+          <div class="payment-info">
+            <h2>{{ (pago.cliente?.nombre || 'Sin nombre') | titlecase }}</h2>
+            <div class="payment-meta">
+              <span *ngIf="pago.cliente?.alias">
+                <ion-icon name="pricetag-outline"></ion-icon>
+                {{ pago.cliente?.alias }}
+              </span>
+              <span *ngIf="pago.createdAt || pago.fecha">
+                <ion-icon name="time-outline"></ion-icon>
+                {{ (pago.createdAt || pago.fecha) | date: 'hh:mm a' }}
+              </span>
+            </div>
+            <div class="mora-line" *ngIf="pago.montoMora > 0">
+              <ion-icon name="alert-circle-outline"></ion-icon>
+              Mora: {{ pago.montoMora | money }}
+            </div>
+            <div class="no-payment-reason" *ngIf="pago.monto === 0 && pago.comentario">
+              <ion-icon name="information-circle-outline"></ion-icon>
+              <p>{{ pago.comentario }}</p>
+            </div>
+          </div>
+
+          <div class="payment-amount" [class.no-payment]="pago.monto === 0">
+            <span class="amount">{{ pago.monto | money }}</span>
+            <span class="status-badge">{{ pago.monto > 0 ? 'Recibido' : 'No pago' }}</span>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <div *ngIf="!loading() && !searched()" class="empty-state">
       <div class="empty-icon">
         <ion-icon name="receipt-outline"></ion-icon>
       </div>
-      <h3>No hay pagos registrados</h3>
-      <p>Selecciona una ruta y fecha para visualizar los movimientos de caja.</p>
+      <h3>Consulta de pagos</h3>
+      <p>Selecciona una ruta y fecha para ver los movimientos.</p>
     </div>
 
+    <div *ngIf="!loading() && searched() && pagos().length === 0" class="empty-state">
+      <div class="empty-icon">
+        <ion-icon [name]="loadError() ? 'cloud-offline-outline' : 'search-outline'"></ion-icon>
+      </div>
+      <h3>{{ loadError() ? 'No se pudieron cargar' : 'No hay pagos' }}</h3>
+      <p>
+        {{
+          loadError()
+            ? 'Revisa la conexión e inténtalo de nuevo.'
+            : 'No hay movimientos para esa ruta y fecha.'
+        }}
+      </p>
+      <ion-button fill="solid" color="primary" (click)="handleRefresh(null)">
+        <ion-icon slot="start" name="refresh"></ion-icon>
+        Reintentar
+      </ion-button>
+    </div>
   </div>
 </ion-content>

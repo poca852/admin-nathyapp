@@ -12,7 +12,7 @@
       <ion-datetime-button datetime="datetime"></ion-datetime-button>
       <ion-modal #modal [keepContentsMounted]="true">
         <ng-template>
-          <ion-datetime mode="ios" id="datetime" #datetime presentation="date" (ionChange)="onChangeDay($event)"
+          <ion-datetime mode="md" id="datetime" #datetime presentation="date" (ionChange)="onChangeDay($event)"
             locale="es-GT">
             <span slot="title">Selecciona una fecha</span>
           </ion-datetime>
@@ -31,7 +31,7 @@
       (click)="editGasto(gasto)">
 
       <ion-label>
-        <ion-text><h3><strong>Valor:</strong> {{ gasto.valor | currency:'USD':'symbol':'':'en' }}</h3></ion-text>
+        <ion-text><h3><strong>Valor:</strong> {{ gasto.valor | money }}</h3></ion-text>
         <ion-text><h3><strong>Fecha:</strong> {{ gasto.fecha | date:'fullDate' }}</h3></ion-text>
         <ion-text><h3><strong>Concepto:</strong> {{ gasto.gasto.gasto| titlecase}}</h3></ion-text>
         <ion-text *ngIf="!!gasto.nota"><h3><strong>Detalle:</strong> {{ gasto.nota | lowercase}}</h3></ion-text>

@@ -22,7 +22,7 @@
           <ion-card-title>{{ cli.nombre | titlecase }}</ion-card-title>
           <ion-card-subtitle>{{ cli.alias | titlecase }}</ion-card-subtitle>
         </div>
-        <ion-badge [color]="cli.status ? 'success' : 'danger'" mode="ios">
+        <ion-badge [color]="cli.status ? 'success' : 'danger'" mode="md">
           {{ cli.status ? 'Activo' : 'Inactivo' }}
         </ion-badge>
       </div>
@@ -107,7 +107,7 @@
         <ion-item>
           <ion-label>Valor del crédito</ion-label>
           <ion-note slot="end" class="credit-value">
-            {{ credito.valor_credito | currency:'USD':'symbol':'':'en' }}
+            {{ credito.valor_credito | money }}
           </ion-note>
         </ion-item>
 
@@ -121,28 +121,28 @@
         <ion-item>
           <ion-label>Ganancia</ion-label>
           <ion-note slot="end" class="credit-value">
-            {{ gananciaCredito(credito) | currency:'USD':'symbol':'':'en' }}
+            {{ gananciaCredito(credito) | money }}
           </ion-note>
         </ion-item>
 
         <ion-item>
           <ion-label>Ganancia cobrada</ion-label>
           <ion-note slot="end" class="credit-value">
-            {{ gananciaCobrada(credito) | currency:'USD':'symbol':'':'en' }}
+            {{ gananciaCobrada(credito) | money }}
           </ion-note>
         </ion-item>
 
         <ion-item>
           <ion-label>Ganancia pendiente</ion-label>
           <ion-note slot="end" class="credit-value">
-            {{ gananciaPendiente(credito) | currency:'USD':'symbol':'':'en' }}
+            {{ gananciaPendiente(credito) | money }}
           </ion-note>
         </ion-item>
 
         <ion-item>
           <ion-label>Total a pagar</ion-label>
           <ion-note slot="end" class="credit-value highlight">
-            {{ credito.total_pagar | currency:'USD':'symbol':'':'en' }}
+            {{ credito.total_pagar | money }}
           </ion-note>
         </ion-item>
 
@@ -163,42 +163,42 @@
         <ion-item>
           <ion-label>Valor de la cuota</ion-label>
           <ion-note slot="end" class="credit-value">
-            {{ credito.valor_cuota | currency:'USD':'symbol':'':'en' }}
+            {{ credito.valor_cuota | money }}
           </ion-note>
         </ion-item>
 
         <ion-item>
           <ion-label>Saldo</ion-label>
           <ion-note slot="end" class="credit-value highlight">
-            {{ credito.saldo | currency:'USD':'symbol':'':'en' }}
+            {{ credito.saldo | money }}
           </ion-note>
         </ion-item>
 
         <ion-item>
           <ion-label>Abonos</ion-label>
           <ion-note slot="end" class="credit-value">
-            {{ credito.abonos | currency:'USD':'symbol':'':'en' }}
+            {{ credito.abonos | money }}
           </ion-note>
         </ion-item>
 
         <ion-item>
           <ion-label>Mora adeudada</ion-label>
           <ion-note slot="end" class="credit-value highlight">
-            {{ (credito.mora_adeudada || 0) | currency:'USD':'symbol':'':'en' }}
+            {{ (credito.mora_adeudada || 0) | money }}
           </ion-note>
         </ion-item>
 
         <ion-item>
           <ion-label>Mora cobrada</ion-label>
           <ion-note slot="end" class="credit-value">
-            {{ (credito.mora_cobrada || 0) | currency:'USD':'symbol':'':'en' }}
+            {{ (credito.mora_cobrada || 0) | money }}
           </ion-note>
         </ion-item>
 
         <ion-item>
           <ion-label>Mora sugerida</ion-label>
           <ion-note slot="end" class="credit-value">
-            {{ (credito.moraSugerida || 0) | currency:'USD':'symbol':'':'en' }}
+            {{ (credito.moraSugerida || 0) | money }}
           </ion-note>
         </ion-item>
 
@@ -236,7 +236,7 @@
 
         <ion-item>
           <ion-label>Clasificación</ion-label>
-          <ion-badge slot="end" mode="ios">
+          <ion-badge slot="end" mode="md">
             {{ credito.state === TipoDeCliente.BUENO ? 'Bueno' : credito.state === TipoDeCliente.REGULAR
             ? 'Regular' : 'Malo'
             }}
@@ -297,13 +297,18 @@
     <ion-card-content>
       <ion-list lines="inset" class="history-list">
         @for (credito of historialCreditos(); track $index) {
-        <ion-item>
+        <ion-item button detail (click)="openHistorialCredito(credito)">
           <ion-icon name="document-text-outline" slot="start" color="medium"></ion-icon>
           <ion-label>
-            <h3>{{ credito.valor_credito | currency:'USD':'symbol':'':'en' }}</h3>
+            <h3>{{ credito.valor_credito | money }}</h3>
             <p>
               {{ credito.fecha_inicio | date:'dd/MM/yyyy' }} — {{ credito.ultimo_pago | date:'dd/MM/yyyy' }}
             </p>
+            @if (credito.abonos != null) {
+            <p>
+              Abonado: {{ credito.abonos | money }}
+            </p>
+            }
           </ion-label>
           <ion-note slot="end">
             {{ credito.dias_tardados_en_pagar }} días

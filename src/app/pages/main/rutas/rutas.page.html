@@ -1,66 +1,177 @@
 <app-header title="Rutas" [showMenu]="true" />
 
 <ion-content [fullscreen]="true" class="ion-padding">
-
   <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
-    <ion-refresher-content></ion-refresher-content>
+    <ion-refresher-content
+      pullingIcon="chevron-down-circle-outline"
+      refreshingSpinner="crescent">
+    </ion-refresher-content>
   </ion-refresher>
 
-  <!-- aqui pondre el skeleton -->
-  @if(loading){
-  <ion-list>
-    @for(product of [1,1,1,1,1,1]; track $index){
-    <ion-item class="product-item">
-      <ion-label>
-        <ion-grid>
-          <ion-row>
-            <ion-col>
-              <ion-skeleton-text animated style="width: 80%"></ion-skeleton-text>
-            </ion-col>
-            <ion-col size="1">
-              <ion-skeleton-text animated style="width: 30%"></ion-skeleton-text>
-            </ion-col>
-          </ion-row>
-        </ion-grid>
-      </ion-label>
-    </ion-item>
-    }
-  </ion-list>
-  }
+  <div *ngIf="loading" class="skeleton-container">
+    <ion-grid>
+      <ion-row>
+        <ion-col size="12" size-md="6" size-lg="4" *ngFor="let item of [1,2,3,4,5,6]">
+          <ion-card class="skeleton-card">
+            <ion-card-header>
+              <ion-skeleton-text animated style="width: 60%; height: 24px;"></ion-skeleton-text>
+              <ion-skeleton-text animated style="width: 40%; height: 18px; margin-top: 8px;"></ion-skeleton-text>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-skeleton-text animated style="width: 80%; height: 16px;"></ion-skeleton-text>
+              <ion-skeleton-text animated style="width: 50%; height: 16px; margin-top: 12px;"></ion-skeleton-text>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
 
-  @if(!loading && rutas.length > 0){
-  <ion-list>
-    @for(ruta of rutas; track $index){
-    <ion-item>
-      <ion-label>
-        <ion-grid>
-          <ion-row>
-            <ion-col>
-              <ion-text>
-                <h3>{{ruta.nombre | titlecase}}</h3>
-              </ion-text>
-            </ion-col>
-            <ion-col size="auto">
-              <ion-button fill="clear" (click)="presentActions(ruta)">
-                <ion-icon name="ellipsis-vertical-outline"></ion-icon>
-              </ion-button>
-            </ion-col>
-          </ion-row>
-        </ion-grid>
-      </ion-label>
-    </ion-item>
-    }
-  </ion-list>
-  }
+  <ng-container *ngIf="!loading">
+    <div *ngIf="loadError && resumen().total === 0" class="empty-state">
+      <ion-icon name="cloud-offline-outline" class="empty-icon"></ion-icon>
+      <h2>No se pudieron cargar las rutas</h2>
+      <p>Revisa tu conexión e inténtalo de nuevo.</p>
+      <ion-button fill="solid" color="primary" (click)="getRutas()">
+        <ion-icon slot="start" name="refresh"></ion-icon>
+        Reintentar
+      </ion-button>
+    </div>
 
-  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-    <ion-fab-button>
-      <ion-icon name="chevron-up-circle"></ion-icon>
+    <div *ngIf="!loadError && resumen().total === 0" class="empty-state">
+      <ion-icon name="map-outline" class="empty-icon"></ion-icon>
+      <h2>No hay rutas</h2>
+      <p>Aún no hay rutas configuradas para esta empresa.</p>
+      <ion-button *ngIf="canManageRutas" fill="solid" color="primary" (click)="addUpdateRuta()">
+        <ion-icon slot="start" name="add"></ion-icon>
+        Agregar ruta
+      </ion-button>
+      <ion-button *ngIf="!canManageRutas" fill="outline" color="primary" (click)="getRutas()">
+        <ion-icon slot="start" name="refresh"></ion-icon>
+        Recargar
+      </ion-button>
+    </div>
+
+    <ng-container *ngIf="resumen().total > 0">
+      <div class="summary-strip" aria-live="polite">
+        <div class="summary-title">
+          <span>{{ resumen().total }} {{ resumen().total === 1 ? 'ruta' : 'rutas' }}</span>
+        </div>
+        <div class="summary-chips">
+          <ion-chip color="success" outline>
+            <ion-label>{{ resumen().abiertas }} abiertas</ion-label>
+          </ion-chip>
+          <ion-chip color="danger" outline>
+            <ion-label>{{ resumen().cerradas }} cerradas</ion-label>
+          </ion-chip>
+          <ion-chip color="warning" outline *ngIf="resumen().bloqueadas > 0">
+            <ion-label>{{ resumen().bloqueadas }} bloqueadas</ion-label>
+          </ion-chip>
+        </div>
+      </div>
+
+      <ion-searchbar
+        class="rutas-search"
+        debounce="250"
+        placeholder="Buscar por nombre"
+        [value]="searchQuery()"
+        (ionInput)="onSearch($event)"
+        (ionClear)="searchQuery.set('')">
+      </ion-searchbar>
+
+      <div class="filter-chips">
+        <ion-chip [color]="filter() === 'all' ? 'primary' : 'medium'" [outline]="filter() !== 'all'" (click)="setFilter('all')">
+          <ion-label>Todas</ion-label>
+        </ion-chip>
+        <ion-chip [color]="filter() === 'open' ? 'success' : 'medium'" [outline]="filter() !== 'open'" (click)="setFilter('open')">
+          <ion-label>Abiertas</ion-label>
+        </ion-chip>
+        <ion-chip [color]="filter() === 'closed' ? 'danger' : 'medium'" [outline]="filter() !== 'closed'" (click)="setFilter('closed')">
+          <ion-label>Cerradas</ion-label>
+        </ion-chip>
+        <ion-chip [color]="filter() === 'locked' ? 'warning' : 'medium'" [outline]="filter() !== 'locked'" (click)="setFilter('locked')">
+          <ion-label>Bloqueadas</ion-label>
+        </ion-chip>
+      </div>
+
+      <div *ngIf="filteredRutas().length === 0" class="empty-filter">
+        <p>No hay rutas con ese filtro o búsqueda.</p>
+      </div>
+
+      <ion-grid class="routes-grid" *ngIf="filteredRutas().length > 0">
+        <ion-row>
+          <ion-col
+            size="12"
+            size-md="6"
+            size-lg="4"
+            *ngFor="let ruta of filteredRutas(); trackBy: trackByRutaId">
+            <ion-card
+              class="route-card"
+              [class.card-open]="ruta.status"
+              [class.card-closed]="!ruta.status"
+              [class.card-locked]="ruta.isLocked"
+              button
+              (click)="viewRuta(ruta)">
+              <ion-card-header>
+                <div class="card-header-row">
+                  <ion-card-title class="route-title">
+                    <ion-icon
+                      [name]="ruta.status ? 'lock-open-outline' : 'lock-closed-outline'"
+                      [color]="ruta.status ? 'success' : 'medium'">
+                    </ion-icon>
+                    {{ ruta.nombre | titlecase }}
+                  </ion-card-title>
+                  <ion-button
+                    fill="clear"
+                    size="small"
+                    class="more-btn"
+                    (click)="presentActions(ruta, $event)">
+                    <ion-icon slot="icon-only" name="ellipsis-vertical"></ion-icon>
+                  </ion-button>
+                </div>
+                <ion-card-subtitle class="route-subtitle">
+                  <ion-icon name="location-outline"></ion-icon>
+                  {{ ruta.ciudad }}, {{ ruta.pais }}
+                </ion-card-subtitle>
+              </ion-card-header>
+
+              <ion-card-content>
+                <div class="status-container">
+                  <ion-badge [color]="ruta.status ? 'success' : 'danger'" class="status-badge">
+                    {{ ruta.status ? 'Abierta' : 'Cerrada' }}
+                  </ion-badge>
+                  <ion-badge *ngIf="ruta.isLocked" color="warning" class="lock-badge">
+                    <ion-icon name="alert-circle-outline"></ion-icon>
+                    Bloqueada
+                  </ion-badge>
+                </div>
+
+                <div class="meta-row">
+                  <span class="meta-item" *ngIf="ruta.timeZone">
+                    <ion-icon name="globe-outline"></ion-icon>
+                    {{ ruta.timeZone }}
+                  </span>
+                  <span class="meta-item" *ngIf="ruta.currency">
+                    <ion-icon name="cash-outline"></ion-icon>
+                    {{ ruta.currency }}
+                  </span>
+                </div>
+
+                <div class="auto-open" *ngIf="ruta.autoOpen">
+                  <ion-icon name="time-outline" color="tertiary"></ion-icon>
+                  <span>Apertura automática</span>
+                </div>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ng-container>
+  </ng-container>
+
+  <ion-fab *ngIf="canManageRutas" slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button color="primary" (click)="addUpdateRuta()">
+      <ion-icon name="add"></ion-icon>
     </ion-fab-button>
-    <ion-fab-list side="top">
-      <ion-fab-button (click)="addUpdateRuta()">
-        <ion-icon name="add"></ion-icon>
-      </ion-fab-button>
-    </ion-fab-list>
   </ion-fab>
 </ion-content>

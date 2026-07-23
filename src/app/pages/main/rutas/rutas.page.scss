@@ -1,0 +1,276 @@
+:host {
+  --card-border-radius: 16px;
+  --transition-speed: 0.3s;
+  --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --card-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.1);
+  --badge-success-bg: rgba(var(--ion-color-success-rgb), 0.15);
+  --badge-success-text: var(--ion-color-success);
+  --badge-danger-bg: rgba(var(--ion-color-danger-rgb), 0.15);
+  --badge-danger-text: var(--ion-color-danger);
+  --badge-warning-bg: rgba(var(--ion-color-warning-rgb), 0.15);
+  --badge-warning-text: var(--ion-color-warning);
+}
+
+ion-content {
+  --padding-bottom: 90px;
+}
+
+.skeleton-container {
+  padding-top: 8px;
+}
+
+.skeleton-card {
+  border-radius: var(--card-border-radius);
+  box-shadow: none;
+  margin-bottom: 16px;
+
+  ion-card-header,
+  ion-card-content {
+    padding: 16px;
+  }
+
+  ion-skeleton-text {
+    --border-radius: 4px;
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 64px 24px;
+  color: var(--ion-color-medium);
+
+  .empty-icon {
+    font-size: 64px;
+    margin-bottom: 24px;
+    opacity: 0.5;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--ion-text-color);
+  }
+
+  p {
+    font-size: 1rem;
+    margin-bottom: 24px;
+    max-width: 400px;
+  }
+}
+
+.summary-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin-bottom: 8px;
+  padding: 4px 2px 8px;
+
+  .summary-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ion-text-color);
+  }
+
+  .summary-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+
+    ion-chip {
+      margin: 0;
+      height: 28px;
+    }
+  }
+}
+
+.rutas-search {
+  padding: 0 0 8px;
+  --background: var(--ion-item-background, var(--ion-background-color));
+  --border-radius: 12px;
+}
+
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+
+  ion-chip {
+    margin: 0;
+    cursor: pointer;
+  }
+}
+
+.empty-filter {
+  text-align: center;
+  color: var(--ion-color-medium);
+  padding: 24px 12px;
+}
+
+.routes-grid {
+  padding-inline: 0;
+}
+
+.route-card {
+  border-radius: var(--card-border-radius);
+  box-shadow: var(--card-shadow);
+  transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+  margin-bottom: 16px;
+  overflow: hidden;
+  border: 1px solid var(--ion-item-border-color, var(--ion-color-light-shade));
+  background: var(--ion-background-color);
+  color: var(--ion-text-color);
+
+  @media (hover: hover) {
+    &:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--card-shadow-hover);
+    }
+  }
+
+  &.card-open {
+    --background: rgba(var(--ion-color-success-rgb), 0.05);
+    border-color: rgba(var(--ion-color-success-rgb), 0.15);
+  }
+
+  &.card-closed {
+    --background: rgba(var(--ion-color-danger-rgb), 0.05);
+    border-color: rgba(var(--ion-color-danger-rgb), 0.15);
+  }
+
+  &.card-locked {
+    border-color: rgba(var(--ion-color-warning-rgb), 0.45);
+  }
+
+  .card-header-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .more-btn {
+    margin: -8px -8px 0 0;
+    --padding-start: 6px;
+    --padding-end: 6px;
+  }
+
+  .route-title {
+    display: flex;
+    align-items: center;
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 0;
+    min-width: 0;
+
+    ion-icon {
+      margin-right: 8px;
+      font-size: 1.35rem;
+      flex-shrink: 0;
+    }
+  }
+
+  .route-subtitle {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    opacity: 0.75;
+    margin-top: 6px;
+
+    ion-icon {
+      margin-right: 6px;
+      font-size: 1rem;
+    }
+  }
+
+  .status-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+
+    ion-badge {
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 20px;
+    }
+
+    .status-badge[color='success'] {
+      --background: var(--badge-success-bg);
+      --color: var(--badge-success-text);
+    }
+
+    .status-badge[color='danger'] {
+      --background: var(--badge-danger-bg);
+      --color: var(--badge-danger-text);
+    }
+
+    .lock-badge {
+      --background: var(--badge-warning-bg);
+      --color: var(--badge-warning-text);
+
+      ion-icon {
+        margin-right: 4px;
+      }
+    }
+  }
+
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    margin-bottom: 6px;
+
+    .meta-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.8rem;
+      color: var(--ion-color-medium);
+
+      ion-icon {
+        font-size: 0.95rem;
+      }
+    }
+  }
+
+  .auto-open {
+    display: flex;
+    align-items: center;
+    font-size: 0.85rem;
+    color: var(--ion-color-tertiary);
+    margin-top: 8px;
+
+    ion-icon {
+      margin-right: 6px;
+      font-size: 1rem;
+    }
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :host {
+    --card-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    --card-shadow-hover: 0 12px 28px rgba(0, 0, 0, 0.4);
+    --badge-success-bg: rgba(var(--ion-color-success-rgb), 0.25);
+    --badge-danger-bg: rgba(var(--ion-color-danger-rgb), 0.25);
+    --badge-warning-bg: rgba(var(--ion-color-warning-rgb), 0.25);
+  }
+}
+
+html.dark {
+  :host {
+    --card-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    --card-shadow-hover: 0 12px 28px rgba(0, 0, 0, 0.4);
+    --badge-success-bg: rgba(var(--ion-color-success-rgb), 0.25);
+    --badge-danger-bg: rgba(var(--ion-color-danger-rgb), 0.25);
+    --badge-warning-bg: rgba(var(--ion-color-warning-rgb), 0.25);
+  }
+}

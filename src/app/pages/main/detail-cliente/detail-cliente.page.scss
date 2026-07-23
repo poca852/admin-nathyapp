@@ -1,3 +1,13 @@
+// ===== Layout =====
+ion-content {
+  --padding-bottom: 96px;
+}
+
+ion-fab {
+  margin-bottom: 12px;
+  margin-inline-end: 12px;
+}
+
 // ===== Skeleton Loading =====
 .skeleton-container {
   padding: 16px;

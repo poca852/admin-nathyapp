@@ -1,5 +1,6 @@
 export interface Caja {
    id: string;
+   _id?: string;
    fecha: Date;
    base: number;
    inversion: number;
@@ -16,4 +17,6 @@ export interface Caja {
    moraPorCobrar?: number;
    /** Flag de empresa: si false, la UI no muestra líneas de mora en caja. */
    cobraMora?: boolean;
+   /** true = caja del día abierta / en curso */
+   status?: boolean;
  }

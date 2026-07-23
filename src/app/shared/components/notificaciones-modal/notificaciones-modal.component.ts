@@ -2,7 +2,6 @@ import { Component, inject, OnInit } from '@angular/core';
 import { UtilsService } from 'src/app/services/utils.service';
 import { PeticionesService } from 'src/app/services/peticiones.service';
 import { PeticionUbicacion } from 'src/app/models';
-import { LngLat } from 'mapbox-gl';
 import { MapModalComponent } from '../map-modal/map-modal.component';
 
 @Component({
@@ -77,10 +76,7 @@ export class NotificacionesModalComponent implements OnInit {
     this.utilsSvc.presentModal({
       component: MapModalComponent,
       componentProps: {
-        lngLat: new LngLat(
-          this.peticionSeleccionada.old_ubicacion[0],
-          this.peticionSeleccionada.old_ubicacion[1]
-        )
+        lngLat: this.peticionSeleccionada.old_ubicacion,
       }
     }).then(() => {
       this.mostrarMapaViejo = false;
@@ -93,10 +89,7 @@ export class NotificacionesModalComponent implements OnInit {
     this.utilsSvc.presentModal({
       component: MapModalComponent,
       componentProps: {
-        lngLat: new LngLat(
-          this.peticionSeleccionada.new_ubicacion[0],
-          this.peticionSeleccionada.new_ubicacion[1]
-        )
+        lngLat: this.peticionSeleccionada.new_ubicacion,
       }
     }).then(() => {
       this.mostrarMapaNuevo = false;

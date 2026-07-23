@@ -27,6 +27,7 @@ import { EmpresaService } from 'src/app/services/empresa.service';
 import { ReportesService } from 'src/app/services/reportes.service';
 import { RutaService } from 'src/app/services/ruta.service';
 import { UtilsService } from 'src/app/services/utils.service';
+import { resolveRutaCurrency } from 'src/app/helpers/money.helpers';
 
 @Component({
   selector: 'app-reportes',
@@ -57,6 +58,17 @@ export class ReportesPage {
   public readonly reporteCaja = signal<ReporteCajaHistoricoResponse | null>(null);
 
   public readonly rutas = computed(() => this.empresaSvc.rutas());
+  /** Moneda del filtro de ruta (o la primera disponible si es "todas"). */
+  public readonly reportCurrency = computed(() => {
+    const rutas = this.rutas();
+    const selected = this.selectedRouteId();
+    if (selected !== 'all') {
+      const match = rutas.find((r) => r.id === selected || r._id === selected);
+      if (match) return resolveRutaCurrency(match);
+    }
+    const first = rutas.find((r) => r.currency || r.pais);
+    return first ? resolveRutaCurrency(first) : 'USD';
+  });
   public readonly hasDateRange = computed(() => this.activeTab() !== 'cartera');
   public readonly hasReportData = computed(() => {
     switch (this.activeTab()) {
@@ -117,6 +129,12 @@ export class ReportesPage {
 
   trackByRutaId(_index: number, ruta: { rutaId: string }): string {
     return ruta.rutaId;
+  }
+
+  currencyForRuta(rutaId: string, fallbackCurrency?: string | null): string {
+    const match = this.rutas().find((r) => r.id === rutaId || r._id === rutaId);
+    if (match) return resolveRutaCurrency(match);
+    return resolveRutaCurrency({ currency: fallbackCurrency }) || this.reportCurrency();
   }
 
   trackByFecha(_index: number, item: { fecha: string }): string {

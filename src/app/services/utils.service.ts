@@ -19,7 +19,7 @@ export class UtilsService {
   async presentAlert(opts?: AlertOptions) {
     const alert = await this.alertCtrl.create({
       ...opts,
-      mode: 'ios'
+      mode: 'md'
     });
     await alert.present();
   }
@@ -52,7 +52,7 @@ export class UtilsService {
   loading(opts?: LoadingOptions) {
     return this.loadingCtrl.create({
       spinner: 'crescent',
-      mode: 'ios',
+      mode: 'md',
       ...opts,
     })
   }
@@ -106,7 +106,7 @@ export class UtilsService {
   async presentActionSheet(opts?: ActionSheetOptions) {
     const actionSheet = await this.actionSheetCtrl.create({
       ...opts,
-      mode: 'ios',
+      mode: 'md',
     });
     await actionSheet.present();
   }

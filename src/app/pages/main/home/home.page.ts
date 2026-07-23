@@ -1,31 +1,108 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, computed } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { finalize } from 'rxjs/operators';
+
 import { RutaService } from '../../../services/ruta.service';
 import { UtilsService } from '../../../services/utils.service';
 import { Ruta } from '../../../models';
 import { EmpresaService } from 'src/app/services/empresa.service';
-import { finalize } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { UpdateNotesModalComponent } from 'src/app/shared/components/update-notes-modal/update-notes-modal.component';
-import { WsService } from 'src/app/services/ws.service';
+import {
+  CajaCloseEvent,
+  CajaLockEvent,
+  WsService,
+} from 'src/app/services/ws.service';
+import { formatMoney, resolveRutaCurrency } from 'src/app/helpers/money.helpers';
+
+const WS_ACTION_TIMEOUT_MS = 10_000;
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
 })
-export class HomePage {
+export class HomePage implements OnDestroy {
   loading = true;
+  loadError = false;
+  /** Ruta id con acción en curso (HTTP o WS). */
+  actionPendingId: string | null = null;
+
+  readonly resumen = computed(() => {
+    const rutas = this.empresaSvc.rutas() ?? [];
+    let abiertas = 0;
+    let cerradas = 0;
+    let bloqueadas = 0;
+    for (const r of rutas) {
+      if (r.status) abiertas++;
+      else cerradas++;
+      if (r.isLocked) bloqueadas++;
+    }
+    return {
+      total: rutas.length,
+      abiertas,
+      cerradas,
+      bloqueadas,
+    };
+  });
+
+  private subs = new Subscription();
+  private pendingTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private rutaSvc: RutaService,
     public utilsSvc: UtilsService,
     public empresaSvc: EmpresaService,
     private ws: WsService,
-  ) { }
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ionViewWillEnter(): void {
     this.checkUpdateNotes();
+    this.bindWsFeedback();
     this.loadRutas();
+  }
+
+  ionViewWillLeave(): void {
+    this.clearPending();
+    this.subs.unsubscribe();
+    this.subs = new Subscription();
+  }
+
+  ngOnDestroy(): void {
+    this.clearPending();
+    this.subs.unsubscribe();
+  }
+
+  private bindWsFeedback(): void {
+    this.subs.unsubscribe();
+    this.subs = new Subscription();
+
+    this.subs.add(
+      this.ws.onCloseCaja().subscribe((event: CajaCloseEvent) => {
+        if (event?.ruta && this.matchesPending(event.ruta)) {
+          this.clearPending();
+        }
+      }),
+    );
+    this.subs.add(
+      this.ws.onBlockCaja().subscribe((event: CajaLockEvent) => {
+        if (event?.ruta && this.matchesPending(event.ruta)) {
+          this.clearPending();
+        }
+      }),
+    );
+    this.subs.add(
+      this.ws.onUnblockCaja().subscribe((event: CajaLockEvent) => {
+        if (event?.ruta && this.matchesPending(event.ruta)) {
+          this.clearPending();
+        }
+      }),
+    );
+  }
+
+  private matchesPending(rutaId: string): boolean {
+    return this.actionPendingId === rutaId;
   }
 
   private checkUpdateNotes(): void {
@@ -40,106 +117,184 @@ export class HomePage {
   }
 
   loadRutas(event?: any): void {
-    this.loading = true;
-    this.rutaSvc.getRutasByEmpresa()
-      .pipe(finalize(() => {
-        this.loading = false;
-        if (event) {
-          event.target.complete();
-        }
-      }))
+    const isRefresh = !!event;
+    if (!isRefresh) {
+      this.loading = true;
+    }
+    this.loadError = false;
+
+    this.rutaSvc
+      .getRutasByEmpresa()
+      .pipe(
+        finalize(() => {
+          this.loading = false;
+          if (event) {
+            event.target.complete();
+          }
+          this.cdr.markForCheck();
+        }),
+      )
       .subscribe({
         next: ({ rutas }) => {
           this.empresaSvc.setRutas(rutas);
+          this.loadError = false;
         },
         error: () => {
+          this.loadError = true;
           this.utilsSvc.presentToast({
             message: 'Error al obtener las rutas',
             duration: 2000,
             position: 'bottom',
-            color: 'danger'
+            color: 'danger',
           });
-        }
+        },
       });
   }
 
-  trackByRutaId(index: number, ruta: Ruta): string {
+  trackByRutaId(_index: number, ruta: Ruta): string {
     return ruta.id;
   }
 
+  isPending(ruta: Ruta): boolean {
+    return (
+      this.actionPendingId === ruta.id ||
+      (!!ruta._id && this.actionPendingId === ruta._id)
+    );
+  }
+
+  formatCartera(ruta: Ruta): string | null {
+    const value = Number(ruta.cartera);
+    if (!Number.isFinite(value)) return null;
+    return formatMoney(value, resolveRutaCurrency(ruta));
+  }
+
+  formatRutaMoment(ruta: Ruta): string | null {
+    const raw = ruta.status ? ruta.ultima_apertura : ruta.ultimo_cierre;
+    if (!raw) return null;
+    const date = new Date(raw);
+    if (Number.isNaN(date.getTime())) return null;
+    return date.toLocaleString('es', {
+      day: '2-digit',
+      month: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
+
+  momentLabel(ruta: Ruta): string {
+    return ruta.status ? 'Abierta desde' : 'Cerrada desde';
+  }
+
   async confirmToggle(ruta: Ruta): Promise<void> {
-    const message = ruta.status ? '¿Cerrar ruta?' : '¿Abrir ruta?';
-    const header = 'Confirmación';
+    if (this.actionPendingId) return;
+
+    const nombre = ruta.nombre || 'esta ruta';
+    const header = ruta.status ? 'Cerrar ruta' : 'Abrir ruta';
+    const message = ruta.status
+      ? `Se cerrará la caja del día de ${nombre}. Los cobradores no podrán seguir operando hasta que se vuelva a abrir.`
+      : `Se abrirá la caja del día de ${nombre} para iniciar operaciones.`;
 
     await this.utilsSvc.presentAlert({
       header,
       message,
       buttons: [
+        { text: 'Cancelar', role: 'cancel' },
         {
-          text: 'Sí',
-          handler: () => this.toggleRutaStatus(ruta)
+          text: ruta.status ? 'Cerrar' : 'Abrir',
+          handler: () => this.toggleRutaStatus(ruta),
         },
-        {
-          text: 'No',
-          role: 'cancel'
-        }
-      ]
+      ],
     });
   }
 
   async toggleRutaStatus(ruta: Ruta): Promise<void> {
+    if (this.actionPendingId) return;
+
     if (ruta.status) {
+      this.beginPending(ruta.id);
       this.ws.closeCaja(ruta.id);
       return;
     }
 
-    const loading = await this.utilsSvc.loading({ message: 'Abriendo ruta...' });
-    await loading.present();
-
+    this.beginPending(ruta.id);
     this.rutaSvc.newCaja(ruta.id).subscribe({
       next: () => {
-        loading.dismiss();
+        this.clearPending();
         this.loadRutas();
       },
       error: () => {
-        loading.dismiss();
+        this.clearPending();
         this.utilsSvc.presentToast({
           message: 'Error al abrir la ruta',
           duration: 2000,
           position: 'bottom',
-          color: 'danger'
+          color: 'danger',
         });
-      }
+      },
     });
   }
 
   async confirmToggleLock(ruta: Ruta): Promise<void> {
+    if (this.actionPendingId) return;
+
     const willLock = !ruta.isLocked;
+    const nombre = ruta.nombre || 'esta ruta';
+    const header = willLock ? 'Bloquear caja' : 'Desbloquear caja';
     const message = willLock
-      ? `¿Bloquear la caja de ${ruta.nombre}?`
-      : `¿Desbloquear la caja de ${ruta.nombre}?`;
+      ? `Se bloqueará la caja de ${nombre}. El cobrador no podrá registrar movimientos hasta desbloquearla.`
+      : `Se desbloqueará la caja de ${nombre} para continuar operaciones.`;
 
     await this.utilsSvc.presentAlert({
-      header: 'Confirmación',
+      header,
       message,
       buttons: [
+        { text: 'Cancelar', role: 'cancel' },
         {
-          text: 'Sí',
-          handler: () => this.toggleRutaLock(ruta)
+          text: willLock ? 'Bloquear' : 'Desbloquear',
+          handler: () => this.toggleRutaLock(ruta),
         },
-        {
-          text: 'No',
-          role: 'cancel'
-        }
-      ]
+      ],
     });
   }
 
   toggleRutaLock(ruta: Ruta): void {
+    if (this.actionPendingId) return;
+    this.beginPending(ruta.id);
     if (ruta.isLocked) {
       this.ws.unblockCaja(ruta.id);
     } else {
       this.ws.blockCaja(ruta.id);
+    }
+  }
+
+  private beginPending(rutaId: string): void {
+    this.clearPendingTimerOnly();
+    this.actionPendingId = rutaId;
+    this.cdr.markForCheck();
+    this.pendingTimer = setTimeout(() => {
+      if (this.actionPendingId !== rutaId) return;
+      this.actionPendingId = null;
+      this.pendingTimer = null;
+      this.cdr.markForCheck();
+      this.utilsSvc.presentToast({
+        message: 'No se pudo confirmar la acción. Desliza para actualizar.',
+        duration: 3000,
+        position: 'bottom',
+        color: 'warning',
+      });
+    }, WS_ACTION_TIMEOUT_MS);
+  }
+
+  private clearPending(): void {
+    this.actionPendingId = null;
+    this.clearPendingTimerOnly();
+    this.cdr.markForCheck();
+  }
+
+  private clearPendingTimerOnly(): void {
+    if (this.pendingTimer != null) {
+      clearTimeout(this.pendingTimer);
+      this.pendingTimer = null;
     }
   }
 }

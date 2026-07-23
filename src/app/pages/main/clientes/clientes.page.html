@@ -1,69 +1,150 @@
 <app-header title="Clientes" [showMenu]="true" />
 
 <ion-content [fullscreen]="true" class="ion-padding">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="chevron-down-circle-outline"
+      refreshingSpinner="crescent">
+    </ion-refresher-content>
+  </ion-refresher>
 
-  <ion-list>
-    <ion-item>
+  <div class="controls-card">
+    <ion-item lines="none" *ngIf="empresaSvc.rutas().length > 0">
       <select-ruta (onEmitRuta)="onChangeRuta($event)" />
     </ion-item>
-    <ion-item>
-      <ion-grid>
-        <ion-col>
-          <app-search-bar
-            *ngIf="!loading"
-            (onEmitQuery)="onSearchBar($event)" />
-          <ion-skeleton-text
-            *ngIf="loading"
-            animated 
-            style="width: 100%; height: 50px;"></ion-skeleton-text>
-        </ion-col>
-      </ion-grid>
-    </ion-item>
-  </ion-list>
 
-  <ion-list *ngIf="clientes.length > 0 && !loading">
-    <ion-item
-      *ngFor="let cliente of clientesFiltrados"
-      detail
-      button
-      (click)="goToCliente(cliente)"
-    >
-      <ion-label>
-        <ion-grid>
-          <ion-row>
-            <ion-col>
-              <ion-text><h3>{{cliente.nombre | titlecase}}</h3></ion-text>
-            </ion-col>
-            <ion-col size="auto">
-              <ion-text>
-                <h3>
-                  <ion-badge 
-                    [color]="cliente.status ? 'success':'danger' " 
-                    mode="ios">{{ cliente.status ? 'Activo':'Inactivo' }}</ion-badge>
-                </h3>
-              </ion-text>
-            </ion-col>
-          </ion-row>
-        </ion-grid>
-      </ion-label>
-    </ion-item>
-  </ion-list>
+    <div class="controls-actions">
+      <ion-button
+        expand="block"
+        fill="outline"
+        color="primary"
+        (click)="loadClientes()"
+        [disabled]="loading() || !currentRuta()">
+        <ion-icon slot="start" name="search-outline"></ion-icon>
+        Buscar
+      </ion-button>
+    </div>
+  </div>
 
-  <ion-list *ngIf="loading">
-    <ion-item class="product-item" *ngFor="let product of [1,1,1,1,1,1]">
-      <ion-label>
-        <ion-grid>
-          <ion-row>
-            <ion-col size="10">
-              <ion-skeleton-text animated style="width: 80%"></ion-skeleton-text>
-            </ion-col>
-            <ion-col size="2">
-              <ion-skeleton-text animated style="width: 100%"></ion-skeleton-text>
-            </ion-col>
-          </ion-row>
-        </ion-grid>
-      </ion-label>
-    </ion-item>
-  </ion-list>
+  <div *ngIf="loading()" class="skeleton-block">
+    <ion-skeleton-text animated style="width: 100%; height: 72px; border-radius: 16px;"></ion-skeleton-text>
+    <ion-skeleton-text animated style="width: 100%; height: 72px; border-radius: 16px; margin-top: 10px;"></ion-skeleton-text>
+    <ion-skeleton-text animated style="width: 100%; height: 72px; border-radius: 16px; margin-top: 10px;"></ion-skeleton-text>
+  </div>
 
+  <ng-container *ngIf="!loading()">
+    <div *ngIf="!currentRuta()" class="empty-state">
+      <ion-icon name="map-outline" class="empty-icon"></ion-icon>
+      <h2>Selecciona una ruta</h2>
+      <p>Elige una ruta para ver sus clientes.</p>
+    </div>
+
+    <div *ngIf="currentRuta() && loadError() && resumen().total === 0" class="empty-state">
+      <ion-icon name="cloud-offline-outline" class="empty-icon"></ion-icon>
+      <h2>No se pudieron cargar</h2>
+      <p>Revisa tu conexión e inténtalo de nuevo.</p>
+      <ion-button fill="solid" color="primary" (click)="loadClientes()">
+        <ion-icon slot="start" name="refresh"></ion-icon>
+        Reintentar
+      </ion-button>
+    </div>
+
+    <div *ngIf="currentRuta() && !loadError() && searched() && resumen().total === 0" class="empty-state">
+      <ion-icon name="people-outline" class="empty-icon"></ion-icon>
+      <h2>Sin clientes</h2>
+      <p>No hay clientes registrados en esta ruta.</p>
+    </div>
+
+    <ng-container *ngIf="currentRuta() && resumen().total > 0">
+      <div class="summary-strip" aria-live="polite">
+        <div class="summary-item">
+          <span>Total</span>
+          <strong>{{ resumen().total }}</strong>
+        </div>
+        <div class="summary-item">
+          <span>Activos</span>
+          <strong>{{ resumen().activos }}</strong>
+        </div>
+        <div class="summary-item">
+          <span>Inactivos</span>
+          <strong>{{ resumen().inactivos }}</strong>
+        </div>
+      </div>
+
+      <ion-searchbar
+        class="clientes-search"
+        mode="md"
+        debounce="250"
+        placeholder="Buscar por nombre, alias, DPI o teléfono"
+        [value]="searchQuery()"
+        (ionInput)="onSearch($event)"
+        (ionClear)="searchQuery.set('')">
+      </ion-searchbar>
+
+      <div class="filter-chips">
+        <ion-chip
+          [color]="filter() === 'all' ? 'primary' : 'medium'"
+          [outline]="filter() !== 'all'"
+          (click)="setFilter('all')">
+          <ion-label>Todos</ion-label>
+        </ion-chip>
+        <ion-chip
+          [color]="filter() === 'active' ? 'success' : 'medium'"
+          [outline]="filter() !== 'active'"
+          (click)="setFilter('active')">
+          <ion-label>Activos</ion-label>
+        </ion-chip>
+        <ion-chip
+          [color]="filter() === 'inactive' ? 'danger' : 'medium'"
+          [outline]="filter() !== 'inactive'"
+          (click)="setFilter('inactive')">
+          <ion-label>Inactivos</ion-label>
+        </ion-chip>
+      </div>
+
+      <div *ngIf="filteredClientes().length === 0" class="empty-filter">
+        <p>No hay clientes con ese filtro o búsqueda.</p>
+      </div>
+
+      <div class="clientes-list" *ngIf="filteredClientes().length > 0">
+        <div
+          class="cliente-card"
+          *ngFor="let cliente of filteredClientes(); trackBy: trackById"
+          (click)="goToCliente(cliente)">
+          <div class="avatar-icon" [class.inactive]="!cliente.status">
+            <ion-icon name="person-outline"></ion-icon>
+          </div>
+
+          <div class="cliente-info">
+            <h2>{{ cliente.nombre | titlecase }}</h2>
+            <div class="cliente-meta">
+              <span *ngIf="cliente.alias">
+                <ion-icon name="pricetag-outline"></ion-icon>
+                {{ cliente.alias }}
+              </span>
+              <span *ngIf="cliente.telefono">
+                <ion-icon name="call-outline"></ion-icon>
+                {{ cliente.telefono }}
+              </span>
+              <span *ngIf="cliente.ciudad || cliente.direccion">
+                <ion-icon name="location-outline"></ion-icon>
+                {{ (cliente.ciudad || cliente.direccion) | titlecase }}
+              </span>
+            </div>
+          </div>
+
+          <div class="cliente-status">
+            <ion-badge [color]="cliente.status ? 'success' : 'danger'" mode="md">
+              {{ cliente.status ? 'Activo' : 'Inactivo' }}
+            </ion-badge>
+            <ion-icon
+              *ngIf="hasUbication(cliente)"
+              name="navigate-circle-outline"
+              color="primary">
+            </ion-icon>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </ng-container>
 </ion-content>

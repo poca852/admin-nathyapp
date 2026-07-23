@@ -1,5 +1,4 @@
 import { Component, inject, Input, OnInit, signal } from '@angular/core';
-import { LngLat } from 'mapbox-gl';
 import { CajaMovimiento } from 'src/app/models/caja-movimiento.interface';
 import { CreditosService } from 'src/app/services/creditos.service';
 import { UtilsService } from 'src/app/services/utils.service';
@@ -39,7 +38,7 @@ export class ModalHistorialPagosComponent implements OnInit {
       component: MapModalComponent,
       cssClass: 'add-update-modal',
       componentProps: {
-        lngLat: new LngLat(pago.ubication[0], pago.ubication[1]),
+        lngLat: pago.ubication,
       },
     });
   }

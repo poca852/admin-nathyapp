@@ -1,4 +1,5 @@
 import { Component, ViewChild, signal, inject, computed } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { UtilsService } from '../../../services/utils.service';
 import { EmpresaService } from '../../../services/empresa.service';
 import { OficinaService } from '../../../services/oficina.service';
@@ -28,11 +29,12 @@ export class OficinaPage {
   private readonly utilsSvc = inject(UtilsService);
   private readonly empresaSvc = inject(EmpresaService);
   private readonly oficinaSvc = inject(OficinaService);
+  private readonly route = inject(ActivatedRoute);
 
   @ViewChild('modalOficina') modalOficina!: IonModal;
 
   public SubTipo = SubTipo;
-  public readonly dateSelect = signal<Date>(new Date());
+  public readonly dateSelect = signal<Date>(this.startOfToday());
   public readonly currentRuta = signal<Ruta | null>(null);
 
   public readonly resumen = signal<ResumenOficinaResponse | null>(null);
@@ -42,6 +44,40 @@ export class OficinaPage {
   public readonly totalGastos = computed(() => this.resumen()?.gastos?.total || 0);
   public readonly totalInversiones = computed(() => this.resumen()?.inversiones?.total || 0);
   public readonly totalRetiros = computed(() => this.resumen()?.retiros?.total || 0);
+
+  ionViewWillEnter(): void {
+    this.syncFromNavigation();
+    if (this.currentRuta()?.id) {
+      this.fetchMovimientos();
+    }
+  }
+
+  ionViewWillLeave(): void {
+    this.resumen.set(null);
+    this.movimientos.set([]);
+  }
+
+  private startOfToday(): Date {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  private syncFromNavigation(): void {
+    const preselected = this.empresaSvc.ruta();
+    if (preselected?.id) {
+      this.currentRuta.set(preselected);
+    }
+
+    const fechaParam = this.route.snapshot.queryParamMap.get('fecha');
+    if (fechaParam) {
+      const parsed = new Date(fechaParam);
+      if (!Number.isNaN(parsed.getTime())) {
+        parsed.setHours(0, 0, 0, 0);
+        this.dateSelect.set(parsed);
+      }
+    }
+  }
 
   onChangeDay(e: CustomEvent): void {
     const dateValue = Array.isArray(e.detail.value) ? e.detail.value[0] : e.detail.value;
@@ -56,7 +92,12 @@ export class OficinaPage {
 
   onChangeRuta(ruta: Ruta): void {
     this.currentRuta.set(ruta);
+    this.empresaSvc.setRuta(ruta);
     this.fetchMovimientos();
+  }
+
+  actualizar(): void {
+    void this.fetchMovimientos();
   }
 
   getSubTipoLabel(subTipo: SubTipo): string {
@@ -103,7 +144,6 @@ export class OficinaPage {
           ...this.mapToMovimientoOficina(res.retiros?.movimientos || [], SubTipo.RETIRO),
         ];
 
-        // Ordenar del más reciente al más antiguo
         movimientos.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
 
         this.movimientos.set(movimientos);

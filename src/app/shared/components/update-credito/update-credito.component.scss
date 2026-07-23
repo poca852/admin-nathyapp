@@ -1,0 +1,168 @@
+.form-hero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(var(--ion-color-primary-rgb), 0.08);
+  border: 1px solid rgba(var(--ion-color-primary-rgb), 0.12);
+}
+
+.form-hero-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: rgba(var(--ion-color-success-rgb, 45, 211, 111), 0.18);
+
+  ion-icon {
+    font-size: 1.5rem;
+    color: var(--ion-color-success-shade, var(--ion-color-success));
+  }
+}
+
+.form-hero-text {
+  min-width: 0;
+
+  h2 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--ion-text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  p {
+    margin: 4px 0 0;
+    font-size: 0.82rem;
+    line-height: 1.35;
+    color: var(--ion-color-medium);
+  }
+}
+
+.form-section {
+  margin-bottom: 18px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px 2px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--ion-color-medium);
+
+  ion-icon {
+    font-size: 1rem;
+    color: var(--ion-color-primary);
+  }
+}
+
+.credito-form {
+  custom-input,
+  .field-card {
+    display: block;
+    margin-bottom: 12px;
+  }
+}
+
+:host ::ng-deep custom-input .custom-input,
+.field-card {
+  --background: var(--ion-color-step-50, rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.04));
+  --border-radius: 14px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --inner-padding-end: 8px;
+  border: 1px solid rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.06);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.field-card {
+  ion-icon[slot='start'] {
+    font-size: 1.25rem;
+    margin-inline-end: 4px;
+  }
+}
+
+.mode-toggle {
+  ion-toggle {
+    width: 100%;
+    font-weight: 600;
+    font-size: 0.92rem;
+  }
+}
+
+.mode-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: -2px 2px 4px;
+  font-size: 0.78rem;
+  color: var(--ion-color-medium);
+  line-height: 1.35;
+
+  ion-icon {
+    margin-top: 1px;
+    color: var(--ion-color-primary);
+    flex-shrink: 0;
+  }
+}
+
+.freq-group {
+  display: block;
+}
+
+.freq-option {
+  margin-bottom: 10px;
+
+  h3 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--ion-text-color);
+  }
+
+  p {
+    margin: 2px 0 0;
+    font-size: 0.78rem;
+    color: var(--ion-color-medium);
+  }
+
+  ion-icon[slot='end'] {
+    font-size: 1.25rem;
+  }
+}
+
+.submit-btn {
+  --border-radius: 14px;
+  --padding-top: 16px;
+  --padding-bottom: 16px;
+  height: 52px;
+  font-weight: 700;
+  margin-top: 8px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 14px rgba(var(--ion-color-primary-rgb), 0.25);
+}
+
+:host-context(.dark),
+:host-context(html.ion-palette-dark) {
+  :host ::ng-deep custom-input .custom-input,
+  .field-card {
+    --background: var(--ion-color-step-100, rgba(255, 255, 255, 0.06));
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .form-hero {
+    background: rgba(var(--ion-color-primary-rgb), 0.14);
+  }
+}

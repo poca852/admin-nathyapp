@@ -77,7 +77,7 @@
     </div>
 
     <!-- Tabs -->
-    <ion-segment [value]="activeTab()" (ionChange)="onTabChange($event)" mode="ios" scrollable="true">
+    <ion-segment [value]="activeTab()" (ionChange)="onTabChange($event)" mode="md" scrollable="true">
       <ion-segment-button value="cartera">
         <ion-label>Cartera</ion-label>
       </ion-segment-button>
@@ -120,17 +120,17 @@
           <div class="metric-card highlight">
             <ion-icon name="wallet-outline"></ion-icon>
             <span class="metric-label">Cartera</span>
-            <span class="metric-value">{{ report.totalesEmpresa.cartera | currency:'USD':'symbol':'1.0-0':'en' }}</span>
+            <span class="metric-value">{{ report.totalesEmpresa.cartera | money:reportCurrency() }}</span>
           </div>
           <div class="metric-card">
             <ion-icon name="cash-outline"></ion-icon>
             <span class="metric-label">Capital prestado</span>
-            <span class="metric-value">{{ report.totalesEmpresa.capitalPrestado | currency:'USD':'symbol':'1.0-0':'en' }}</span>
+            <span class="metric-value">{{ report.totalesEmpresa.capitalPrestado | money:reportCurrency() }}</span>
           </div>
           <div class="metric-card success">
             <ion-icon name="trending-up-outline"></ion-icon>
             <span class="metric-label">Ganancia potencial</span>
-            <span class="metric-value">{{ report.totalesEmpresa.gananciaPotencial | currency:'USD':'symbol':'1.0-0':'en' }}</span>
+            <span class="metric-value">{{ report.totalesEmpresa.gananciaPotencial | money:reportCurrency() }}</span>
           </div>
           <div class="metric-card warning">
             <ion-icon name="alert-circle-outline"></ion-icon>
@@ -154,9 +154,9 @@
             </ion-card-header>
             <ion-card-content>
               <div class="route-metrics">
-                <div><span>Cartera</span><strong>{{ ruta.cartera | currency:'USD':'symbol':'1.0-0':'en' }}</strong></div>
-                <div><span>Capital</span><strong>{{ ruta.capitalPrestado | currency:'USD':'symbol':'1.0-0':'en' }}</strong></div>
-                <div><span>Ganancia pot.</span><strong>{{ ruta.gananciaPotencial | currency:'USD':'symbol':'1.0-0':'en' }}</strong></div>
+                <div><span>Cartera</span><strong>{{ ruta.cartera | money:currencyForRuta(ruta.rutaId) }}</strong></div>
+                <div><span>Capital</span><strong>{{ ruta.capitalPrestado | money:currencyForRuta(ruta.rutaId) }}</strong></div>
+                <div><span>Ganancia pot.</span><strong>{{ ruta.gananciaPotencial | money:currencyForRuta(ruta.rutaId) }}</strong></div>
               </div>
             </ion-card-content>
           </ion-card>
@@ -169,22 +169,22 @@
           <div class="metric-card highlight success">
             <ion-icon name="trending-up-outline"></ion-icon>
             <span class="metric-label">Interés cobrado</span>
-            <span class="metric-value">{{ report.totalesEmpresa.interesCobrado | currency:'USD':'symbol':'1.0-0':'en' }}</span>
+            <span class="metric-value">{{ report.totalesEmpresa.interesCobrado | money:reportCurrency() }}</span>
           </div>
           <div class="metric-card">
             <ion-icon name="cash-outline"></ion-icon>
             <span class="metric-label">Cobros</span>
-            <span class="metric-value">{{ report.totalesEmpresa.cobros | currency:'USD':'symbol':'1.0-0':'en' }}</span>
+            <span class="metric-value">{{ report.totalesEmpresa.cobros | money:reportCurrency() }}</span>
           </div>
           <div class="metric-card">
             <ion-icon name="arrow-down-circle-outline"></ion-icon>
             <span class="metric-label">Préstamos</span>
-            <span class="metric-value">{{ report.totalesEmpresa.prestamosOtorgados | currency:'USD':'symbol':'1.0-0':'en' }}</span>
+            <span class="metric-value">{{ report.totalesEmpresa.prestamosOtorgados | money:reportCurrency() }}</span>
           </div>
           <div class="metric-card">
             <ion-icon name="card-outline"></ion-icon>
             <span class="metric-label">Gastos</span>
-            <span class="metric-value">{{ report.totalesEmpresa.gastos | currency:'USD':'symbol':'1.0-0':'en' }}</span>
+            <span class="metric-value">{{ report.totalesEmpresa.gastos | money:reportCurrency() }}</span>
           </div>
         </div>
 
@@ -195,9 +195,9 @@
               <ion-item>
                 <ion-label>
                   <h3>{{ formatDisplayDate(dia.fecha) }}</h3>
-                  <p>Cobros: {{ dia.cobros | currency:'USD':'symbol':'1.0-0':'en' }} · Interés: {{ dia.interesCobrado | currency:'USD':'symbol':'1.0-0':'en' }}</p>
+                  <p>Cobros: {{ dia.cobros | money:reportCurrency() }} · Interés: {{ dia.interesCobrado | money:reportCurrency() }}</p>
                 </ion-label>
-                <ion-note slot="end" color="success">{{ dia.interesCobrado | currency:'USD':'symbol':'1.0-0':'en' }}</ion-note>
+                <ion-note slot="end" color="success">{{ dia.interesCobrado | money:reportCurrency() }}</ion-note>
               </ion-item>
             }
           </ion-list>
@@ -210,9 +210,9 @@
             </ion-card-header>
             <ion-card-content>
               <div class="route-metrics">
-                <div><span>Interés cobrado</span><strong>{{ ruta.interesCobrado | currency:'USD':'symbol':'1.0-0':'en' }}</strong></div>
-                <div><span>Cobros</span><strong>{{ ruta.cobros | currency:'USD':'symbol':'1.0-0':'en' }}</strong></div>
-                <div><span>Préstamos</span><strong>{{ ruta.prestamosOtorgados | currency:'USD':'symbol':'1.0-0':'en' }}</strong></div>
+                <div><span>Interés cobrado</span><strong>{{ ruta.interesCobrado | money:currencyForRuta(ruta.rutaId) }}</strong></div>
+                <div><span>Cobros</span><strong>{{ ruta.cobros | money:currencyForRuta(ruta.rutaId) }}</strong></div>
+                <div><span>Préstamos</span><strong>{{ ruta.prestamosOtorgados | money:currencyForRuta(ruta.rutaId) }}</strong></div>
               </div>
             </ion-card-content>
           </ion-card>
@@ -225,22 +225,22 @@
           <div class="metric-card danger">
             <ion-icon name="card-outline"></ion-icon>
             <span class="metric-label">Gastos</span>
-            <span class="metric-value">{{ report.totalesEmpresa.gastos | currency:'USD':'symbol':'1.0-0':'en' }}</span>
+            <span class="metric-value">{{ report.totalesEmpresa.gastos | money:reportCurrency() }}</span>
           </div>
           <div class="metric-card warning">
             <ion-icon name="wallet-outline"></ion-icon>
             <span class="metric-label">Retiros</span>
-            <span class="metric-value">{{ report.totalesEmpresa.retiros | currency:'USD':'symbol':'1.0-0':'en' }}</span>
+            <span class="metric-value">{{ report.totalesEmpresa.retiros | money:reportCurrency() }}</span>
           </div>
           <div class="metric-card">
             <ion-icon name="trending-up-outline"></ion-icon>
             <span class="metric-label">Inversiones</span>
-            <span class="metric-value">{{ report.totalesEmpresa.inversiones | currency:'USD':'symbol':'1.0-0':'en' }}</span>
+            <span class="metric-value">{{ report.totalesEmpresa.inversiones | money:reportCurrency() }}</span>
           </div>
           <div class="metric-card highlight">
             <ion-icon name="analytics-outline"></ion-icon>
             <span class="metric-label">Neto capital</span>
-            <span class="metric-value">{{ report.totalesEmpresa.netoCapital | currency:'USD':'symbol':'1.0-0':'en' }}</span>
+            <span class="metric-value">{{ report.totalesEmpresa.netoCapital | money:reportCurrency() }}</span>
           </div>
         </div>
 
@@ -250,7 +250,7 @@
             @for (entry of gastosPorCategoriaEntries(); track entry[0]) {
               <ion-item>
                 <ion-label>{{ entry[0] | titlecase }}</ion-label>
-                <ion-note slot="end">{{ entry[1] | currency:'USD':'symbol':'1.0-0':'en' }}</ion-note>
+                <ion-note slot="end">{{ entry[1] | money:reportCurrency() }}</ion-note>
               </ion-item>
             }
           </ion-list>
@@ -263,9 +263,9 @@
             </ion-card-header>
             <ion-card-content>
               <div class="route-metrics">
-                <div><span>Gastos</span><strong>{{ ruta.gastos.total | currency:'USD':'symbol':'1.0-0':'en' }}</strong></div>
-                <div><span>Retiros</span><strong>{{ ruta.retiros.total | currency:'USD':'symbol':'1.0-0':'en' }}</strong></div>
-                <div><span>Inversiones</span><strong>{{ ruta.inversiones.total | currency:'USD':'symbol':'1.0-0':'en' }}</strong></div>
+                <div><span>Gastos</span><strong>{{ ruta.gastos.total | money:ruta.currency }}</strong></div>
+                <div><span>Retiros</span><strong>{{ ruta.retiros.total | money:ruta.currency }}</strong></div>
+                <div><span>Inversiones</span><strong>{{ ruta.inversiones.total | money:ruta.currency }}</strong></div>
               </div>
             </ion-card-content>
           </ion-card>
@@ -278,17 +278,17 @@
           <div class="metric-card">
             <ion-icon name="cash-outline"></ion-icon>
             <span class="metric-label">Cobros</span>
-            <span class="metric-value">{{ report.totalesEmpresa.cobro | currency:'USD':'symbol':'1.0-0':'en' }}</span>
+            <span class="metric-value">{{ report.totalesEmpresa.cobro | money:reportCurrency() }}</span>
           </div>
           <div class="metric-card">
             <ion-icon name="arrow-down-circle-outline"></ion-icon>
             <span class="metric-label">Préstamos</span>
-            <span class="metric-value">{{ report.totalesEmpresa.prestamo | currency:'USD':'symbol':'1.0-0':'en' }}</span>
+            <span class="metric-value">{{ report.totalesEmpresa.prestamo | money:reportCurrency() }}</span>
           </div>
           <div class="metric-card danger">
             <ion-icon name="card-outline"></ion-icon>
             <span class="metric-label">Gastos</span>
-            <span class="metric-value">{{ report.totalesEmpresa.gasto | currency:'USD':'symbol':'1.0-0':'en' }}</span>
+            <span class="metric-value">{{ report.totalesEmpresa.gasto | money:reportCurrency() }}</span>
           </div>
           <div class="metric-card highlight">
             <ion-icon name="speedometer-outline"></ion-icon>
@@ -304,7 +304,7 @@
               <ion-item>
                 <ion-label>
                   <h3>{{ formatDisplayDate(dia.fecha) }}</h3>
-                  <p>Cobro: {{ dia.cobro | currency:'USD':'symbol':'1.0-0':'en' }} · Pretendido: {{ dia.pretendido | currency:'USD':'symbol':'1.0-0':'en' }}</p>
+                  <p>Cobro: {{ dia.cobro | money:reportCurrency() }} · Pretendido: {{ dia.pretendido | money:reportCurrency() }}</p>
                 </ion-label>
                 <ion-note slot="end">
                   @if (dia.eficienciaCobro !== null) {

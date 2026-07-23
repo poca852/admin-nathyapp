@@ -3,11 +3,11 @@
 <ion-content class="ion-padding">
 
   <div class="header-info" *ngIf="ruta">
-    <ion-chip color="primary" mode="ios">
+    <ion-chip color="primary" mode="md">
       <ion-icon name="map-outline"></ion-icon>
       <ion-label>{{ruta.nombre}}</ion-label>
     </ion-chip>
-    <ion-chip [color]="isEditable() ? 'success' : 'warning'" mode="ios">
+    <ion-chip [color]="isEditable() ? 'success' : 'warning'" mode="md">
       <ion-icon [name]="isEditable() ? 'calendar-outline' : 'lock-closed-outline'"></ion-icon>
       <ion-label>{{fechaSeleccionada | date: 'dd/MM/yyyy'}}</ion-label>
     </ion-chip>
@@ -44,7 +44,7 @@
     </ion-item>
 
     <!-- Botón de Acción -->
-    <ion-button mode="ios" type="submit" expand="block" class="ion-margin-top"
+    <ion-button mode="md" type="submit" expand="block" class="ion-margin-top"
       [disabled]="form.invalid || !isEditable()">
       {{movimiento ? 'Actualizar' : 'Guardar'}} Movimiento
       <ion-icon slot="end" [name]="movimiento ? 'refresh-outline' : 'save-outline'"></ion-icon>

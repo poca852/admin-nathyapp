@@ -75,12 +75,23 @@ export interface NuevoCredito {
 }
 
 export interface HistorialCredito {
-  _id: string;
+  id: string;
+  _id?: string;
+  ruta: string;
   valor_credito: number;
   interes: number;
-  fecha_inicio: Date;
+  total_pagar: number;
+  abonos: number;
+  saldo: number;
+  valor_cuota: number;
+  fecha_inicio: Date | string;
+  dueDate?: Date | string;
   frecuencia_cobro: string;
   total_cuotas: number;
-  ultimo_pago: Date;
+  ultimo_pago: Date | string;
   dias_tardados_en_pagar: number;
+  state?: string;
+  observaciones?: string;
+  mora_adeudada?: number;
+  mora_cobrada?: number;
 }

@@ -1,127 +1,155 @@
 <app-header title="Renovaciones" [showMenu]="true" />
 
 <ion-content [fullscreen]="true" class="ion-padding">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="chevron-down-circle-outline"
+      refreshingSpinner="crescent">
+    </ion-refresher-content>
+  </ion-refresher>
 
-  <!-- Filters Section -->
-  <ion-card class="filter-card">
-    <ion-card-content>
-      <ion-row class="ion-align-items-center">
-        <ion-col size="6">
-          <ion-item lines="none" class="filter-item">
-            <ion-datetime-button datetime="datetimeRenovaciones"></ion-datetime-button>
-          </ion-item>
-        </ion-col>
-        <ion-col size="6">
-          <ion-item lines="none" class="filter-item">
-            <select-ruta (onEmitRuta)="handleRutaChange($event)"></select-ruta>
-          </ion-item>
-        </ion-col>
-      </ion-row>
+  <div class="controls-card">
+    <ion-item lines="none" *ngIf="empresaSvc.rutas().length > 0">
+      <select-ruta (onEmitRuta)="handleRutaChange($event)" />
+    </ion-item>
 
-      <ion-button expand="block" shape="round" class="search-btn" (click)="getRenovaciones()" [disabled]="loading()">
-        <ion-spinner *ngIf="loading()" name="crescent" slot="start"></ion-spinner>
-        <ion-icon *ngIf="!loading()" name="search-outline" slot="start"></ion-icon>
-        {{ loading() ? 'Buscando...' : 'Buscar Renovaciones' }}
+    <ion-item lines="none">
+      <div class="date-trigger" (click)="modalRenovaciones.present()">
+        <div class="date-label">
+          <ion-icon name="calendar-clear-outline"></ion-icon>
+          <span>Filtrar por fecha</span>
+        </div>
+        <div class="date-value">
+          {{ selectedDate() | date: 'dd MMM, yyyy' }}
+        </div>
+      </div>
+
+      <ion-modal #modalRenovaciones [keepContentsMounted]="true" class="auto-height">
+        <ng-template>
+          <ion-datetime
+            mode="md"
+            id="datetimeRenovaciones"
+            #datetimeRenovaciones
+            presentation="date"
+            locale="es-GT"
+            [value]="selectedDate()"
+            (ionChange)="onChangeDay($event)">
+            <span slot="title">Selecciona una fecha</span>
+            <ion-buttons slot="buttons">
+              <ion-button color="medium" fill="clear" (click)="modalRenovaciones.dismiss()">
+                Cancelar
+              </ion-button>
+              <ion-button color="primary" fill="solid" (click)="datetimeRenovaciones.confirm()">
+                Confirmar
+              </ion-button>
+            </ion-buttons>
+          </ion-datetime>
+        </ng-template>
+      </ion-modal>
+    </ion-item>
+
+    <div class="controls-actions">
+      <ion-button expand="block" fill="outline" color="primary" (click)="refresh()" [disabled]="loading()">
+        <ion-icon slot="start" name="search-outline"></ion-icon>
+        Buscar
       </ion-button>
-    </ion-card-content>
-  </ion-card>
-
-  <ion-modal #modalRenocaciones [keepContentsMounted]="true">
-    <ng-template>
-      <ion-datetime mode="ios" id="datetimeRenovaciones" #datetimeRenovaciones presentation="date"
-        [value]="selectedDate()" (ionChange)="onChangeDay($event)" locale="es-GT">
-        <span slot="title">Selecciona una fecha</span>
-        <ion-buttons slot="buttons">
-          <ion-button color="primary" (click)="modalRenocaciones.dismiss()">Cancelar</ion-button>
-          <ion-button color="primary" (click)="datetimeRenovaciones.confirm()">Confirmar</ion-button>
-        </ion-buttons>
-      </ion-datetime>
-    </ng-template>
-  </ion-modal>
-
-  <!-- Summary Section -->
-  <div *ngIf="!loading() && report()">
-    <ion-row>
-      <ion-col size="6">
-        <ion-card class="summary-card total-card">
-          <ion-item lines="none">
-            <ion-icon name="cash-outline" slot="start" color="success"></ion-icon>
-            <ion-label>
-              <p>Total Empresa</p>
-              <h2>{{ report().totalEmpresa | currency:'$': 'symbol':'':'en' }}</h2>
-            </ion-label>
-          </ion-item>
-        </ion-card>
-      </ion-col>
-      <ion-col size="6">
-        <ion-card class="summary-card quantity-card">
-          <ion-item lines="none">
-            <ion-icon name="people-outline" slot="start" color="primary"></ion-icon>
-            <ion-label>
-              <p>Clientes</p>
-              <h2>{{ report().cantidadEmpresa }}</h2>
-            </ion-label>
-          </ion-item>
-        </ion-card>
-      </ion-col>
-    </ion-row>
-
-    <!-- Hierarchical Routes and Credits -->
-    <div *ngFor="let ruta of report().rutas">
-      <ion-list-header mode="ios" class="route-header">
-        <ion-label>
-          <h1>{{ ruta.nombre | titlecase }}</h1>
-          <p>
-            <ion-badge color="success">{{ ruta.totalMonto | currency:'$': 'symbol':'':'en' }}</ion-badge>
-            <ion-badge color="tertiary" class="ion-margin-start">{{ ruta.cantidad }} renovaciones</ion-badge>
-          </p>
-        </ion-label>
-      </ion-list-header>
-
-      <ion-list lines="full">
-        @for(credito of ruta.renovaciones; track $index){
-        <ion-item detail button (click)="presentAcionSheet(credito)">
-          <ion-label>
-            <h2>
-              <strong>{{ credito.nombre | titlecase }}</strong>
-              <small *ngIf="credito.alias"> ({{credito.alias | titlecase}})</small>
-            </h2>
-            <h3>
-              <strong>Monto: </strong>
-              <span color="success">{{ credito.monto | currency:'$': 'symbol':'':'en' }}</span>
-            </h3>
-            <!-- <p>
-                <ion-icon name="call-outline"></ion-icon> {{ credito.cliente.telefono }}
-              </p> -->
-            <!-- <p>
-                <ion-icon name="location-outline"></ion-icon> {{ credito.cliente.ciudad | lowercase }}
-              </p> -->
-          </ion-label>
-          <!-- <ion-note slot="end" mode="ios">
-              {{ credito.turno }}
-            </ion-note> -->
-        </ion-item>
-        }
-      </ion-list>
     </div>
   </div>
 
-  <!-- Loading Skeleton -->
-  <ion-list *ngIf="loading()">
-    <ion-item class="product-item" *ngFor="let product of [1,1,1,1,1,1]">
-      <ion-label>
-        <ion-skeleton-text animated style="width: 80%"></ion-skeleton-text>
-        <ion-skeleton-text animated style="width: 50%"></ion-skeleton-text>
-        <ion-skeleton-text animated style="width: 50%"></ion-skeleton-text>
-      </ion-label>
-    </ion-item>
-  </ion-list>
-
-  <!-- No Results -->
-  <div *ngIf="!loading() && (!report() || report()?.rutas?.length === 0)" class="ion-text-center ion-padding">
-    <ion-icon name="document-text-outline" style="font-size: 64px; color: #ccc;"></ion-icon>
-    <h2 style="color: #666;">Sin Renovaciones</h2>
-    <p>Intenta cambiar la fecha o la ruta del filtro.</p>
+  <div *ngIf="loading()" class="skeleton-block">
+    <ion-skeleton-text animated style="width: 100%; height: 72px; border-radius: 16px;"></ion-skeleton-text>
+    <ion-skeleton-text animated style="width: 100%; height: 72px; border-radius: 16px; margin-top: 10px;"></ion-skeleton-text>
+    <ion-skeleton-text animated style="width: 100%; height: 72px; border-radius: 16px; margin-top: 10px;"></ion-skeleton-text>
   </div>
 
+  <ng-container *ngIf="!loading()">
+    <div *ngIf="loadError() && !hasReportData()" class="empty-state">
+      <ion-icon name="cloud-offline-outline" class="empty-icon"></ion-icon>
+      <h2>No se pudieron cargar</h2>
+      <p>Revisa tu conexión e inténtalo de nuevo.</p>
+      <ion-button fill="solid" color="primary" (click)="refresh()">
+        <ion-icon slot="start" name="refresh"></ion-icon>
+        Reintentar
+      </ion-button>
+    </div>
+
+    <div *ngIf="!loadError() && !hasReportData()" class="empty-state">
+      <ion-icon name="document-text-outline" class="empty-icon"></ion-icon>
+      <h2>Sin renovaciones</h2>
+      <p>No hay renovaciones para la fecha y ruta seleccionadas.</p>
+    </div>
+
+    <ng-container *ngIf="hasReportData()">
+      <div class="summary-strip" aria-live="polite">
+        <div class="summary-item">
+          <span>Total</span>
+          <strong>{{ resumen().total | money:reportCurrency() }}</strong>
+        </div>
+        <div class="summary-item">
+          <span>Cantidad</span>
+          <strong>{{ resumen().cantidad }}</strong>
+        </div>
+        <div class="summary-item">
+          <span>Rutas</span>
+          <strong>{{ resumen().rutasConDatos }}</strong>
+        </div>
+      </div>
+
+      <ion-searchbar
+        class="renovaciones-search"
+        mode="md"
+        debounce="250"
+        placeholder="Buscar por nombre o alias"
+        [value]="searchQuery()"
+        (ionInput)="onSearch($event)"
+        (ionClear)="searchQuery.set('')">
+      </ion-searchbar>
+
+      <div *ngIf="filteredRutas().length === 0" class="empty-filter">
+        <p>No hay renovaciones con esa búsqueda.</p>
+      </div>
+
+      <div class="renovaciones-list" *ngIf="filteredRutas().length > 0">
+        <section
+          class="ruta-section"
+          *ngFor="let ruta of filteredRutas(); trackBy: trackByRutaId">
+          <div class="ruta-header">
+            <div class="ruta-title">
+              <h2>{{ ruta.nombre | titlecase }}</h2>
+              <p>{{ ruta.cantidad }} renovacion{{ ruta.cantidad === 1 ? '' : 'es' }}</p>
+            </div>
+            <strong class="ruta-total">{{ ruta.totalMonto | money:currencyForRuta(ruta.rutaId) }}</strong>
+          </div>
+
+          <div
+            class="renovacion-card"
+            *ngFor="let item of ruta.renovaciones; trackBy: trackByRenovacionId"
+            (click)="presentActionSheet(item)">
+            <div class="avatar-icon">
+              <ion-icon name="refresh-outline"></ion-icon>
+            </div>
+
+            <div class="renovacion-info">
+              <h2>{{ item.nombre | titlecase }}</h2>
+              <div class="renovacion-meta">
+                <span *ngIf="item.alias">
+                  <ion-icon name="pricetag-outline"></ion-icon>
+                  {{ item.alias | titlecase }}
+                </span>
+                <span *ngIf="item.fecha">
+                  <ion-icon name="calendar-outline"></ion-icon>
+                  {{ item.fecha | date:'dd/MM/yyyy' }}
+                </span>
+              </div>
+            </div>
+
+            <div class="renovacion-amount">
+              <strong>{{ item.monto | money:currencyForRuta(ruta.rutaId) }}</strong>
+              <ion-icon name="chevron-forward-outline" color="medium"></ion-icon>
+            </div>
+          </div>
+        </section>
+      </div>
+    </ng-container>
+  </ng-container>
 </ion-content>

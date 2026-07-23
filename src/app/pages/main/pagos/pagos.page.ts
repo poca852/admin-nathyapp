@@ -1,8 +1,11 @@
-import { Component, OnInit, inject, ViewChild, signal, computed } from '@angular/core';
+import { Component, ViewChild, computed, inject, signal } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { IonModal } from '@ionic/angular';
+import { finalize } from 'rxjs/operators';
+
 import { UtilsService } from '../../../services/utils.service';
 import { Ruta } from 'src/app/models';
 import { PagosService } from '../../../services/pagos.service';
-import { IonModal } from '@ionic/angular';
 import { EmpresaService } from '../../../services/empresa.service';
 import { MovimientoCaja } from 'src/app/models/movimiento-caja.interface';
 import { UpdatePagoComponent } from 'src/app/shared/components/update-pago/update-pago.component';
@@ -12,62 +15,118 @@ import { UpdatePagoComponent } from 'src/app/shared/components/update-pago/updat
   templateUrl: './pagos.page.html',
   styleUrls: ['./pagos.page.scss'],
 })
-export class PagosPage implements OnInit {
+export class PagosPage {
+  private readonly utilsSvc = inject(UtilsService);
+  private readonly pagosSvc = inject(PagosService);
+  private readonly empresaSvc = inject(EmpresaService);
+  private readonly route = inject(ActivatedRoute);
 
-  private utilsSvc = inject(UtilsService);
-  private pagosSvc = inject(PagosService);
-  private empresaSvc = inject(EmpresaService);
+  readonly dateSelect = signal<Date>(this.startOfToday());
+  readonly currentRuta = signal<Ruta | null>(null);
+  readonly loading = signal(false);
+  readonly loadError = signal(false);
+  readonly searched = signal(false);
 
-  public dateSelect = signal<Date>(new Date());
-  public currentRuta = signal<Ruta | null>(null);
+  readonly rutas = computed(() => this.empresaSvc.rutas());
+  readonly pagos = computed(() => this.pagosSvc.pagos());
 
-  public rutas = computed(() => this.empresaSvc.rutas());
-  public pagos = computed(() => this.pagosSvc.pagos());
+  readonly totalCobrado = computed(() =>
+    this.pagos().reduce((sum, p) => sum + Number(p.monto || 0), 0),
+  );
+
+  readonly totalConMonto = computed(
+    () => this.pagos().filter((p) => Number(p.monto) > 0).length,
+  );
+
+  readonly totalSinPago = computed(
+    () => this.pagos().filter((p) => Number(p.monto) === 0).length,
+  );
 
   @ViewChild('modalPagos') modalPagos!: IonModal;
 
-  ngOnInit() {
-    // Inicializar si es necesario
+  ionViewWillEnter(): void {
+    this.syncFromNavigation();
+    if (this.currentRuta()?.id) {
+      this.fetchPagos();
+    }
   }
 
-  private async fetchPagos() {
+  ionViewWillLeave(): void {
+    // Evita flash de datos de otra ruta/fecha al volver a entrar.
+    this.pagosSvc.setPagos([]);
+    this.searched.set(false);
+    this.loadError.set(false);
+    this.loading.set(false);
+  }
+
+  private startOfToday(): Date {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  private syncFromNavigation(): void {
+    const preselected = this.empresaSvc.ruta();
+    if (preselected?.id) {
+      this.currentRuta.set(preselected);
+    }
+
+    const fechaParam = this.route.snapshot.queryParamMap.get('fecha');
+    if (fechaParam) {
+      const parsed = new Date(fechaParam);
+      if (!Number.isNaN(parsed.getTime())) {
+        parsed.setHours(0, 0, 0, 0);
+        this.dateSelect.set(parsed);
+      }
+    }
+  }
+
+  private async fetchPagos(event?: any): Promise<void> {
     const rutaId = this.currentRuta()?.id;
     const date = this.dateSelect();
 
-    if (!rutaId) return;
+    if (!rutaId) {
+      event?.target?.complete?.();
+      return;
+    }
 
-    const loading = await this.utilsSvc.loading();
-    await loading.present();
+    this.loading.set(true);
+    this.loadError.set(false);
+    this.searched.set(true);
 
-    this.pagosSvc.getPagosByRutaAndDate(rutaId, date)
+    this.pagosSvc
+      .getPagosByRutaAndDate(rutaId, date)
+      .pipe(
+        finalize(() => {
+          this.loading.set(false);
+          event?.target?.complete?.();
+        }),
+      )
       .subscribe({
         next: (pagos) => {
-          this.pagosSvc.setPagos(pagos);
-          if (pagos.length === 0) {
-            this.utilsSvc.presentToast({
-              message: 'No se encontraron resultados',
-              duration: 3000,
-              color: 'warning',
-              icon: 'search-outline'
-            });
-          }
+          this.pagosSvc.setPagos(pagos ?? []);
         },
-        error: (err) => {
+        error: () => {
+          this.pagosSvc.setPagos([]);
+          this.loadError.set(true);
           this.utilsSvc.presentToast({
             message: 'Error al cargar los pagos',
             duration: 3000,
             color: 'danger',
-            icon: 'alert-circle-outline'
+            icon: 'alert-circle-outline',
           });
         },
-        complete: () => {
-          loading.dismiss();
-        }
       });
   }
 
-  onChangeDay(e: any) {
-    const dateValue = Array.isArray(e.detail.value) ? e.detail.value[0] : e.detail.value;
+  handleRefresh(event?: any): void {
+    this.fetchPagos(event);
+  }
+
+  onChangeDay(e: any): void {
+    const dateValue = Array.isArray(e.detail.value)
+      ? e.detail.value[0]
+      : e.detail.value;
     if (dateValue) {
       const newDate = new Date(dateValue);
       newDate.setHours(0, 0, 0, 0);
@@ -77,8 +136,9 @@ export class PagosPage implements OnInit {
     }
   }
 
-  onChangeRuta(ruta: Ruta) {
+  onChangeRuta(ruta: Ruta): void {
     this.currentRuta.set(ruta);
+    this.empresaSvc.setRuta(ruta);
     this.fetchPagos();
   }
 
@@ -90,12 +150,12 @@ export class PagosPage implements OnInit {
       message: 'No tienes permisos necesarios',
       duration: 3500,
       color: 'danger',
-      icon: 'lock-closed-outline'
+      icon: 'lock-closed-outline',
     });
     return false;
   }
 
-  async presentAcciones(pago: MovimientoCaja) {
+  async presentAcciones(pago: MovimientoCaja): Promise<void> {
     if (!this.isAdmin()) return;
 
     await this.utilsSvc.presentActionSheet({
@@ -105,27 +165,27 @@ export class PagosPage implements OnInit {
           text: 'Actualizar',
           handler: () => {
             setTimeout(() => this.updatePago(pago), 200);
-          }
+          },
         },
         {
           text: 'Eliminar',
           handler: () => {
             setTimeout(() => this.confirmDeletePago(pago), 200);
-          }
+          },
         },
         {
           text: 'Cancelar',
-          role: 'cancel'
-        }
-      ]
+          role: 'cancel',
+        },
+      ],
     });
   }
 
-  async updatePago(pago: MovimientoCaja) {
+  async updatePago(pago: MovimientoCaja): Promise<void> {
     const success = await this.utilsSvc.presentModal({
       component: UpdatePagoComponent,
       cssClass: 'add-update-modal',
-      componentProps: { pago }
+      componentProps: { pago },
     });
 
     if (success) {
@@ -133,26 +193,21 @@ export class PagosPage implements OnInit {
     }
   }
 
-  async confirmDeletePago(pago: MovimientoCaja) {
+  async confirmDeletePago(pago: MovimientoCaja): Promise<void> {
     await this.utilsSvc.presentAlert({
       header: 'Eliminar pago',
       message: '¿Estás seguro de que quieres eliminar este pago? Esta acción es irreversible.',
       buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel'
-        },
+        { text: 'Cancelar', role: 'cancel' },
         {
           text: 'Sí, eliminar',
-          handler: () => {
-            this.deletePago(pago);
-          }
-        }
-      ]
+          handler: () => this.deletePago(pago),
+        },
+      ],
     });
   }
 
-  private async deletePago(pago: MovimientoCaja) {
+  private async deletePago(pago: MovimientoCaja): Promise<void> {
     const movimientoId = pago?.id || (pago as any)?._id;
 
     if (!movimientoId) {
@@ -160,7 +215,7 @@ export class PagosPage implements OnInit {
         message: 'No se encontró el identificador del pago',
         duration: 3000,
         color: 'danger',
-        icon: 'alert-circle-outline'
+        icon: 'alert-circle-outline',
       });
       return;
     }
@@ -175,7 +230,7 @@ export class PagosPage implements OnInit {
           message: 'Pago eliminado correctamente',
           duration: 2500,
           color: 'success',
-          icon: 'checkmark-outline'
+          icon: 'checkmark-outline',
         });
         this.fetchPagos();
       },
@@ -185,11 +240,9 @@ export class PagosPage implements OnInit {
           message: err.error?.message || 'Error al eliminar el pago',
           duration: 3500,
           color: 'danger',
-          icon: 'alert-circle-outline'
+          icon: 'alert-circle-outline',
         });
-      }
+      },
     });
   }
-
 }
-

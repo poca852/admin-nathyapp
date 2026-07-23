@@ -1,0 +1,211 @@
+.controls-card {
+  background: var(--ion-card-background, var(--ion-item-background, #fff));
+  border-radius: 16px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.08);
+  overflow: hidden;
+
+  ion-item {
+    --background: transparent;
+    --padding-start: 12px;
+    --inner-padding-end: 12px;
+  }
+}
+
+.controls-actions {
+  padding: 0 12px 14px;
+}
+
+.skeleton-block {
+  margin-top: 4px;
+}
+
+.summary-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+
+  .summary-item {
+    background: var(--ion-card-background, var(--ion-item-background, #fff));
+    border: 1px solid rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.08);
+    border-radius: 14px;
+    padding: 12px 10px;
+    text-align: center;
+
+    span {
+      display: block;
+      font-size: 0.72rem;
+      color: var(--ion-color-medium);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      margin-bottom: 4px;
+    }
+
+    strong {
+      font-size: 1rem;
+      color: var(--ion-text-color);
+    }
+  }
+}
+
+.clientes-search {
+  padding: 0;
+  margin-bottom: 10px;
+  --background: var(--ion-color-step-50, var(--ion-item-background, #fff));
+  --color: var(--ion-text-color);
+  --icon-color: var(--ion-color-medium);
+  --placeholder-color: var(--ion-color-medium-shade, var(--ion-color-medium));
+  --clear-button-color: var(--ion-color-medium);
+  --border-radius: 14px;
+  --box-shadow: none;
+  border: 1px solid rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.12);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+@media (prefers-color-scheme: dark) {
+  :host .clientes-search {
+    --background: var(--ion-color-step-150, rgba(255, 255, 255, 0.1));
+    --color: var(--ion-text-color, #f4f5f8);
+    --icon-color: #c5c9d0;
+    --placeholder-color: #a8adb6;
+    --clear-button-color: #c5c9d0;
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+}
+
+html.dark :host .clientes-search,
+html.ion-palette-dark :host .clientes-search {
+  --background: var(--ion-color-step-150, rgba(255, 255, 255, 0.1));
+  --color: var(--ion-text-color, #f4f5f8);
+  --icon-color: #c5c9d0;
+  --placeholder-color: #a8adb6;
+  --clear-button-color: #c5c9d0;
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+
+  ion-chip {
+    margin: 0;
+    cursor: pointer;
+  }
+}
+
+.clientes-list {
+  padding-bottom: 24px;
+}
+
+.cliente-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  margin-bottom: 10px;
+  border-radius: 16px;
+  background: var(--ion-card-background, var(--ion-item-background, #fff));
+  border: 1px solid rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.08);
+  cursor: pointer;
+
+  .avatar-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(var(--ion-color-primary-rgb), 0.1);
+    flex-shrink: 0;
+
+    ion-icon {
+      font-size: 1.25rem;
+      color: var(--ion-color-primary);
+    }
+
+    &.inactive {
+      background: rgba(var(--ion-color-medium-rgb), 0.12);
+
+      ion-icon {
+        color: var(--ion-color-medium);
+      }
+    }
+  }
+
+  .cliente-info {
+    flex: 1;
+    min-width: 0;
+
+    h2 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--ion-text-color);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .cliente-meta {
+    margin-top: 4px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+
+    span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.78rem;
+      color: var(--ion-color-medium);
+
+      ion-icon {
+        font-size: 0.9rem;
+      }
+    }
+  }
+
+  .cliente-status {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+}
+
+.empty-state,
+.empty-filter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--ion-color-medium);
+
+  .empty-icon {
+    font-size: 56px;
+    margin-bottom: 14px;
+    opacity: 0.5;
+  }
+
+  h2 {
+    margin: 0 0 8px;
+    color: var(--ion-text-color);
+    font-size: 1.2rem;
+  }
+
+  p {
+    margin: 0 0 18px;
+    max-width: 320px;
+  }
+}
+
+.empty-filter {
+  padding: 24px 16px;
+}

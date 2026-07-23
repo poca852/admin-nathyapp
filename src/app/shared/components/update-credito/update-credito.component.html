@@ -1,37 +1,123 @@
-<app-header title="Actualizar Credito" [isModal]="true" />
+<app-header title="Actualizar crédito" [isModal]="true" />
 
 <ion-content class="ion-padding">
+  <div class="form-hero">
+    <div class="form-hero-icon">
+      <ion-icon name="cash-outline"></ion-icon>
+    </div>
+    <div class="form-hero-text">
+      <h2>{{ credito?.nombre | titlecase }}</h2>
+      <p>
+        @if (credito?.alias) {
+          {{ credito.alias | titlecase }} ·
+        }
+        Monto actual: {{ credito?.monto | money }}
+      </p>
+    </div>
+  </div>
 
-  <form [formGroup]="form" (ngSubmit)="editarCredito()">
+  <form class="credito-form" [formGroup]="form" (ngSubmit)="editarCredito()">
+    <section class="form-section">
+      <div class="section-title">
+        <ion-icon name="options-outline"></ion-icon>
+        <span>Modo de cálculo</span>
+      </div>
 
-    <ion-item class="custom-input" lines="none">
-      <ion-toggle formControlName="esAutomatico" [enableOnOffLabels]="true">Manual / Automatico</ion-toggle>
-    </ion-item>
+      <ion-item class="field-card mode-toggle" lines="none">
+        <ion-icon slot="start" name="swap-horizontal-outline" color="primary"></ion-icon>
+        <ion-toggle formControlName="esAutomatico" [enableOnOffLabels]="true" justify="space-between">
+          {{ isAutomatico ? 'Automático (por interés)' : 'Manual (por cuota)' }}
+        </ion-toggle>
+      </ion-item>
 
-    <custom-input [control]="form.controls.valor_credito" type="number"
-      (ionInput)="onInputChange($event, form.controls.valor_credito)" label="Valor Credito" />
+      <p class="mode-hint">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        @if (isAutomatico) {
+          El sistema calcula la cuota a partir del interés y el número de cuotas.
+        } @else {
+          Defines el valor de la cuota manualmente; el interés no aplica.
+        }
+      </p>
+    </section>
 
-    <custom-input [control]="form.controls.interes" type="number"
-      (ionInput)="onInputChange($event, form.controls.interes)" label="Interes" />
+    <section class="form-section">
+      <div class="section-title">
+        <ion-icon name="wallet-outline"></ion-icon>
+        <span>Montos</span>
+      </div>
 
-    <custom-input [control]="form.controls.total_cuotas" type="number"
-      (ionInput)="onInputChange($event, form.controls.total_cuotas)" label="Numero de cuotas" />
+      <custom-input
+        [control]="form.controls.valor_credito"
+        type="number"
+        label="Valor del crédito"
+        icon="cash-outline"
+        (ionInput)="onInputChange($event, form.controls.valor_credito)"
+      />
 
-    <custom-input [control]="form.controls.valor_cuota" type="number"
-      (ionInput)="onInputChange($event, form.controls.valor_cuota)" label="Valor de la cuota" />
+      @if (isAutomatico) {
+        <custom-input
+          [control]="form.controls.interes"
+          type="number"
+          label="Interés (%)"
+          icon="trending-up-outline"
+          (ionInput)="onInputChange($event, form.controls.interes)"
+        />
+      }
 
-    <ion-item class="custom-input" lines="none">
-      <ion-radio-group formControlName="frecuencia_cobro" value="diario">
-        <ion-radio value="diario">Diario</ion-radio>
-        <ion-radio value="semanal">Semanal</ion-radio>
+      <custom-input
+        [control]="form.controls.total_cuotas"
+        type="number"
+        label="Número de cuotas"
+        icon="list-outline"
+        (ionInput)="onInputChange($event, form.controls.total_cuotas)"
+      />
+
+      @if (!isAutomatico) {
+        <custom-input
+          [control]="form.controls.valor_cuota"
+          type="number"
+          label="Valor de la cuota"
+          icon="card-outline"
+          (ionInput)="onInputChange($event, form.controls.valor_cuota)"
+        />
+      }
+    </section>
+
+    <section class="form-section">
+      <div class="section-title">
+        <ion-icon name="calendar-outline"></ion-icon>
+        <span>Frecuencia de cobro</span>
+      </div>
+
+      <ion-radio-group formControlName="frecuencia_cobro" class="freq-group">
+        <ion-item class="field-card freq-option" lines="none" button detail="false">
+          <ion-radio slot="start" [value]="FrecuenciaCobro.DIARIO"></ion-radio>
+          <ion-label>
+            <h3>Diario</h3>
+            <p>Cobro cada día laboral de la ruta</p>
+          </ion-label>
+          <ion-icon slot="end" name="sunny-outline" color="warning"></ion-icon>
+        </ion-item>
+
+        <ion-item class="field-card freq-option" lines="none" button detail="false">
+          <ion-radio slot="start" [value]="FrecuenciaCobro.SEMANAL"></ion-radio>
+          <ion-label>
+            <h3>Semanal</h3>
+            <p>Cobro una vez por semana</p>
+          </ion-label>
+          <ion-icon slot="end" name="calendar-number-outline" color="primary"></ion-icon>
+        </ion-item>
       </ion-radio-group>
-    </ion-item>
+    </section>
 
-    <ion-button expand="full" class="ion-margin" type="submit" [disabled]="form.invalid">
-      Actualizar
+    <ion-button
+      mode="md"
+      type="submit"
+      expand="block"
+      class="submit-btn"
+      [disabled]="form.invalid || submitting">
+      {{ submitting ? 'Actualizando...' : 'Actualizar crédito' }}
       <ion-icon slot="end" name="checkmark-circle-outline"></ion-icon>
     </ion-button>
-
   </form>
-
 </ion-content>

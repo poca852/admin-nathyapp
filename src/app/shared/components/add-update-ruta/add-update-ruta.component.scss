@@ -1,0 +1,20 @@
+.derived-field {
+  margin-top: 8px;
+  border-radius: 12px;
+  --background: rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.03);
+
+  p {
+    margin: 0 0 2px;
+    font-size: 0.75rem;
+    color: var(--ion-color-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ion-text-color);
+  }
+}

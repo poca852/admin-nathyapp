@@ -8,7 +8,7 @@
       <ion-item lines="none">
         <ion-label>
           <p>Mora adeudada</p>
-          <h2>{{ (credito.mora_adeudada || 0) | currency:'USD':'symbol':'':'en' }}</h2>
+          <h2>{{ (credito.mora_adeudada || 0) | money }}</h2>
         </ion-label>
       </ion-item>
     }
@@ -17,7 +17,7 @@
       <ion-item lines="none">
         <ion-label>
           <p>Mora sugerida</p>
-          <h2>{{ credito.moraSugerida | currency:'USD':'symbol':'':'en' }}</h2>
+          <h2>{{ credito.moraSugerida | money }}</h2>
         </ion-label>
       </ion-item>
     }
@@ -34,7 +34,7 @@
       label="Motivo (opcional)"
     />
 
-    <ion-button type="submit" expand="block" mode="ios" [disabled]="form.invalid">
+    <ion-button type="submit" expand="block" mode="md" [disabled]="form.invalid">
       {{ submitLabel }}
     </ion-button>
 

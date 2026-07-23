@@ -1,71 +1,159 @@
-<app-header title="Historial de credito" [isModal]="true" />
+<app-header title="Crédito cerrado" [isModal]="true" />
 
 <ion-content class="ion-padding">
+  <div class="form-hero">
+    <div class="form-hero-icon">
+      <ion-icon name="document-text-outline"></ion-icon>
+    </div>
+    <div class="form-hero-text">
+      <h2>Detalle del crédito</h2>
+      <p>
+        {{ credito.fecha_inicio | date: 'dd MMM yyyy' }}
+        —
+        {{ credito.ultimo_pago ? (credito.ultimo_pago | date: 'dd MMM yyyy') : 'Sin pagos' }}
+      </p>
+    </div>
+    <ion-badge color="medium" mode="md">Cerrado</ion-badge>
+  </div>
 
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>{{credito.cliente.nombre | titlecase}}</ion-card-title>
-      <ion-card-subtitle>{{credito.cliente.alias | titlecase}}</ion-card-subtitle>
-    </ion-card-header>
-    <ion-card-content>
+  <div class="summary-strip">
+    <div class="summary-item">
+      <span>Prestado</span>
+      <strong>{{ credito.valor_credito | money }}</strong>
+    </div>
+    <div class="summary-item">
+      <span>Abonado</span>
+      <strong>{{ credito.abonos | money }}</strong>
+    </div>
+    <div class="summary-item">
+      <span>Días</span>
+      <strong>{{ credito.dias_tardados_en_pagar ?? 0 }}</strong>
+    </div>
+  </div>
 
-      <ion-grid>
+  <section class="form-section">
+    <div class="section-title">
+      <ion-icon name="cash-outline"></ion-icon>
+      <span>Información del crédito</span>
+    </div>
 
-        <ion-row>
-          <ion-col size="4">
-            <ion-text>Valor Prestado</ion-text>
-          </ion-col>
-          <ion-col>
-            <ion-text>{{ credito.valor_credito | currency:'USD':'symbol':'':'en' }}</ion-text>
-          </ion-col>
-        </ion-row>
+    <div class="info-card">
+      <div class="info-row">
+        <span>Total a pagar</span>
+        <strong>{{ credito.total_pagar | money }}</strong>
+      </div>
+      <div class="info-row">
+        <span>Saldo</span>
+        <strong>{{ credito.saldo | money }}</strong>
+      </div>
+      <div class="info-row">
+        <span>Valor cuota</span>
+        <strong>{{ credito.valor_cuota | money }}</strong>
+      </div>
+      <div class="info-row">
+        <span>Interés</span>
+        <strong>{{ credito.interes }}%</strong>
+      </div>
+      <div class="info-row">
+        <span>Cuotas</span>
+        <strong>{{ credito.total_cuotas }}</strong>
+      </div>
+      <div class="info-row">
+        <span>Frecuencia</span>
+        <strong>{{ frecuenciaLabel() }}</strong>
+      </div>
+      <div class="info-row" *ngIf="credito.dueDate">
+        <span>Fecha límite</span>
+        <strong>{{ credito.dueDate | date: 'dd/MM/yyyy' }}</strong>
+      </div>
+      <div class="info-row">
+        <span>Clasificación</span>
+        <strong>{{ stateLabel() }}</strong>
+      </div>
+      <div class="info-row" *ngIf="credito.mora_adeudada > 0 || credito.mora_cobrada > 0">
+        <span>Mora adeudada</span>
+        <strong>{{ credito.mora_adeudada | money }}</strong>
+      </div>
+      <div class="info-row" *ngIf="credito.mora_cobrada > 0">
+        <span>Mora cobrada</span>
+        <strong>{{ credito.mora_cobrada | money }}</strong>
+      </div>
+      <div class="info-row notas" *ngIf="credito.observaciones">
+        <span>Observaciones</span>
+        <strong>{{ credito.observaciones }}</strong>
+      </div>
+    </div>
+  </section>
 
-        <ion-row>
-          <ion-col size="4">
-            <ion-text>Valor Cuota</ion-text>
-          </ion-col>
-          <ion-col>
-            <ion-text>{{ credito.valor_cuota | currency:'USD':'symbol':'':'en' }}</ion-text>
-          </ion-col>
-        </ion-row>
+  <section class="form-section">
+    <div class="section-title">
+      <ion-icon name="receipt-outline"></ion-icon>
+      <span>Historial de pagos</span>
+    </div>
 
-        <ion-row>
-          <ion-col size="4">
-            <ion-text>Abonos</ion-text>
-          </ion-col>
-          <ion-col>
-            <ion-text>{{ credito.abonos | currency:'USD':'symbol':'':'en' }}</ion-text>
-          </ion-col>
-        </ion-row>
+    <div *ngIf="loading()" class="skeleton-block">
+      <ion-skeleton-text animated style="width: 100%; height: 64px; border-radius: 14px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 100%; height: 64px; border-radius: 14px; margin-top: 10px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 100%; height: 64px; border-radius: 14px; margin-top: 10px;"></ion-skeleton-text>
+    </div>
 
-        <ion-row>
-          <ion-col size="4">
-            <ion-text>Saldo</ion-text>
-          </ion-col>
-          <ion-col>
-            <ion-text>{{ credito.saldo | currency:'USD':'symbol':'':'en' }}</ion-text>
-          </ion-col>
-        </ion-row>
+    <div *ngIf="!loading() && loadError()" class="empty-state">
+      <ion-icon name="cloud-offline-outline" class="empty-icon"></ion-icon>
+      <h3>No se pudieron cargar los pagos</h3>
+      <p>Revisa la conexión e inténtalo de nuevo.</p>
+      <ion-button fill="solid" color="primary" (click)="retry()">
+        <ion-icon slot="start" name="refresh"></ion-icon>
+        Reintentar
+      </ion-button>
+    </div>
 
+    <div *ngIf="!loading() && !loadError() && pagos().length === 0" class="empty-state">
+      <ion-icon name="receipt-outline" class="empty-icon"></ion-icon>
+      <h3>Sin pagos</h3>
+      <p>Este crédito cerrado no tiene movimientos de pago registrados.</p>
+    </div>
 
+    <ng-container *ngIf="!loading() && !loadError() && pagos().length > 0">
+      <div class="summary-strip pagos-summary">
+        <div class="summary-item">
+          <span>Movimientos</span>
+          <strong>{{ pagos().length }}</strong>
+        </div>
+        <div class="summary-item">
+          <span>Con monto</span>
+          <strong>{{ totalConMonto() }}</strong>
+        </div>
+        <div class="summary-item">
+          <span>Total</span>
+          <strong>{{ totalPagado() | money }}</strong>
+        </div>
+      </div>
 
-
-      </ion-grid>
-
-    </ion-card-content>
-  </ion-card>
-
-  <ion-list *ngIf="credito.pagos.length > 0">
-    <ion-item *ngFor="let pago of credito.pagos">
-      <ion-label>
-        <ion-grid>
-          <ion-row>
-            <ion-col>{{pago.valor | currency:'USD':'symbol':'':'en' }}</ion-col>
-            <ion-col>{{pago.fecha}}</ion-col>
-          </ion-row>
-        </ion-grid>
-      </ion-label>
-    </ion-item>
-  </ion-list>
-
+      <div class="pagos-list">
+        <div class="pago-card" *ngFor="let pago of pagos()">
+          <div class="pago-icon">
+            <ion-icon name="arrow-down-circle" color="success"></ion-icon>
+          </div>
+          <div class="pago-info">
+            <h3>{{ pago.concepto || 'Abono' }}</h3>
+            <p>{{ pago.createdAt | date: 'dd/MM/yyyy - hh:mm a' }}</p>
+            <p class="comentario" *ngIf="pago.comentario">{{ pago.comentario }}</p>
+          </div>
+          <div class="pago-end">
+            <ion-button
+              *ngIf="pago.ubication?.length === 2"
+              fill="clear"
+              size="small"
+              color="primary"
+              (click)="verUbicacion(pago)"
+              aria-label="Ver ubicación del pago"
+            >
+              <ion-icon slot="icon-only" name="location-outline"></ion-icon>
+            </ion-button>
+            <span class="pago-monto">{{ pago.monto | money }}</span>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </section>
 </ion-content>

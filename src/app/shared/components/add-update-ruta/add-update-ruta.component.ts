@@ -1,23 +1,33 @@
-import { Component, inject, Input } from '@angular/core';
-import { RutaService } from '../../../services/ruta.service';
+import { Component, inject, Input, OnDestroy } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { Subscription } from 'rxjs';
+
+import { RutaService } from '../../../services/ruta.service';
 import { Ruta } from 'src/app/models';
 import { UtilsService } from '../../../services/utils.service';
 import { EmpresaService } from 'src/app/services/empresa.service';
+
+const COUNTRY_DATA: Record<string, { timeZone: string; currency: string }> = {
+  Colombia: { timeZone: 'America/Bogota', currency: 'COP' },
+  Guatemala: { timeZone: 'America/Guatemala', currency: 'GTQ' },
+  Brasil: { timeZone: 'America/Sao_Paulo', currency: 'BRL' },
+  México: { timeZone: 'America/Mexico_City', currency: 'MXN' },
+};
 
 @Component({
   selector: 'add-update-ruta',
   templateUrl: './add-update-ruta.component.html',
   styleUrls: ['./add-update-ruta.component.scss'],
 })
-export class AddUpdateRutaComponent {
+export class AddUpdateRutaComponent implements OnDestroy {
+  @Input() ruta!: Ruta;
 
-  @Input()
-  ruta: Ruta;
+  private readonly rutaSvc = inject(RutaService);
+  private readonly utilsSvc = inject(UtilsService);
+  private readonly empresaSvc = inject(EmpresaService);
+  private paisSub?: Subscription;
 
-  private rutaSvc = inject(RutaService);
-  private utilsSvc = inject(UtilsService);
-  private empresaSvc = inject(EmpresaService);
+  readonly countries = Object.keys(COUNTRY_DATA);
 
   form = new FormGroup({
     nombre: new FormControl('', [Validators.required]),
@@ -26,93 +36,93 @@ export class AddUpdateRutaComponent {
     autoOpen: new FormControl(false, [Validators.required]),
     empresa: new FormControl(this.empresaSvc.empresa()?.id),
     timeZone: new FormControl('', [Validators.required]),
-    currency: new FormControl('', [Validators.required])
-  })
+    currency: new FormControl('', [Validators.required]),
+  });
 
-  constructor() { }
-
-  ionViewWillEnter() {
+  ionViewWillEnter(): void {
     this.initComponent();
     this.setupCountryChange();
   }
 
-  setupCountryChange() {
-    this.form.controls.pais.valueChanges.subscribe(pais => {
-      const countryData = {
-        'Colombia': { timeZone: 'America/Bogota', currency: 'COP' },
-        'Guatemala': { timeZone: 'America/Guatemala', currency: 'GTQ' },
-        'Brasil': { timeZone: 'America/Sao_Paulo', currency: 'BRL' }
-      }
+  ngOnDestroy(): void {
+    this.paisSub?.unsubscribe();
+  }
 
-      if (pais && countryData[pais]) {
+  setupCountryChange(): void {
+    this.paisSub?.unsubscribe();
+    this.paisSub = this.form.controls.pais.valueChanges.subscribe((pais) => {
+      if (pais && COUNTRY_DATA[pais]) {
         this.form.patchValue({
-          timeZone: countryData[pais].timeZone,
-          currency: countryData[pais].currency
+          timeZone: COUNTRY_DATA[pais].timeZone,
+          currency: COUNTRY_DATA[pais].currency,
         });
       }
     });
   }
 
-  initComponent() {
-    if (!!this.ruta) {
-      this.form.patchValue({ ...this.ruta });
+  initComponent(): void {
+    if (this.ruta) {
+      this.form.patchValue({
+        nombre: this.ruta.nombre,
+        pais: this.ruta.pais,
+        ciudad: this.ruta.ciudad,
+        autoOpen: this.ruta.autoOpen,
+        empresa: this.empresaSvc.empresa()?.id,
+        timeZone: this.ruta.timeZone,
+        currency: this.ruta.currency,
+      });
     }
   }
 
-  async updateRuta() {
-
-    const loading = await this.utilsSvc.loading();
-    loading.present();
-
-    this.rutaSvc.updateRuta(this.ruta.id, this.form.value)
-      .subscribe({
-        next: () => {
-          loading.dismiss();
-          this.utilsSvc.dismissModal({ success: true });
-        },
-        error: err => {
-          loading.dismiss()
-          this.utilsSvc.presentAlert({
-            header: 'Error',
-            message: err.error.message,
-            buttons: ['OK']
-          })
-        }
-      })
-
+  private payload() {
+    return this.form.value;
   }
 
-  async addRuta() {
+  async updateRuta(): Promise<void> {
     const loading = await this.utilsSvc.loading();
-    loading.present();
+    await loading.present();
 
-    this.rutaSvc.addRuta(this.form.value, this.empresaSvc.empresa()?.id)
-      .subscribe({
-        next: ruta => {
-          this.empresaSvc.setEmpresa(this.empresaSvc.empresa()?.id)
-          this.utilsSvc.dismissModal({ success: true });
-          loading.dismiss();
-        },
-        error: err => {
-          loading.dismiss();
-          this.utilsSvc.presentAlert({
-            header: 'Error',
-            message: err.error.message,
-            buttons: ['OK']
-          })
-        }
-      })
+    this.rutaSvc.updateRuta(this.ruta.id, this.payload()).subscribe({
+      next: () => {
+        loading.dismiss();
+        this.utilsSvc.dismissModal({ success: true });
+      },
+      error: (err) => {
+        loading.dismiss();
+        this.utilsSvc.presentAlert({
+          header: 'Error',
+          message: err?.error?.message || 'No se pudo actualizar la ruta',
+          buttons: ['OK'],
+        });
+      },
+    });
   }
 
-  async submit() {
+  async addRuta(): Promise<void> {
+    const loading = await this.utilsSvc.loading();
+    await loading.present();
 
-    if (!!this.ruta) {
+    this.rutaSvc.addRuta(this.payload(), this.empresaSvc.empresa()?.id).subscribe({
+      next: () => {
+        this.empresaSvc.setEmpresa(this.empresaSvc.empresa()?.id);
+        this.utilsSvc.dismissModal({ success: true });
+        loading.dismiss();
+      },
+      error: (err) => {
+        loading.dismiss();
+        this.utilsSvc.presentAlert({
+          header: 'Error',
+          message: err?.error?.message || 'No se pudo crear la ruta',
+          buttons: ['OK'],
+        });
+      },
+    });
+  }
+
+  async submit(): Promise<void> {
+    if (this.ruta) {
       return this.updateRuta();
     }
-
     return this.addRuta();
-
   }
-
-
 }

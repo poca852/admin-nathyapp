@@ -24,7 +24,8 @@
 
         <ion-modal #modalOficina [keepContentsMounted]="true" class="auto-height">
           <ng-template>
-            <ion-datetime mode="ios" id="datetimeOficina" #datetimeOficina presentation="date"
+            <ion-datetime mode="md" id="datetimeOficina" #datetimeOficina presentation="date"
+              [value]="dateSelect().toISOString()"
               (ionChange)="onChangeDay($event)" locale="es-GT">
               <span slot="title">Selecciona una fecha</span>
               <ion-buttons slot="buttons">
@@ -36,6 +37,18 @@
           </ng-template>
         </ion-modal>
       </ion-item>
+
+      <div class="controls-actions">
+        <ion-button
+          expand="block"
+          fill="outline"
+          color="primary"
+          (click)="actualizar()"
+          [disabled]="!currentRuta()">
+          <ion-icon slot="start" name="search-outline"></ion-icon>
+          Buscar
+        </ion-button>
+      </div>
     </div>
 
     @if (movimientos().length > 0) {
@@ -45,7 +58,7 @@
         <ion-icon name="card-outline"></ion-icon>
         <div class="summary-info">
           <span class="summary-label">Gastos</span>
-          <span class="summary-value">{{ totalGastos() | currency:'USD':'symbol':'1.0-0':'en' }}</span>
+          <span class="summary-value">{{ totalGastos() | money }}</span>
         </div>
         <ion-button fill="clear" color="danger" size="small" (click)="addOrUpdateMovimiento(SubTipo.GASTO)">
           <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
@@ -55,7 +68,7 @@
         <ion-icon name="trending-up-outline"></ion-icon>
         <div class="summary-info">
           <span class="summary-label">Inversiones</span>
-          <span class="summary-value">{{ totalInversiones() | currency:'USD':'symbol':'1.0-0':'en' }}</span>
+          <span class="summary-value">{{ totalInversiones() | money }}</span>
         </div>
         <ion-button fill="clear" color="primary" size="small" (click)="addOrUpdateMovimiento(SubTipo.INVERSION)">
           <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
@@ -65,7 +78,7 @@
         <ion-icon name="wallet-outline"></ion-icon>
         <div class="summary-info">
           <span class="summary-label">Retiros</span>
-          <span class="summary-value">{{ totalRetiros() | currency:'USD':'symbol':'1.0-0':'en' }}</span>
+          <span class="summary-value">{{ totalRetiros() | money }}</span>
         </div>
         <ion-button fill="clear" color="warning" size="small" (click)="addOrUpdateMovimiento(SubTipo.RETIRO)">
           <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
@@ -118,7 +131,7 @@
         </div>
 
         <div class="movement-amount">
-          <span class="amount">{{ mov.valor | currency:'USD':'symbol':'1.0-0':'en' }}</span>
+          <span class="amount">{{ mov.valor | money }}</span>
         </div>
       </div>
       } @empty {

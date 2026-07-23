@@ -1,143 +1,227 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
+import { finalize } from 'rxjs/operators';
+
 import { UtilsService } from '../../../services/utils.service';
 import { Ruta } from 'src/app/models';
 import { AddUpdateRutaComponent } from 'src/app/shared/components/add-update-ruta/add-update-ruta.component';
 import { RutaModalComponent } from 'src/app/shared/components/ruta-modal/ruta-modal.component';
 import { RutaService } from 'src/app/services/ruta.service';
+import { EmpresaService } from 'src/app/services/empresa.service';
+
+type RutaFilter = 'all' | 'open' | 'closed' | 'locked';
 
 @Component({
   selector: 'app-rutas',
   templateUrl: './rutas.page.html',
   styleUrls: ['./rutas.page.scss'],
 })
-export class RutasPage implements OnInit {
+export class RutasPage {
+  private readonly utilsSvc = inject(UtilsService);
+  private readonly rutaSvc = inject(RutaService);
+  private readonly empresaSvc = inject(EmpresaService);
 
-  private utilsSvc = inject(UtilsService);
-  private rutaSvc = inject(RutaService);
-  public rutas: Ruta[] = [];
-  public loading: boolean = true;
+  loading = true;
+  loadError = false;
 
-  constructor() { }
+  readonly rutas = signal<Ruta[]>([]);
+  readonly searchQuery = signal('');
+  readonly filter = signal<RutaFilter>('all');
 
-  ngOnInit() { }
+  readonly resumen = computed(() => {
+    const list = this.rutas();
+    let abiertas = 0;
+    let cerradas = 0;
+    let bloqueadas = 0;
+    for (const r of list) {
+      if (r.status) abiertas++;
+      else cerradas++;
+      if (r.isLocked) bloqueadas++;
+    }
+    return {
+      total: list.length,
+      abiertas,
+      cerradas,
+      bloqueadas,
+    };
+  });
 
-  ionViewWillEnter() {
+  readonly filteredRutas = computed(() => {
+    const q = this.searchQuery().trim().toLowerCase();
+    const f = this.filter();
+    return this.rutas().filter((ruta) => {
+      if (f === 'open' && !ruta.status) return false;
+      if (f === 'closed' && ruta.status) return false;
+      if (f === 'locked' && !ruta.isLocked) return false;
+      if (!q) return true;
+      return (ruta.nombre || '').toLowerCase().includes(q);
+    });
+  });
+
+  ionViewWillEnter(): void {
     this.getRutas();
   }
 
-  handleRefresh(event) {
-    setTimeout(() => {
-      this.getRutas();
-      event.target.complete();
-    }, 2000);
+  get canManageRutas(): boolean {
+    const user = this.utilsSvc.getFromLocalStorage('user') as { rol?: string } | null;
+    return !!user && (user.rol === 'ADMIN' || user.rol === 'SUPERADMIN');
   }
 
-  getRutas() {
-    this.loading = true;
-    this.rutaSvc.getRutasByEmpresa().subscribe({
-      next: ({ rutas }) => {
-        this.rutas = rutas;
-        this.loading = false;
+  onSearch(ev: CustomEvent): void {
+    this.searchQuery.set(String(ev.detail?.value ?? ''));
+  }
+
+  setFilter(value: RutaFilter): void {
+    this.filter.set(value);
+  }
+
+  trackByRutaId(_index: number, ruta: Ruta): string {
+    return ruta.id;
+  }
+
+  handleRefresh(event: any): void {
+    this.getRutas(event);
+  }
+
+  getRutas(event?: any): void {
+    const isRefresh = !!event;
+    if (!isRefresh) {
+      this.loading = true;
+    }
+    this.loadError = false;
+
+    this.rutaSvc
+      .getRutasByEmpresa()
+      .pipe(
+        finalize(() => {
+          this.loading = false;
+          if (event) {
+            event.target.complete();
+          }
+        }),
+      )
+      .subscribe({
+        next: ({ rutas }) => {
+          const list = rutas ?? [];
+          this.rutas.set(list);
+          this.empresaSvc.setRutas(list);
+          this.loadError = false;
+        },
+        error: () => {
+          this.loadError = true;
+          this.utilsSvc.presentToast({
+            message: 'Error al obtener las rutas',
+            duration: 2500,
+            color: 'danger',
+          });
+        },
+      });
+  }
+
+  async presentActions(ruta: Ruta, event?: Event): Promise<void> {
+    event?.stopPropagation();
+
+    const buttons: Array<{
+      text: string;
+      role?: string;
+      handler?: () => void;
+    }> = [
+      {
+        text: 'Ver detalle',
+        handler: () => this.viewRuta(ruta),
       },
-      error: err => {
-        this.loading = false
-      }
-    })
+    ];
 
+    if (this.canManageRutas) {
+      buttons.unshift({
+        text: 'Editar ruta',
+        handler: () => this.addUpdateRuta(ruta),
+      });
+      buttons.push({
+        text: 'Eliminar ruta',
+        role: 'destructive',
+        handler: () => this.deleteRuta(ruta),
+      });
+    }
+
+    buttons.push({ text: 'Cancelar', role: 'cancel' });
+
+    await this.utilsSvc.presentActionSheet({ buttons });
   }
 
-  async presentActions(ruta: Ruta) {
-
-    await this.utilsSvc.presentActionSheet({
-      buttons: [
-        {
-          text: 'Actualizar Ruta',
-          handler: () => this.addUpdateRuta(ruta)
-        },
-        {
-          text: 'Eliminar Ruta',
-          handler: () => this.deleteRuta(ruta.id!)
-        },
-        {
-          text: 'Ver detalle',
-          handler: () => this.viewRuta(ruta)
-        },
-        {
-          text: 'Cancelar',
-          role: 'cancel'
-        }
-      ]
-    })
-
-  }
-
-  async viewRuta(ruta?: Ruta) {
+  async viewRuta(ruta: Ruta): Promise<void> {
     await this.utilsSvc.presentModal({
       component: RutaModalComponent,
       cssClass: 'add-update-modal',
-      componentProps: { ruta }
-    })
+      componentProps: { ruta },
+    });
   }
 
-  async addUpdateRuta(ruta?: Ruta) {
-
-    if (this.utilsSvc.getFromLocalStorage('user').rol !== 'ADMIN') {
+  async addUpdateRuta(ruta?: Ruta): Promise<void> {
+    if (!this.canManageRutas) {
       this.utilsSvc.presentToast({
-        message: 'Usted no tiene permisos para realizar esta operacion',
+        message: 'No tienes permisos para realizar esta operación',
         duration: 3500,
-        color: 'danger'
-      })
+        color: 'danger',
+      });
       return;
     }
 
-    let success = await this.utilsSvc.presentModal({
+    const success = await this.utilsSvc.presentModal({
       component: AddUpdateRutaComponent,
       cssClass: 'add-update-modal',
-      componentProps: { ruta }
-    })
+      componentProps: { ruta },
+    });
 
     if (success) {
+      this.utilsSvc.presentToast({
+        message: ruta ? 'Ruta actualizada correctamente' : 'Ruta creada correctamente',
+        duration: 2500,
+        color: 'success',
+      });
       this.getRutas();
     }
   }
 
-  deleteRuta(idRuta: string) {
+  deleteRuta(ruta: Ruta): void {
+    if (!this.canManageRutas) {
+      this.utilsSvc.presentToast({
+        message: 'No tienes permisos para eliminar rutas',
+        duration: 3500,
+        color: 'danger',
+      });
+      return;
+    }
 
+    const nombre = ruta.nombre || 'esta ruta';
     this.utilsSvc.presentAlert({
-      header: 'Eliminar Ruta',
-      message: '¿Estás seguro de que quieres eliminar esta ruta? Esta acción es irreversible.',
-      mode: 'ios',
+      header: 'Eliminar ruta',
+      message: `Se eliminará ${nombre} y también sus clientes, créditos, movimientos y cajas asociados. Esta acción es irreversible.`,
       buttons: [
+        { text: 'Cancelar', role: 'cancel' },
         {
-          text: 'Cancelar',
-          role: 'cancel',
-        }, {
-          text: 'Si, eliminar',
+          text: 'Sí, eliminar',
+          role: 'destructive',
           handler: () => {
-            this.rutaSvc.deleteRuta(idRuta).subscribe({
-              next: (resp) => {
+            this.rutaSvc.deleteRuta(ruta.id).subscribe({
+              next: () => {
                 this.utilsSvc.presentToast({
                   message: 'Ruta eliminada correctamente',
                   duration: 2500,
-                  color: 'success'
-                })
+                  color: 'success',
+                });
                 this.getRutas();
               },
-              error: err => {
-                console.log(err);
+              error: () => {
                 this.utilsSvc.presentToast({
                   message: 'Error al eliminar la ruta',
                   duration: 3500,
-                  color: 'danger'
-                })
-              }
-            })
-          }
-        }
-      ]
-    })
-
-
+                  color: 'danger',
+                });
+              },
+            });
+          },
+        },
+      ],
+    });
   }
-
 }

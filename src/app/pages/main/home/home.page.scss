@@ -87,9 +87,11 @@ ion-content {
    background: var(--ion-background-color);
    color: var(--ion-text-color);
 
-   &:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--card-shadow-hover);
+   @media (hover: hover) {
+      &:hover {
+         transform: translateY(-4px);
+         box-shadow: var(--card-shadow-hover);
+      }
    }
 
    &.card-open {
@@ -104,6 +106,10 @@ ion-content {
 
    &.card-locked {
       border-color: rgba(var(--ion-color-warning-rgb), 0.45);
+   }
+
+   &.card-pending {
+      opacity: 0.85;
    }
 
    ion-card-header {
@@ -142,7 +148,7 @@ ion-content {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
 
       ion-badge {
          font-weight: 500;
@@ -170,25 +176,45 @@ ion-content {
       }
    }
 
-   .caja-info {
+   .ruta-metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 12px;
       background: rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.03);
       border-radius: 12px;
       padding: 12px;
-      margin-bottom: 16px;
+      margin-bottom: 8px;
 
-      p {
-         margin: 0 0 6px 0;
-         font-size: 0.9rem;
+      .metric {
+         display: flex;
+         flex-direction: column;
+         gap: 2px;
+         min-width: 0;
+      }
+
+      .metric-label {
+         font-size: 0.75rem;
+         color: var(--ion-color-medium);
+         text-transform: uppercase;
+         letter-spacing: 0.3px;
+      }
+
+      .metric-value {
+         font-size: 0.95rem;
+         font-weight: 600;
          color: var(--ion-text-color);
+         white-space: nowrap;
+         overflow: hidden;
+         text-overflow: ellipsis;
+      }
 
-         &:last-child {
-            margin-bottom: 0;
-         }
+      .metric-muted {
+         font-weight: 500;
+         color: var(--ion-color-medium);
+      }
 
-         strong {
-            color: var(--ion-text-color);
-            margin-right: 6px;
-         }
+      .metric.metric-wide {
+         grid-column: 1 / -1;
       }
    }
 
@@ -197,7 +223,7 @@ ion-content {
       align-items: center;
       font-size: 0.85rem;
       color: var(--ion-color-tertiary);
-      margin-top: 12px;
+      margin-top: 8px;
 
       ion-icon {
          margin-right: 6px;
@@ -206,26 +232,69 @@ ion-content {
    }
 
    .card-footer {
-      padding: 0;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
       border-top: 1px solid var(--ion-color-light-shade);
+      background: transparent;
    }
 
    .action-button {
       margin: 0;
-      border-radius: 0;
-      --border-radius: 0;
+      --border-radius: 10px;
+      border-radius: 10px;
       font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      text-transform: none;
+      letter-spacing: 0.2px;
+      overflow: hidden;
 
-      ion-icon {
+      ion-icon,
+      ion-spinner {
          font-size: 1.2rem;
+         width: 1.2rem;
+         height: 1.2rem;
       }
 
       &.lock-button {
-         border-top: 1px solid var(--ion-color-light-shade);
+         font-weight: 500;
+         --padding-top: 10px;
+         --padding-bottom: 10px;
+         // Evita que el borde outline “corte” contra el radio de la card
+         --border-width: 1.5px;
       }
    }
+}
+
+.summary-strip {
+   display: flex;
+   flex-wrap: wrap;
+   align-items: center;
+   justify-content: space-between;
+   gap: 10px 16px;
+   margin-bottom: 12px;
+   padding: 4px 2px 8px;
+
+   .summary-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--ion-text-color);
+   }
+
+   .summary-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+
+      ion-chip {
+         margin: 0;
+         height: 28px;
+      }
+   }
+}
+
+.routes-grid {
+   padding-inline: 0;
 }
 
 /* Responsive adjustments */
@@ -273,6 +342,10 @@ ion-content {
    .caja-info {
       background: rgba(255, 255, 255, 0.05);
    }
+
+   .ruta-metrics {
+      background: rgba(255, 255, 255, 0.05);
+   }
 }
 
 /* Ionic dark class support */
@@ -301,6 +374,10 @@ html.dark {
    }
 
    .caja-info {
+      background: rgba(255, 255, 255, 0.05);
+   }
+
+   .ruta-metrics {
       background: rgba(255, 255, 255, 0.05);
    }
 }

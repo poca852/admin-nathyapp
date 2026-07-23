@@ -42,14 +42,15 @@ export class DetailClientePage {
   }
 
   llamarCliente(): void {
-    const cliente = this.clienteSvc.currentCliente();
-    if (!cliente) return;
+    const cliente = this.cliente() || this.clienteSvc.currentCliente();
+    if (!cliente?.telefono) return;
 
     window.open(`tel:${cliente.telefono}`, '_system');
   }
 
   async editCliente(): Promise<void> {
-    if (this.utilsSvc.getFromLocalStorage('user').rol !== 'ADMIN') {
+    const user = this.utilsSvc.getFromLocalStorage('user') as { rol?: string } | null;
+    if (!user || (user.rol !== 'ADMIN' && user.rol !== 'SUPERADMIN')) {
       this.utilsSvc.presentToast({
         message: 'Usted no tiene los permisos necesarios',
         duration: 3500,
@@ -58,30 +59,44 @@ export class DetailClientePage {
       return;
     }
 
+    const clienteActual = this.cliente() || this.clienteSvc.currentCliente();
+    if (!clienteActual) {
+      this.utilsSvc.presentToast({
+        message: 'No se pudo cargar el cliente para editar',
+        duration: 3000,
+        color: 'warning',
+      });
+      return;
+    }
+
     const success = await this.utilsSvc.presentModal({
       component: UpdateClienteComponent,
       cssClass: 'add-update-modal',
-      componentProps: { cliente: this.clienteSvc.currentCliente() },
+      componentProps: { cliente: clienteActual },
     });
 
     if (success) {
-      this.loading.set(true);
-      this.clienteSvc.getClientesByRuta(this.empresaSvc.ruta().id).subscribe({
-        next: (clientes) => {
-          this.clienteSvc.setClientes(clientes);
-          const currentCliente = clientes.find(
-            (c) => c._id === this.clienteSvc.currentCliente()?._id
-          );
-          if (currentCliente) {
-            this.clienteSvc.setCurrentCliente(currentCliente);
-          }
-          this.loading.set(false);
-        },
-      });
+      this.getCliente();
+
+      const rutaId = this.empresaSvc.ruta()?.id;
+      if (rutaId) {
+        this.clienteSvc.getClientesByRuta(rutaId).subscribe({
+          next: (clientes) => this.clienteSvc.setClientes(clientes),
+        });
+      }
     }
   }
 
-  async openHistorialCredito(credito: Credito): Promise<void> {
+  async openHistorialCredito(credito: HistorialCredito): Promise<void> {
+    if (!credito?.id && !(credito as any)?._id) {
+      this.utilsSvc.presentToast({
+        message: 'Este crédito no tiene identificador para cargar pagos',
+        duration: 3000,
+        color: 'warning',
+      });
+      return;
+    }
+
     await this.utilsSvc.presentModal({
       component: ModalHistorialCreditoComponent,
       cssClass: 'add-update-modal',
@@ -98,8 +113,9 @@ export class DetailClientePage {
   }
 
   async viewMap(): Promise<void> {
+    const ubication = this.cliente()?.ubication;
 
-    if (!this.cliente() || this.cliente()?.ubication.length === 0) {
+    if (!ubication || ubication.length < 2) {
       return this.utilsSvc.presentAlert({
         header: 'Información',
         message: 'Este cliente aún no tiene la ubicación',
@@ -107,10 +123,26 @@ export class DetailClientePage {
       });
     }
 
+    const [a, b] = ubication.map(Number);
+    const latLooksInvalid =
+      !Number.isFinite(a) ||
+      !Number.isFinite(b) ||
+      (Math.abs(b) > 90 && Math.abs(a) > 90);
+
+    // Aviso temprano si ambos ejes están fuera de rango latitud (dato claramente corrupto)
+    if (latLooksInvalid && Math.abs(a) > 90 && Math.abs(b) > 90) {
+      return this.utilsSvc.presentAlert({
+        header: 'Ubicación inválida',
+        message:
+          'Las coordenadas guardadas no son válidas. Solicita al cobrador un nuevo cambio de ubicación para este cliente.',
+        buttons: ['OK'],
+      });
+    }
+
     await this.utilsSvc.presentModal({
       component: MapModalComponent,
       cssClass: 'map',
-      componentProps: { lngLat: this.cliente()?.ubication },
+      componentProps: { lngLat: ubication },
     });
   }
 
@@ -176,6 +208,9 @@ export class DetailClientePage {
         tap((resp) => {
           this.cliente.set(resp.cliente);
           this.creditoActual.set(resp.credito);
+          if (resp.cliente) {
+            this.clienteSvc.setCurrentCliente(resp.cliente);
+          }
         }),
         switchMap(() => this.creditosSvc.getHistorialCreditos(this.idCliente))
       )

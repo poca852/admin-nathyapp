@@ -1,104 +1,197 @@
-<app-header title="Control de cajas" [showMenu]="true" />
+<app-header title="Caja" [showMenu]="true" />
 
 <ion-content [fullscreen]="true" class="ion-padding">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="chevron-down-circle-outline"
+      refreshingSpinner="crescent">
+    </ion-refresher-content>
+  </ion-refresher>
 
-  <ion-list>
-
-    <ion-item>
-
+  <div class="controls-card">
+    <ion-item lines="none">
       <select-ruta (onEmitRuta)="onChangeRuta($event)" />
-
     </ion-item>
 
-    <ion-item>
-      <ion-datetime-button datetime="datetimeCaja"></ion-datetime-button>
-      <ion-modal #modalCaja [keepContentsMounted]="true">
+    <ion-item lines="none">
+      <div class="date-trigger" (click)="modalCaja.present()">
+        <div class="date-label">
+          <ion-icon name="calendar-clear-outline"></ion-icon>
+          <span>Filtrar por fecha</span>
+        </div>
+        <div class="date-value">
+          {{ dateSelect() | date: 'dd MMM, yyyy' }}
+        </div>
+      </div>
+
+      <ion-modal #modalCaja [keepContentsMounted]="true" class="auto-height">
         <ng-template>
           <ion-datetime
-            locale="es-ES"
             mode="md"
             id="datetimeCaja"
             #datetimeCaja
             presentation="date"
-            (ionChange)="onChangeDay($event)"
-            locale="es-GT">
+            locale="es-GT"
+            (ionChange)="onChangeDay($event)">
             <span slot="title">Selecciona una fecha</span>
             <ion-buttons slot="buttons">
-              <ion-button color="primary" (click)="modalCaja.dismiss()">Cancelar</ion-button>
-              <ion-button color="primary" (click)="datetimeCaja.confirm()">Confirmar</ion-button>
+              <ion-button color="medium" fill="clear" (click)="modalCaja.dismiss()">
+                Cancelar
+              </ion-button>
+              <ion-button color="primary" fill="solid" (click)="datetimeCaja.confirm()">
+                Confirmar
+              </ion-button>
             </ion-buttons>
           </ion-datetime>
         </ng-template>
       </ion-modal>
     </ion-item>
 
-    <ion-item>
-      <ion-button (click)="searchCaja()">
+    <div class="controls-actions">
+      <ion-button expand="block" fill="outline" color="primary" (click)="searchCaja()" [disabled]="loading()">
+        <ion-icon slot="start" name="search-outline"></ion-icon>
         Buscar
       </ion-button>
-    </ion-item>
+    </div>
+  </div>
 
-  </ion-list>
+  <!-- Idle -->
+  <div *ngIf="!searched() && !loading()" class="empty-state">
+    <ion-icon name="wallet-outline" class="empty-icon"></ion-icon>
+    <h2>Consulta de caja</h2>
+    <p>Selecciona una ruta para ver los totales del día.</p>
+  </div>
 
-  <ion-card *ngIf="!!currentCaja">
+  <!-- Loading -->
+  <div *ngIf="loading()" class="skeleton-block">
+    <ion-skeleton-text animated style="width: 100%; height: 110px; border-radius: 16px;"></ion-skeleton-text>
+    <ion-skeleton-text animated style="width: 100%; height: 160px; border-radius: 16px; margin-top: 14px;"></ion-skeleton-text>
+    <ion-skeleton-text animated style="width: 100%; height: 160px; border-radius: 16px; margin-top: 14px;"></ion-skeleton-text>
+  </div>
 
-    <ion-card-header>
-      <ion-card-title>{{ruta.nombre | titlecase}}</ion-card-title>
-      <ion-card-subtitle>{{currentCaja.fecha | date}}</ion-card-subtitle>
-    </ion-card-header>
+  <!-- Error / empty result -->
+  <div *ngIf="!loading() && searched() && !currentCaja()" class="empty-state">
+    <ion-icon name="cloud-offline-outline" class="empty-icon"></ion-icon>
+    <h2>{{ loadError() ? 'No se pudo cargar la caja' : 'Sin registros' }}</h2>
+    <p>
+      {{
+        loadError()
+          ? 'Revisa la ruta/fecha o inténtalo de nuevo.'
+          : 'No hay caja para la combinación seleccionada.'
+      }}
+    </p>
+    <ion-button fill="solid" color="primary" (click)="searchCaja()">
+      <ion-icon slot="start" name="refresh"></ion-icon>
+      Reintentar
+    </ion-button>
+  </div>
 
-    <ion-card-content>
+  <!-- Result -->
+  <ng-container *ngIf="!loading() && currentCaja() as caja">
+    <div class="hero-card">
+      <div class="hero-top">
+        <div>
+          <p class="hero-label">Caja final</p>
+          <h1 class="hero-value">{{ caja.caja_final | money }}</h1>
+        </div>
+        <div class="hero-badges">
+          <ion-badge [color]="isLive() ? 'success' : 'medium'">
+            {{ isLive() ? 'En vivo' : 'Histórico' }}
+          </ion-badge>
+          <ion-badge *ngIf="caja.status === false" color="danger">
+            Cerrada
+          </ion-badge>
+          <ion-badge *ngIf="cobroPct() !== null" color="tertiary">
+            {{ cobroPct() }}% cobrado
+          </ion-badge>
+        </div>
+      </div>
+      <p class="hero-meta">
+        {{ ruta()?.nombre | titlecase }} · {{ caja.fecha | date: 'dd MMM yyyy' }}
+      </p>
+    </div>
 
-      <ion-text>
-        <h2><strong>Base: </strong>{{currentCaja.base | currency:'USD':'symbol':'':'en'}}</h2>
-      </ion-text>
+    <ion-card class="metrics-card">
+      <ion-card-header>
+        <ion-card-title>Apertura</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="metric-row">
+          <span>Base</span>
+          <strong>{{ caja.base | money }}</strong>
+        </div>
+        <div class="metric-row">
+          <span>Pretendido</span>
+          <strong>{{ caja.pretendido | money }}</strong>
+        </div>
+        <div class="metric-row" *ngIf="caja.cobraMora">
+          <span>Mora por cobrar</span>
+          <strong>{{ (caja.moraPorCobrar || 0) | money }}</strong>
+        </div>
+      </ion-card-content>
+    </ion-card>
 
-      <ion-text>
-        <h2><strong>Pretendido: </strong>{{currentCaja.pretendido | currency:'USD':'symbol':'':'en'}}</h2>
-      </ion-text>
+    <ion-card class="metrics-card">
+      <ion-card-header>
+        <ion-card-title>Operación</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="metric-row highlight">
+          <span>Cobro</span>
+          <strong>{{ caja.cobro | money }}</strong>
+        </div>
+        <div class="metric-row" *ngIf="caja.cobraMora">
+          <span>Mora cobrada</span>
+          <strong>{{ (caja.moraCobrada || 0) | money }}</strong>
+        </div>
+        <div class="metric-row">
+          <span>Préstamo</span>
+          <strong>{{ caja.prestamo | money }}</strong>
+        </div>
+        <div class="metric-row">
+          <span>Clientes</span>
+          <strong>{{ caja.total_clientes ?? 0 }}</strong>
+        </div>
+        <div class="metric-row">
+          <span>Pendientes</span>
+          <strong>{{ caja.clientes_pendientes ?? 0 }}</strong>
+        </div>
+        <div class="metric-row">
+          <span>Renovaciones</span>
+          <strong>{{ caja.renovaciones ?? 0 }}</strong>
+        </div>
+      </ion-card-content>
+    </ion-card>
 
-      @if (currentCaja.cobraMora) {
-        <ion-text>
-          <h2><strong>Mora por cobrar: </strong>{{(currentCaja.moraPorCobrar || 0) | currency:'USD':'symbol':'':'en'}}</h2>
-        </ion-text>
-      }
+    <ion-card class="metrics-card">
+      <ion-card-header>
+        <ion-card-title>Capital</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="metric-row">
+          <span>Gastos</span>
+          <strong>{{ caja.gasto | money }}</strong>
+        </div>
+        <div class="metric-row">
+          <span>Retiros</span>
+          <strong>{{ caja.retiro | money }}</strong>
+        </div>
+        <div class="metric-row">
+          <span>Inversiones</span>
+          <strong>{{ caja.inversion | money }}</strong>
+        </div>
+      </ion-card-content>
+    </ion-card>
 
-      <ion-text>
-        <h2><strong>Clientes: </strong>{{currentCaja.total_clientes}}</h2>
-      </ion-text>
-
-      <ion-text>
-        <h2><strong>Cobro: </strong>{{currentCaja.cobro | currency:'USD':'symbol':'':'en'}}</h2>
-      </ion-text>
-
-      @if (currentCaja.cobraMora) {
-        <ion-text>
-          <h2><strong>Mora cobrada: </strong>{{(currentCaja.moraCobrada || 0) | currency:'USD':'symbol':'':'en'}}</h2>
-        </ion-text>
-      }
-
-      <ion-text>
-        <h2><strong>Prestamo: </strong>{{currentCaja.prestamo | currency:'USD':'symbol':'':'en'}}</h2>
-      </ion-text>
-
-      <ion-text>
-        <h2><strong>Oficina: </strong>{{currentCaja.gasto | currency:'USD':'symbol':'':'en'}}</h2>
-      </ion-text>
-
-      <ion-text>
-        <h2><strong>Retiro: </strong>{{currentCaja.retiro | currency:'USD':'symbol':'':'en'}}</h2>
-      </ion-text>
-
-      <ion-text>
-        <h2><strong>Inversion: </strong>{{currentCaja.inversion | currency:'USD':'symbol':'':'en'}}</h2>
-      </ion-text>
-
-      <ion-text>
-        <h2><strong>Caja Final: </strong>{{currentCaja.caja_final | currency:'USD':'symbol':'':'en'}}</h2>
-      </ion-text>
-
-    </ion-card-content>
-
-  </ion-card>
-
+    <div class="detail-actions">
+      <ion-button expand="block" fill="solid" color="primary" (click)="goTo('/main/pagos')">
+        <ion-icon slot="start" name="cash-outline"></ion-icon>
+        Ver pagos
+      </ion-button>
+      <ion-button expand="block" fill="outline" color="primary" (click)="goTo('/main/oficina')">
+        <ion-icon slot="start" name="briefcase-outline"></ion-icon>
+        Ver oficina
+      </ion-button>
+    </div>
+  </ng-container>
 </ion-content>

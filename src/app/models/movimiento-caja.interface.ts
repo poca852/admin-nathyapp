@@ -6,6 +6,8 @@ export interface MovimientoCaja {
   id: string;
   caja: string;
   monto: number;
+  /** Mora cobrada dentro del mismo pago (desglose). */
+  montoMora?: number;
   tipoMovimiento: TipoMovimiento;
   subTipo: SubTipo;
   ruta: string;
