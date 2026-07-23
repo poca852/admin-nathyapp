@@ -76,11 +76,16 @@ export class AuthPage implements OnInit {
 
         },
         error: err => {
-          
+          const raw = err?.error?.message;
+          const message = Array.isArray(raw)
+            ? raw.join(' ')
+            : (raw || 'Ocurrió un error inesperado');
+          const suspended = err?.error?.error === 'SUBSCRIPTION_SUSPENDED';
+
           this.utilsSvc.presentToast({
-            message: err.error.message,
-            duration: 1000,
-            color: 'primary',
+            message,
+            duration: suspended ? 4000 : 2000,
+            color: suspended ? 'danger' : 'primary',
             position: 'middle',
             icon: 'alert-circle-outline'
           })

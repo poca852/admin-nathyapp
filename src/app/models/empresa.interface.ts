@@ -1,5 +1,7 @@
 import { Ruta, User } from "./";
 
+export type SubscriptionStatus = 'ACTIVE' | 'GRACE' | 'OVERDUE' | 'SUSPENDED';
+
 export type BaseCalculoMora = 'VALOR_CUOTA' | 'SALDO' | 'VALOR_CREDITO';
 
 export interface MoraConfig {
@@ -23,6 +25,13 @@ export interface Empresa {
    permiteMoraVoluntaria?: boolean;
    porcentajeMora?: number;
    baseCalculoMora?: BaseCalculoMora;
+   isSubscriptionPaid?: boolean;
+   subscriptionGraceDays?: number;
+   accessSuspended?: boolean;
+   accessSuspendedAt?: string | null;
+   accessSuspendedReason?: 'PAYMENT' | 'MANUAL' | null;
+   subscriptionStatus?: SubscriptionStatus;
+   daysPastDue?: number;
 }
 
 export interface ResponseBackup {

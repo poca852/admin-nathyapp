@@ -18,6 +18,21 @@ export class EmpresaService {
   private readonly _empresa = signal<Empresa | null>(null);
   public readonly empresa = computed(() => this._empresa());
 
+  /** True cuando el SUPERADMIN marcó la suscripción como no pagada. */
+  public readonly paymentDue = computed(() => {
+    const e = this._empresa();
+    if (!e) return false;
+    return e.isSubscriptionPaid === false;
+  });
+
+  public readonly paymentDueLabel = computed(() => {
+    if (!this.paymentDue()) return '';
+    const day = this._empresa()?.dayOfPay;
+    return day != null
+      ? `Pago pendiente · día ${day}`
+      : 'Pago de suscripción pendiente';
+  });
+
   private readonly _ruta = signal<Ruta | null>(null);
   public readonly ruta = computed(() => this._ruta());
 
@@ -88,6 +103,21 @@ export class EmpresaService {
     this._employes.set(empresa.employes || []);
   }
 
+  /** Actualiza solo flags de suscripción (p. ej. vía WebSocket). */
+  patchSubscriptionLocal(patch: {
+    isSubscriptionPaid?: boolean;
+    subscriptionStatus?: Empresa['subscriptionStatus'];
+    dayOfPay?: number;
+  }): void {
+    this._empresa.update((current) => {
+      if (!current) return current;
+      return {
+        ...current,
+        ...patch,
+      };
+    });
+  }
+
   /**
    * Fetches company data and updates internal state (rutas and employees).
    */
@@ -146,6 +176,40 @@ export class EmpresaService {
 
   getAllEmpresas(): Observable<Empresa[]> {
     return this.http.get<Empresa[]>(`${this.baseUrl}/empresa/all`);
+  }
+
+  getOverdueEmpresas(includeGrace = false): Observable<Empresa[]> {
+    let params = new HttpParams();
+    if (includeGrace) {
+      params = params.set('includeGrace', 'true');
+    }
+    return this.http.get<Empresa[]>(`${this.baseUrl}/empresa/overdue`, { params });
+  }
+
+  updateSubscription(
+    id: string,
+    body: {
+      dayOfPay?: number;
+      isSubscriptionPaid?: boolean;
+      subscriptionGraceDays?: number;
+    },
+  ): Observable<Empresa> {
+    return this.http.patch<Empresa>(`${this.baseUrl}/empresa/${id}/subscription`, body);
+  }
+
+  suspendEmpresa(
+    id: string,
+    reason: 'PAYMENT' | 'MANUAL' = 'PAYMENT',
+  ): Observable<Empresa> {
+    return this.http.post<Empresa>(`${this.baseUrl}/empresa/${id}/suspend`, { reason });
+  }
+
+  unsuspendEmpresa(id: string, markPaid = false): Observable<Empresa> {
+    let params = new HttpParams();
+    if (markPaid) {
+      params = params.set('markPaid', 'true');
+    }
+    return this.http.post<Empresa>(`${this.baseUrl}/empresa/${id}/unsuspend`, {}, { params });
   }
 
   createEmpresa(payload: Partial<Empresa> & { name: string; country: string }): Observable<Empresa> {

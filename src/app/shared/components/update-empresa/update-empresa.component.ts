@@ -56,6 +56,10 @@ export class UpdateEmpresaComponent implements OnInit {
       Validators.min(1),
       Validators.max(31),
     ]),
+    subscriptionGraceDays: new FormControl<number | null>(3, [
+      Validators.min(0),
+      Validators.max(31),
+    ]),
     country: new FormControl('', [Validators.required]),
     cobraMora: new FormControl(false),
     permiteMoraVoluntaria: new FormControl(false),
@@ -77,6 +81,7 @@ export class UpdateEmpresaComponent implements OnInit {
         email: this.empresa.email,
         phone: this.empresa.phone || '',
         dayOfPay: this.empresa.dayOfPay ?? null,
+        subscriptionGraceDays: this.empresa.subscriptionGraceDays ?? 3,
         country: this.empresa.country,
         cobraMora: this.empresa.cobraMora ?? false,
         permiteMoraVoluntaria: this.empresa.permiteMoraVoluntaria ?? false,
@@ -98,6 +103,7 @@ export class UpdateEmpresaComponent implements OnInit {
       email,
       phone,
       dayOfPay,
+      subscriptionGraceDays,
       country,
       cobraMora,
       permiteMoraVoluntaria,
@@ -120,6 +126,10 @@ export class UpdateEmpresaComponent implements OnInit {
         dayOfPay != null && Number.isFinite(Number(dayOfPay))
           ? Number(dayOfPay)
           : undefined,
+      subscriptionGraceDays:
+        subscriptionGraceDays != null && Number.isFinite(Number(subscriptionGraceDays))
+          ? Number(subscriptionGraceDays)
+          : undefined,
       country: country || undefined,
     };
 
@@ -133,6 +143,7 @@ export class UpdateEmpresaComponent implements OnInit {
           email: email || undefined,
           phone: phone?.trim() || undefined,
           dayOfPay: empresaPayload.dayOfPay,
+          subscriptionGraceDays: empresaPayload.subscriptionGraceDays,
           ...moraConfig,
         } as any)
         .subscribe({

@@ -2,8 +2,9 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 
-import { Empresa, Ruta, User } from 'src/app/models';
+import { Empresa, Ruta, SubscriptionStatus, User } from 'src/app/models';
 import { EmpresaService } from 'src/app/services/empresa.service';
+import { RutaService } from 'src/app/services/ruta.service';
 import { SuperAdminContextService } from 'src/app/services/super-admin-context.service';
 import { UtilsService } from 'src/app/services/utils.service';
 import { UpdateEmpresaComponent } from 'src/app/shared/components/update-empresa/update-empresa.component';
@@ -17,12 +18,15 @@ import { AddUpdateRutaComponent } from 'src/app/shared/components/add-update-rut
 export class SaEmpresaDetailPage {
   private readonly route = inject(ActivatedRoute);
   private readonly empresaSvc = inject(EmpresaService);
+  private readonly rutaSvc = inject(RutaService);
   private readonly utilsSvc = inject(UtilsService);
   private readonly ctx = inject(SuperAdminContextService);
 
   readonly loading = signal(true);
   readonly loadError = signal(false);
   readonly empresa = signal<Empresa | null>(null);
+  readonly billingBusy = signal(false);
+  readonly lockBusyId = signal<string | null>(null);
 
   readonly rutas = computed(() => {
     const list = this.empresa()?.rutas || [];
@@ -72,6 +76,11 @@ export class SaEmpresaDetailPage {
         dayOfPay: null as number | null,
         cobraMora: false,
         porcentajeMora: 0,
+        isSubscriptionPaid: true,
+        subscriptionGraceDays: 3,
+        accessSuspended: false,
+        subscriptionStatus: 'ACTIVE' as SubscriptionStatus,
+        daysPastDue: 0,
       };
     }
     return {
@@ -85,6 +94,11 @@ export class SaEmpresaDetailPage {
       porcentajeMora: e.porcentajeMora ?? 0,
       ownerName: owner?.nombre || owner?.username || '',
       ownerUsername: owner?.username || '',
+      isSubscriptionPaid: e.isSubscriptionPaid !== false,
+      subscriptionGraceDays: e.subscriptionGraceDays ?? 3,
+      accessSuspended: !!e.accessSuspended,
+      subscriptionStatus: (e.subscriptionStatus || 'ACTIVE') as SubscriptionStatus,
+      daysPastDue: e.daysPastDue ?? 0,
     };
   });
 
@@ -123,6 +137,32 @@ export class SaEmpresaDetailPage {
     });
   }
 
+  statusColor(status?: SubscriptionStatus): string {
+    switch (status) {
+      case 'OVERDUE':
+        return 'danger';
+      case 'GRACE':
+        return 'warning';
+      case 'SUSPENDED':
+        return 'dark';
+      default:
+        return 'success';
+    }
+  }
+
+  statusLabel(status?: SubscriptionStatus): string {
+    switch (status) {
+      case 'OVERDUE':
+        return 'Vencida';
+      case 'GRACE':
+        return 'En gracia';
+      case 'SUSPENDED':
+        return 'Suspendida';
+      default:
+        return 'Al día';
+    }
+  }
+
   trackRuta(_: number, r: Ruta): string {
     return r.id || (r as any)._id;
   }
@@ -135,6 +175,80 @@ export class SaEmpresaDetailPage {
     const id = ruta.id || (ruta as any)._id;
     this.ctx.setDetailPayload(ruta);
     this.utilsSvc.routerLink('/main/super-admin/rutas/:id', { id });
+  }
+
+  confirmToggleRutaLock(event: Event, ruta: Ruta): void {
+    event.stopPropagation();
+    event.preventDefault();
+
+    const id = ruta.id || (ruta as any)._id;
+    if (!id || this.lockBusyId()) return;
+
+    const willLock = !ruta.isLocked;
+    if (willLock && !ruta.status) {
+      this.utilsSvc.presentToast({
+        message: 'No se puede bloquear una ruta cerrada. Ábrela primero.',
+        color: 'warning',
+        duration: 3500,
+        icon: 'alert-circle-outline',
+      });
+      return;
+    }
+
+    const nombre = ruta.nombre || 'esta ruta';
+    this.utilsSvc.presentAlert({
+      header: willLock ? 'Bloquear ruta' : 'Desbloquear ruta',
+      message: willLock
+        ? `Se bloqueará "${nombre}". El cobrador no podrá operar hasta desbloquearla.`
+        : `Se desbloqueará "${nombre}" para continuar operaciones.`,
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: willLock ? 'Bloquear' : 'Desbloquear',
+          role: willLock ? 'destructive' : undefined,
+          handler: () => this.doToggleRutaLock(id, willLock),
+        },
+      ],
+    });
+  }
+
+  private doToggleRutaLock(rutaId: string, willLock: boolean): void {
+    this.lockBusyId.set(rutaId);
+    const req$ = willLock
+      ? this.rutaSvc.lockRuta(rutaId)
+      : this.rutaSvc.unlockRuta(rutaId);
+
+    req$.subscribe({
+      next: () => {
+        this.empresa.update((emp) => {
+          if (!emp) return emp;
+          return {
+            ...emp,
+            rutas: (emp.rutas || []).map((r: any) => {
+              const rid = r.id || r._id;
+              return rid === rutaId ? { ...r, isLocked: willLock } : r;
+            }),
+          };
+        });
+        this.empresaSvc.updateRutaLock(rutaId, willLock);
+        this.lockBusyId.set(null);
+        this.utilsSvc.presentToast({
+          message: willLock ? 'Ruta bloqueada' : 'Ruta desbloqueada',
+          duration: 2500,
+          color: willLock ? 'warning' : 'success',
+          icon: willLock ? 'lock-closed-outline' : 'lock-open-outline',
+        });
+      },
+      error: (err) => {
+        this.lockBusyId.set(null);
+        this.utilsSvc.presentToast({
+          message: err.error?.message || 'No se pudo cambiar el bloqueo',
+          duration: 3500,
+          color: 'danger',
+          icon: 'alert-circle-outline',
+        });
+      },
+    });
   }
 
   openUsuario(user: User): void {
@@ -175,6 +289,140 @@ export class SaEmpresaDetailPage {
       this.ctx.invalidate();
       this.load();
     }
+  }
+
+  togglePaid(): void {
+    const empresa = this.empresa();
+    if (!empresa?.id || this.billingBusy()) return;
+    const next = !(empresa.isSubscriptionPaid !== false);
+    this.billingBusy.set(true);
+    this.empresaSvc.updateSubscription(empresa.id, { isSubscriptionPaid: next }).subscribe({
+      next: (updated) => {
+        this.patchBilling(updated);
+        this.billingBusy.set(false);
+        this.utilsSvc.presentToast({
+          message: next ? 'Marcada como pagada' : 'Marcada como no pagada',
+          duration: 2500,
+          color: 'success',
+          icon: 'checkmark-circle-outline',
+        });
+      },
+      error: (err) => {
+        this.billingBusy.set(false);
+        this.utilsSvc.presentToast({
+          message: err.error?.message || 'No se pudo actualizar el pago',
+          duration: 3000,
+          color: 'danger',
+          icon: 'alert-circle-outline',
+        });
+      },
+    });
+  }
+
+  confirmSuspend(): void {
+    const empresa = this.empresa();
+    if (!empresa?.id) return;
+    this.utilsSvc.presentAlert({
+      header: 'Suspender acceso',
+      message:
+        `¿Suspender "${empresa.name}"?\n\n` +
+        'Los ADMIN, SUPERVISOR y COBRADOR de esta empresa no podrán iniciar sesión ni usar la API hasta que la reactives.',
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Suspender',
+          role: 'destructive',
+          handler: () => this.doSuspend(empresa.id),
+        },
+      ],
+    });
+  }
+
+  confirmUnsuspend(): void {
+    const empresa = this.empresa();
+    if (!empresa?.id) return;
+    this.utilsSvc.presentAlert({
+      header: 'Reactivar acceso',
+      message:
+        `¿Reactivar "${empresa.name}"?\n\n` +
+        'También puedes marcarla como pagada al reactivar.',
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Solo reactivar',
+          handler: () => this.doUnsuspend(empresa.id, false),
+        },
+        {
+          text: 'Reactivar y marcar pagada',
+          handler: () => this.doUnsuspend(empresa.id, true),
+        },
+      ],
+    });
+  }
+
+  private doSuspend(id: string): void {
+    this.billingBusy.set(true);
+    this.empresaSvc.suspendEmpresa(id, 'PAYMENT').subscribe({
+      next: (updated) => {
+        this.patchBilling(updated);
+        this.billingBusy.set(false);
+        this.utilsSvc.presentToast({
+          message: 'Empresa suspendida',
+          duration: 2500,
+          color: 'warning',
+          icon: 'lock-closed-outline',
+        });
+      },
+      error: (err) => {
+        this.billingBusy.set(false);
+        this.utilsSvc.presentToast({
+          message: err.error?.message || 'No se pudo suspender',
+          duration: 3000,
+          color: 'danger',
+          icon: 'alert-circle-outline',
+        });
+      },
+    });
+  }
+
+  private doUnsuspend(id: string, markPaid: boolean): void {
+    this.billingBusy.set(true);
+    this.empresaSvc.unsuspendEmpresa(id, markPaid).subscribe({
+      next: (updated) => {
+        this.patchBilling(updated);
+        this.billingBusy.set(false);
+        this.utilsSvc.presentToast({
+          message: markPaid ? 'Reactivada y marcada como pagada' : 'Empresa reactivada',
+          duration: 2500,
+          color: 'success',
+          icon: 'lock-open-outline',
+        });
+      },
+      error: (err) => {
+        this.billingBusy.set(false);
+        this.utilsSvc.presentToast({
+          message: err.error?.message || 'No se pudo reactivar',
+          duration: 3000,
+          color: 'danger',
+          icon: 'alert-circle-outline',
+        });
+      },
+    });
+  }
+
+  private patchBilling(updated: Partial<Empresa>): void {
+    const current = this.empresa();
+    if (!current) return;
+    const next = {
+      ...current,
+      ...updated,
+      id: current.id,
+      employes: current.employes,
+      rutas: current.rutas,
+      owner: current.owner,
+    };
+    this.empresa.set(next);
+    this.ctx.invalidate();
   }
 
   confirmDelete(): void {

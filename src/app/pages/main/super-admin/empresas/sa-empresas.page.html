@@ -17,6 +17,24 @@
     </ion-button>
   </div>
 
+  <ion-segment
+    class="sa-filter-segment"
+    [value]="statusFilter()"
+    (ionChange)="onFilterChange($event)">
+    <ion-segment-button value="ALL">
+      <ion-label>Todas</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="OVERDUE">
+      <ion-label>Vencidas{{ overdueCount() ? ' (' + overdueCount() + ')' : '' }}</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="GRACE">
+      <ion-label>Gracia</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="SUSPENDED">
+      <ion-label>Suspendidas{{ suspendedCount() ? ' (' + suspendedCount() + ')' : '' }}</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
   <div *ngIf="loading()" class="skeleton-block">
     <ion-skeleton-text animated style="width: 100%; height: 64px; border-radius: 12px;"></ion-skeleton-text>
   </div>
@@ -36,13 +54,29 @@
       <ion-icon slot="start" name="business-outline" color="primary"></ion-icon>
       <ion-label>
         <h2>{{ empresa.name }}</h2>
-        <p>{{ empresa.country }} · {{ empresa.rutas?.length || 0 }} rutas · {{ empresa.employes?.length || 0 }} empleados</p>
+        <p>
+          {{ empresa.country }}
+          · Día {{ empresa.dayOfPay ?? '—' }}
+          · {{ empresa.rutas?.length || 0 }} rutas
+          <ng-container *ngIf="empresa.daysPastDue">
+            · {{ empresa.daysPastDue }}d atraso
+          </ng-container>
+        </p>
       </ion-label>
+      <ion-badge
+        slot="end"
+        mode="md"
+        [color]="statusColor(empresa.subscriptionStatus)">
+        {{ statusLabel(empresa.subscriptionStatus) }}
+      </ion-badge>
     </ion-item>
   </ion-list>
 
   <div *ngIf="!loading() && !loadError() && filtered().length === 0" class="sa-empty">
     <ion-icon name="business-outline"></ion-icon>
-    <p>No hay empresas</p>
+    <p *ngIf="statusFilter() === 'OVERDUE'">No hay empresas vencidas</p>
+    <p *ngIf="statusFilter() === 'GRACE'">No hay empresas en gracia</p>
+    <p *ngIf="statusFilter() === 'SUSPENDED'">No hay empresas suspendidas</p>
+    <p *ngIf="statusFilter() === 'ALL'">No hay empresas</p>
   </div>
 </ion-content>

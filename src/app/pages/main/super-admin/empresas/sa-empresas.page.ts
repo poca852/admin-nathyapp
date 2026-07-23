@@ -3,10 +3,12 @@ import { NavigationEnd, Router } from '@angular/router';
 import { filter, Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
-import { Empresa } from 'src/app/models';
+import { Empresa, SubscriptionStatus } from 'src/app/models';
 import { SuperAdminContextService } from 'src/app/services/super-admin-context.service';
 import { UtilsService } from 'src/app/services/utils.service';
 import { UpdateEmpresaComponent } from 'src/app/shared/components/update-empresa/update-empresa.component';
+
+type EmpresaFilter = 'ALL' | 'OVERDUE' | 'GRACE' | 'SUSPENDED';
 
 @Component({
   selector: 'app-sa-empresas',
@@ -22,10 +24,29 @@ export class SaEmpresasPage implements OnDestroy {
   readonly loading = signal(false);
   readonly loadError = signal(false);
   readonly searchQuery = signal('');
+  readonly statusFilter = signal<EmpresaFilter>('ALL');
+
+  readonly overdueCount = computed(() =>
+    this.ctx.empresas().filter((e) => e.subscriptionStatus === 'OVERDUE').length,
+  );
+
+  readonly suspendedCount = computed(() =>
+    this.ctx.empresas().filter((e) => e.subscriptionStatus === 'SUSPENDED' || e.accessSuspended).length,
+  );
 
   readonly filtered = computed(() => {
     const q = this.searchQuery().trim().toLowerCase();
-    const list = this.ctx.empresas();
+    const status = this.statusFilter();
+    let list = this.ctx.empresas();
+
+    if (status === 'OVERDUE') {
+      list = list.filter((e) => e.subscriptionStatus === 'OVERDUE');
+    } else if (status === 'GRACE') {
+      list = list.filter((e) => e.subscriptionStatus === 'GRACE');
+    } else if (status === 'SUSPENDED') {
+      list = list.filter((e) => e.subscriptionStatus === 'SUSPENDED' || e.accessSuspended);
+    }
+
     if (!q) return list;
     return list.filter((e) =>
       (e.name || '').toLowerCase().includes(q) ||
@@ -80,6 +101,36 @@ export class SaEmpresasPage implements OnDestroy {
 
   onSearch(ev: CustomEvent): void {
     this.searchQuery.set(String(ev.detail?.value ?? ''));
+  }
+
+  onFilterChange(ev: CustomEvent): void {
+    this.statusFilter.set((ev.detail?.value as EmpresaFilter) || 'ALL');
+  }
+
+  statusColor(status?: SubscriptionStatus): string {
+    switch (status) {
+      case 'OVERDUE':
+        return 'danger';
+      case 'GRACE':
+        return 'warning';
+      case 'SUSPENDED':
+        return 'dark';
+      default:
+        return 'success';
+    }
+  }
+
+  statusLabel(status?: SubscriptionStatus): string {
+    switch (status) {
+      case 'OVERDUE':
+        return 'Vencida';
+      case 'GRACE':
+        return 'En gracia';
+      case 'SUSPENDED':
+        return 'Suspendida';
+      default:
+        return 'Al día';
+    }
   }
 
   trackById(_: number, e: Empresa): string {

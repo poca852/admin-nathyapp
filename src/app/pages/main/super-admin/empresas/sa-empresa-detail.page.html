@@ -32,6 +32,87 @@
         <ion-badge [color]="resumen().cobraMora ? 'warning' : 'medium'" mode="md">
           Mora {{ resumen().cobraMora ? (resumen().porcentajeMora + '%') : 'OFF' }}
         </ion-badge>
+        <ion-badge
+          class="sa-status-badge"
+          mode="md"
+          [color]="statusColor(resumen().subscriptionStatus)">
+          {{ statusLabel(resumen().subscriptionStatus) }}
+        </ion-badge>
+      </div>
+    </section>
+
+    <!-- Suscripción / acceso -->
+    <section class="sa-section">
+      <div class="sa-section-head">
+        <h2>Suscripción</h2>
+      </div>
+
+      <div class="sa-summary">
+        <div class="item">
+          <span>Día de pago</span>
+          <strong>{{ resumen().dayOfPay ?? '—' }}</strong>
+        </div>
+        <div class="item">
+          <span>Gracia</span>
+          <strong>{{ resumen().subscriptionGraceDays }}d</strong>
+        </div>
+        <div class="item">
+          <span>Pagada</span>
+          <strong>{{ resumen().isSubscriptionPaid ? 'Sí' : 'No' }}</strong>
+        </div>
+        <div class="item" *ngIf="resumen().daysPastDue > 0">
+          <span>Atraso</span>
+          <strong>{{ resumen().daysPastDue }}d</strong>
+        </div>
+      </div>
+
+      <div class="sa-actions sa-billing-actions">
+        <button
+          type="button"
+          class="sa-action-card"
+          [disabled]="billingBusy()"
+          (click)="togglePaid()">
+          <div class="icon">
+            <ion-icon [name]="resumen().isSubscriptionPaid ? 'cash-outline' : 'card-outline'"></ion-icon>
+          </div>
+          <div class="copy">
+            <h2>{{ resumen().isSubscriptionPaid ? 'Marcar no pagada' : 'Marcar pagada' }}</h2>
+            <p>Control del ciclo de cobro actual</p>
+          </div>
+          <ion-icon name="chevron-forward-outline" class="chevron"></ion-icon>
+        </button>
+
+        <button
+          *ngIf="!resumen().accessSuspended"
+          type="button"
+          class="sa-action-card"
+          [disabled]="billingBusy()"
+          (click)="confirmSuspend()">
+          <div class="icon danger">
+            <ion-icon name="lock-closed-outline"></ion-icon>
+          </div>
+          <div class="copy">
+            <h2>Suspender acceso</h2>
+            <p>Bloquea admin y cobrov2 de esta empresa</p>
+          </div>
+          <ion-icon name="chevron-forward-outline" class="chevron"></ion-icon>
+        </button>
+
+        <button
+          *ngIf="resumen().accessSuspended"
+          type="button"
+          class="sa-action-card"
+          [disabled]="billingBusy()"
+          (click)="confirmUnsuspend()">
+          <div class="icon">
+            <ion-icon name="lock-open-outline"></ion-icon>
+          </div>
+          <div class="copy">
+            <h2>Reactivar acceso</h2>
+            <p>Quita la suspensión; opción de marcar pagada</p>
+          </div>
+          <ion-icon name="chevron-forward-outline" class="chevron"></ion-icon>
+        </button>
       </div>
     </section>
 
@@ -99,16 +180,32 @@
           <ion-icon
             slot="start"
             name="layers-outline"
-            [color]="ruta.status ? 'success' : 'medium'">
+            [color]="ruta.isLocked ? 'warning' : (ruta.status ? 'success' : 'medium')">
           </ion-icon>
           <ion-label>
-            <h3>{{ ruta.nombre }}</h3>
+            <h3>
+              {{ ruta.nombre }}
+              <ion-badge *ngIf="ruta.isLocked" color="warning" mode="md">Bloqueada</ion-badge>
+            </h3>
             <p>
               {{ ruta.ciudad || '—' }}, {{ ruta.pais || '—' }}
               · {{ ruta.currency || '—' }}
               · {{ ruta.status ? 'Abierta' : 'Cerrada' }}
             </p>
           </ion-label>
+          <ion-button
+            *ngIf="ruta.status || ruta.isLocked"
+            slot="end"
+            fill="clear"
+            size="small"
+            [color]="ruta.isLocked ? 'medium' : 'warning'"
+            [disabled]="lockBusyId() === (ruta.id || ruta._id)"
+            (click)="confirmToggleRutaLock($event, ruta)">
+            <ion-icon
+              slot="icon-only"
+              [name]="ruta.isLocked ? 'lock-open-outline' : 'lock-closed-outline'">
+            </ion-icon>
+          </ion-button>
         </ion-item>
       </ion-list>
 

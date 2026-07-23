@@ -135,8 +135,8 @@ export class HomePage implements OnDestroy {
         }),
       )
       .subscribe({
-        next: ({ rutas }) => {
-          this.empresaSvc.setRutas(rutas);
+        next: (empresa) => {
+          this.empresaSvc.applyEmpresa(empresa);
           this.loadError = false;
         },
         error: () => {

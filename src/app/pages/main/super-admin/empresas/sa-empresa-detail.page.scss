@@ -3,7 +3,17 @@
 .sa-hero-copy {
   ion-badge {
     margin-top: 8px;
+    margin-right: 6px;
   }
+}
+
+.sa-billing-actions {
+  margin-top: 12px;
+}
+
+.sa-billing-actions .sa-action-card:disabled {
+  opacity: 0.55;
+  pointer-events: none;
 }
 
 .sa-section {
