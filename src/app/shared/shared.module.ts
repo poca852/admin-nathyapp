@@ -29,6 +29,7 @@ import { NotificacionesModalComponent } from './components/notificaciones-modal/
 import { UpdateNotesModalComponent } from './components/update-notes-modal/update-notes-modal.component';
 import { AplicarPerdonarMoraComponent } from './components/aplicar-perdonar-mora/aplicar-perdonar-mora.component';
 import { InteresPercentPipe } from './pipes/interes-percent.pipe';
+import { MoneyPipe } from './pipes/money.pipe';
 
 mapboxgl.accessToken = environment.mapbox_token;
 
@@ -86,12 +87,14 @@ mapboxgl.accessToken = environment.mapbox_token;
     NotificacionesModalComponent,
     AplicarPerdonarMoraComponent,
     InteresPercentPipe,
+    MoneyPipe,
   ],
   imports: [
     CommonModule,
     IonicModule,
     ReactiveFormsModule,
     InteresPercentPipe,
+    MoneyPipe,
   ]
 })
 export class SharedModule { }

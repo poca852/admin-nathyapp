@@ -1,3 +1,5 @@
+import { Caja } from './caja.interface';
+
 export interface Ruta {
    id: string;
    _id?: string;
@@ -6,8 +8,8 @@ export interface Ruta {
    pais: string;
    status: boolean;
    isLocked: boolean;
-   caja_actual: string;
-   ultima_caja: string;
+   caja_actual: string | Caja;
+   ultima_caja: string | Caja;
    empresa?: string;
    autoOpen: boolean;
    ultima_apertura: string;
