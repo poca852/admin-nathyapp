@@ -21,6 +21,13 @@ import {
   WsService,
 } from 'src/app/services/ws.service';
 import { UtilsService } from 'src/app/services/utils.service';
+import {
+  colorForCobrador as colorForCobradorHelper,
+  filterPagosByRutaId,
+  resolveRutaMeta as resolveRutaMetaHelper,
+  resolveSelectedRutaId,
+  toggleSelectedCobradorId,
+} from 'src/app/helpers/seguimiento.helpers';
 
 type PagoMapaDia = {
   id: string;
@@ -31,6 +38,9 @@ type PagoMapaDia = {
   clienteAlias?: string;
   at?: string;
   color: string;
+  rutaId?: string;
+  rutaNombre?: string;
+  cobradorNombre?: string;
 };
 
 @Component({
@@ -95,13 +105,53 @@ export class SeguimientoPage implements OnDestroy {
     return this.cobradores.filter((c) => c.online).length;
   }
 
+  /** Ruta del cobrador seleccionado (filtra pagos del mapa). */
+  get selectedRutaId(): string | null {
+    return resolveSelectedRutaId(this.selectedId, this.cobradores);
+  }
+
+  get selectedRutaNombre(): string | null {
+    const rutaId = this.selectedRutaId;
+    if (!rutaId) return null;
+    return this.resolveRutaMeta(rutaId).rutaNombre || null;
+  }
+
+  /** Pagos visibles: todos, o solo los de la ruta del cobrador seleccionado. */
+  get pagosVisibles(): PagoMapaDia[] {
+    return filterPagosByRutaId(this.pagosDia, this.selectedRutaId);
+  }
+
   selectCobrador(item: CobradorTrackingHoy): void {
-    this.selectedId = item.cobradorId;
-    this.drawTrail(item);
+    // Segundo clic desactiva el filtro y vuelve a mostrar todas las rutas
+    this.selectedId = toggleSelectedCobradorId(this.selectedId, item.cobradorId);
+    this.drawAllTrails();
+    this.syncPagoMarkers();
+    this.cdr.markForCheck();
+
+    if (!this.selectedId) {
+      this.fitAllMarkers();
+      return;
+    }
+
     const last = item.ultimaUbicacion;
     if (last && this.map) {
       this.map.flyTo({ center: [last.lng, last.lat], zoom: 15 });
+    } else {
+      this.fitVisiblePagos();
     }
+  }
+
+  clearRutaFilter(): void {
+    this.selectedId = null;
+    this.drawAllTrails();
+    this.syncPagoMarkers();
+    this.fitAllMarkers();
+    this.cdr.markForCheck();
+  }
+
+  /** Color estable por cobrador (leyenda / marcador / trail / pagos). */
+  colorForCobrador(cobradorId: string): string {
+    return colorForCobradorHelper(cobradorId);
   }
 
   togglePagosDia(): void {
@@ -125,16 +175,23 @@ export class SeguimientoPage implements OnDestroy {
         next: (list) => {
           this.pagosDia = (list ?? [])
             .filter((p) => Array.isArray(p.ubication) && p.ubication.length === 2)
-            .map((p) => ({
-              id: String(p._id),
-              monto: p.monto,
-              lng: p.ubication[0],
-              lat: p.ubication[1],
-              clienteNombre: p.cliente?.nombre || 'Cliente',
-              clienteAlias: p.cliente?.alias || undefined,
-              at: p.createdAt || p.fecha,
-              color: this.colorForPagoId(String(p._id)),
-            }));
+            .map((p) => {
+              const rutaId = p.ruta ? String(p.ruta) : undefined;
+              const meta = this.resolveRutaMeta(rutaId);
+              return {
+                id: String(p._id),
+                monto: p.monto,
+                lng: p.ubication[0],
+                lat: p.ubication[1],
+                clienteNombre: p.cliente?.nombre || 'Cliente',
+                clienteAlias: p.cliente?.alias || undefined,
+                at: p.createdAt || p.fecha,
+                rutaId,
+                rutaNombre: meta.rutaNombre,
+                cobradorNombre: meta.cobradorNombre,
+                color: meta.color,
+              };
+            });
           this.syncPagoMarkers();
           this.cdr.markForCheck();
         },
@@ -143,6 +200,30 @@ export class SeguimientoPage implements OnDestroy {
         },
       }),
     );
+  }
+
+  /** Empareja ruta → cobrador (si está en lista) o color por rutaId. */
+  private resolveRutaMeta(rutaId?: string): {
+    color: string;
+    rutaNombre?: string;
+    cobradorNombre?: string;
+  } {
+    const rutas = this.empresaSvc.rutas() || this.empresaSvc.empresa()?.rutas || [];
+    return resolveRutaMetaHelper(rutaId, this.cobradores, rutas);
+  }
+
+  private refreshPagoColors(): void {
+    if (!this.pagosDia.length) return;
+    this.pagosDia = this.pagosDia.map((p) => {
+      const meta = this.resolveRutaMeta(p.rutaId);
+      return {
+        ...p,
+        color: meta.color,
+        rutaNombre: meta.rutaNombre || p.rutaNombre,
+        cobradorNombre: meta.cobradorNombre || p.cobradorNombre,
+      };
+    });
+    this.syncPagoMarkers();
   }
 
   private resolveEmpresaId(): string | null {
@@ -206,7 +287,9 @@ export class SeguimientoPage implements OnDestroy {
         next: (list) => {
           this.mergeCobradores(list);
           this.loading = false;
+          this.refreshPagoColors();
           this.syncMarkers();
+          this.drawAllTrails();
           if (!this.didFitBounds) {
             this.fitAllMarkers();
             this.didFitBounds = true;
@@ -231,7 +314,9 @@ export class SeguimientoPage implements OnDestroy {
       this.ws.onTrackingSnapshot().subscribe((snap: TrackingSnapshotEvent) => {
         this.ngZone.run(() => {
           this.mergeCobradores(snap.cobradores ?? []);
+          this.refreshPagoColors();
           this.syncMarkers();
+          this.drawAllTrails();
           if (!this.didFitBounds) {
             this.fitAllMarkers();
             this.didFitBounds = true;
@@ -245,6 +330,7 @@ export class SeguimientoPage implements OnDestroy {
       this.ws.onCobradorPresence().subscribe((ev: CobradorPresenceEvent) => {
         this.ngZone.run(() => {
           this.upsertPresence(ev);
+          this.refreshPagoColors();
           this.syncMarkers();
           this.cdr.detectChanges();
         });
@@ -256,10 +342,7 @@ export class SeguimientoPage implements OnDestroy {
         this.ngZone.run(() => {
           this.upsertLocation(ev);
           this.syncMarkers();
-          if (this.selectedId === ev.cobradorId) {
-            const current = this.cobradores.find((c) => c.cobradorId === ev.cobradorId);
-            if (current) this.drawTrail(current);
-          }
+          this.drawAllTrails();
           this.cdr.detectChanges();
         });
       }),
@@ -356,9 +439,8 @@ export class SeguimientoPage implements OnDestroy {
       this.map.addSource(this.trailSourceId, {
         type: 'geojson',
         data: {
-          type: 'Feature',
-          properties: {},
-          geometry: { type: 'LineString', coordinates: [] },
+          type: 'FeatureCollection',
+          features: [],
         },
       });
       this.map.addLayer({
@@ -366,10 +448,25 @@ export class SeguimientoPage implements OnDestroy {
         type: 'line',
         source: this.trailSourceId,
         layout: { 'line-join': 'round', 'line-cap': 'round' },
-        paint: { 'line-color': '#2563eb', 'line-width': 4, 'line-opacity': 0.85 },
+        paint: {
+          'line-color': ['get', 'color'],
+          'line-width': [
+            'case',
+            ['==', ['get', 'selected'], 1],
+            5.5,
+            3,
+          ],
+          'line-opacity': [
+            'case',
+            ['==', ['get', 'selected'], 1],
+            0.92,
+            0.42,
+          ],
+        },
       });
       this.syncMarkers();
       this.syncPagoMarkers();
+      this.drawAllTrails();
       this.fitAllMarkers();
     });
 
@@ -402,14 +499,20 @@ export class SeguimientoPage implements OnDestroy {
       if (!loc) continue;
       activeIds.add(cob.cobradorId);
 
-      let marker = this.markers.get(cob.cobradorId);
+      const color = this.colorForCobrador(cob.cobradorId);
+      const rutaNombre = this.resolveRutaMeta(cob.rutaId).rutaNombre;
       const popupHtml = `<strong>${this.escapeHtml(cob.nombre)}</strong><br/>${
         cob.online ? 'En línea' : 'Desconectado'
+      }${
+        rutaNombre
+          ? `<br/><span style="color:#4b5563">Ruta: ${this.escapeHtml(rutaNombre)}</span>`
+          : ''
       }`;
+      let marker = this.markers.get(cob.cobradorId);
       if (!marker) {
         const el = document.createElement('div');
         el.className = 'cobrador-marker';
-        el.innerHTML = `<span class="dot ${cob.online ? 'online' : 'offline'}"></span>`;
+        el.innerHTML = `<span class="dot ${cob.online ? 'online' : 'offline'}" style="background:${color}; box-shadow:0 0 0 3px ${color}55"></span>`;
         marker = new Marker({ element: el })
           .setLngLat([loc.lng, loc.lat])
           .setPopup(new Popup({ offset: 16 }).setHTML(popupHtml))
@@ -419,10 +522,12 @@ export class SeguimientoPage implements OnDestroy {
         marker.setLngLat([loc.lng, loc.lat]);
         marker.getPopup()?.setHTML(popupHtml);
         const el = marker.getElement();
-        const dot = el.querySelector('.dot');
+        const dot = el.querySelector('.dot') as HTMLElement | null;
         if (dot) {
           dot.classList.toggle('online', cob.online);
           dot.classList.toggle('offline', !cob.online);
+          dot.style.background = color;
+          dot.style.boxShadow = `0 0 0 3px ${color}55`;
         }
       }
     }
@@ -448,7 +553,7 @@ export class SeguimientoPage implements OnDestroy {
 
     const activeIds = new Set<string>();
 
-    for (const pago of this.pagosDia) {
+    for (const pago of this.pagosVisibles) {
       activeIds.add(pago.id);
       let marker = this.pagoMarkers.get(pago.id);
       const hora = pago.at
@@ -466,10 +571,18 @@ export class SeguimientoPage implements OnDestroy {
         minimumFractionDigits: 0,
         maximumFractionDigits: 2,
       });
+      const rutaHtml = pago.rutaNombre
+        ? `<div class="pago-popup-line">Ruta: ${this.escapeHtml(pago.rutaNombre)}</div>`
+        : '';
+      const cobradorHtml = pago.cobradorNombre
+        ? `<div class="pago-popup-line">Cobrador: ${this.escapeHtml(pago.cobradorNombre)}</div>`
+        : '';
       const popupHtml = `
         <div class="pago-popup">
           <div class="pago-popup-title">${nombre}</div>
           ${aliasHtml}
+          ${rutaHtml}
+          ${cobradorHtml}
           <div class="pago-popup-line">Pago: $${montoTxt}</div>
           ${hora ? `<div class="pago-popup-line">${hora}</div>` : ''}
         </div>
@@ -537,32 +650,34 @@ export class SeguimientoPage implements OnDestroy {
       .replace(/'/g, '&#39;');
   }
 
-  /** Color estable por id (parece aleatorio, no cambia al refrescar). */
-  private colorForPagoId(id: string): string {
-    let hash = 0;
-    for (let i = 0; i < id.length; i++) {
-      hash = (hash << 5) - hash + id.charCodeAt(i);
-      hash |= 0;
-    }
-    const hue = Math.abs(hash) % 360;
-    const sat = 62 + (Math.abs(hash >> 8) % 20);
-    const light = 42 + (Math.abs(hash >> 16) % 12);
-    return `hsl(${hue} ${sat}% ${light}%)`;
-  }
-
-  private drawTrail(item: CobradorTrackingHoy): void {
+  /** Dibuja todos los recorridos; el seleccionado resalta vía properties.selected. */
+  private drawAllTrails(): void {
     if (!this.map) return;
     const source = this.map.getSource(this.trailSourceId) as GeoJSONSource | undefined;
     if (!source) return;
 
-    const coordinates = (item.puntos ?? []).map((p) => [p.lng, p.lat]);
+    const features = this.cobradores
+      .map((cob) => {
+        const coordinates = (cob.puntos ?? []).map((p) => [p.lng, p.lat]);
+        if (coordinates.length < 2) return null;
+        return {
+          type: 'Feature' as const,
+          properties: {
+            color: this.colorForCobrador(cob.cobradorId),
+            selected: this.selectedId === cob.cobradorId ? 1 : 0,
+            cobradorId: cob.cobradorId,
+          },
+          geometry: {
+            type: 'LineString' as const,
+            coordinates,
+          },
+        };
+      })
+      .filter((f): f is NonNullable<typeof f> => !!f);
+
     source.setData({
-      type: 'Feature',
-      properties: {},
-      geometry: {
-        type: 'LineString',
-        coordinates: coordinates.length >= 2 ? coordinates : [],
-      },
+      type: 'FeatureCollection',
+      features,
     });
   }
 
@@ -574,7 +689,7 @@ export class SeguimientoPage implements OnDestroy {
       .map((u) => [u.lng, u.lat] as [number, number]);
 
     if (this.showPagosDia) {
-      for (const p of this.pagosDia) {
+      for (const p of this.pagosVisibles) {
         coords.push([p.lng, p.lat]);
       }
     }
@@ -585,6 +700,23 @@ export class SeguimientoPage implements OnDestroy {
       return;
     }
 
+    const bounds = coords.reduce(
+      (b, c) => b.extend(c),
+      new LngLatBounds(coords[0], coords[0]),
+    );
+    this.map.fitBounds(bounds, { padding: 60, maxZoom: 15 });
+  }
+
+  private fitVisiblePagos(): void {
+    if (!this.map || !this.showPagosDia) return;
+    const coords = this.pagosVisibles.map(
+      (p) => [p.lng, p.lat] as [number, number],
+    );
+    if (coords.length === 0) return;
+    if (coords.length === 1) {
+      this.map.flyTo({ center: coords[0], zoom: 15 });
+      return;
+    }
     const bounds = coords.reduce(
       (b, c) => b.extend(c),
       new LngLatBounds(coords[0], coords[0]),

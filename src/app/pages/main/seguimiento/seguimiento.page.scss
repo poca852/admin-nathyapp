@@ -9,49 +9,139 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: calc(100vh - 56px);
 }
 
 .lista {
   flex: 0 0 auto;
-  max-height: 38%;
+  max-height: 42%;
   overflow: auto;
   background: var(--ion-background-color, #fff);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.1);
   z-index: 2;
+  padding: 10px 0 8px;
 }
 
 .lista-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  padding: 12px 16px 4px;
+  gap: 10px;
+  padding: 4px 14px 8px;
 
   h2 {
     margin: 0;
     font-size: 1.05rem;
-    font-weight: 600;
+    font-weight: 700;
+    line-height: 1.25;
   }
 
   p {
-    margin: 2px 0 0;
+    margin: 4px 0 0;
     font-size: 0.8rem;
+    line-height: 1.3;
     color: var(--ion-color-medium);
+  }
+
+  ion-spinner {
+    margin-top: 2px;
+  }
+}
+
+.lista-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 12px 8px;
+}
+
+.toggle-pagos {
+  --min-height: 42px;
+  --padding-start: 10px;
+  --padding-end: 10px;
+  --inner-padding-end: 6px;
+  --background: var(--ion-color-step-50, rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.04));
+  --border-radius: 10px;
+  font-size: 0.84rem;
+  border-radius: 10px;
+  border: 1px solid rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.08);
+  margin: 0;
+}
+
+.filter-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 2px;
+  flex-wrap: wrap;
+
+  ion-chip {
+    margin: 0;
+  }
+
+  ion-button {
+    margin: 0;
+    --padding-start: 6px;
+    --padding-end: 6px;
+  }
+}
+
+.filter-tip {
+  margin: 0;
+  padding: 0 2px;
+  font-size: 0.74rem;
+  line-height: 1.35;
+  color: var(--ion-color-medium);
+}
+
+.lista ion-list {
+  background: transparent;
+  padding: 0 10px 6px;
+}
+
+.lista ion-item {
+  --min-height: 56px;
+  --padding-start: 10px;
+  --inner-padding-end: 10px;
+  --background: var(--ion-card-background, var(--ion-item-background, #fff));
+  margin-bottom: 6px;
+  border-radius: 12px;
+  border: 1px solid rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.08);
+  overflow: hidden;
+
+  h3 {
+    margin: 0 0 2px;
+    font-weight: 650;
+  }
+
+  p {
+    margin: 0;
   }
 }
 
 .lista ion-item.selected {
-  --background: rgba(37, 99, 235, 0.08);
+  --background: rgba(var(--ion-color-primary-rgb), 0.1);
+  border-color: rgba(var(--ion-color-primary-rgb), 0.28);
+}
+
+.color-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  margin-inline-end: 8px;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18);
 }
 
 .empty {
-  padding: 24px 16px;
+  padding: 20px 14px;
   text-align: center;
+  line-height: 1.4;
 }
 
 .mapa-wrap {
   flex: 1 1 auto;
-  min-height: 280px;
+  min-height: 240px;
   position: relative;
 }
 
@@ -76,12 +166,9 @@
     border: 2px solid #fff;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
 
-    &.online {
-      background: #16a34a;
-    }
-
     &.offline {
-      background: #94a3b8;
+      opacity: 0.55;
+      filter: grayscale(0.35);
     }
   }
 }
@@ -119,13 +206,12 @@
     height: 14px;
     flex-shrink: 0;
     border-radius: 3px;
-    background: #f59e0b; // fallback; el color real va inline por pago
+    background: #f59e0b;
     border: 2px solid #fff;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
   }
 }
 
-/* Popup de pago: Ionic suele heredar color claro y deja el texto invisible */
 :host ::ng-deep .pago-map-popup .mapboxgl-popup-content {
   color: #111827 !important;
   background: #ffffff !important;
@@ -154,15 +240,6 @@
   color: #374151;
 }
 
-.lista-actions {
-  padding: 0 8px 8px;
-}
-
-.toggle-pagos {
-  --min-height: 40px;
-  font-size: 0.85rem;
-}
-
 @media (min-width: 900px) {
   .layout {
     flex-direction: row;
@@ -173,10 +250,38 @@
     max-height: none;
     height: 100%;
     border-bottom: none;
-    border-right: 1px solid rgba(0, 0, 0, 0.08);
+    border-right: 1px solid rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.1);
+    padding: 12px 0 10px;
+  }
+
+  .lista-header {
+    padding: 6px 14px 10px;
+  }
+
+  .lista-actions {
+    padding: 0 12px 10px;
+  }
+
+  .lista ion-list {
+    padding: 0 10px 8px;
   }
 
   .mapa-wrap {
     min-height: auto;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .lista ion-item,
+  .toggle-pagos {
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+}
+
+html.dark,
+html.ion-palette-dark {
+  :host .lista ion-item,
+  :host .toggle-pagos {
+    border-color: rgba(255, 255, 255, 0.12);
   }
 }

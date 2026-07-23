@@ -1,6 +1,6 @@
 <app-header title="Seguimiento" [showMenu]="true" />
 
-<ion-content [fullscreen]="true" class="seguimiento-content">
+<ion-content class="seguimiento-content">
   <div class="layout">
     <aside class="lista">
       <div class="lista-header">
@@ -18,9 +18,24 @@
             (ionChange)="syncPagoMarkersFromToggle()"
             labelPlacement="start"
           >
-            Mostrar pagos del día ({{ pagosDia.length }})
+            Mostrar pagos del día ({{ pagosVisibles.length }}{{ selectedRutaId && pagosVisibles.length !== pagosDia.length ? ' / ' + pagosDia.length : '' }})
           </ion-toggle>
         </ion-item>
+
+        <div class="filter-hint" *ngIf="selectedId">
+          <ion-chip color="primary" outline>
+            <ion-label>
+              Solo
+              {{ selectedRutaNombre ? (selectedRutaNombre | titlecase) : 'esta ruta' }}
+            </ion-label>
+          </ion-chip>
+          <ion-button size="small" fill="clear" (click)="clearRutaFilter()">
+            Ver todas
+          </ion-button>
+        </div>
+        <p class="filter-tip" *ngIf="!selectedId && cobradores.length">
+          Toca un cobrador para ver solo los pagos de su ruta.
+        </p>
       </div>
 
       <ion-list *ngIf="cobradores.length; else emptyList" lines="full">
@@ -31,6 +46,12 @@
           [class.selected]="selectedId === c.cobradorId"
           (click)="selectCobrador(c)"
         >
+          <span
+            slot="start"
+            class="color-swatch"
+            [style.background]="colorForCobrador(c.cobradorId)"
+            [attr.title]="'Color de ' + c.nombre"
+          ></span>
           <ion-label>
             <h3>{{ c.nombre | titlecase }}</h3>
             <p *ngIf="c.ultimaUbicacion">
@@ -41,7 +62,7 @@
           <ion-badge
             slot="end"
             [color]="c.online ? 'success' : 'medium'"
-            mode="ios"
+            mode="md"
           >
             {{ c.online ? 'Online' : 'Offline' }}
           </ion-badge>

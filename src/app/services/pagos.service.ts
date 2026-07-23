@@ -48,6 +48,7 @@ export class PagosService {
     ubication: number[];
     createdAt?: string;
     fecha?: string;
+    ruta?: string;
     cliente?: { id?: string; nombre?: string; alias?: string };
   }>> {
     const url = `${this.baseUrl}/movimiento-caja/pagos-ubicacion`;
