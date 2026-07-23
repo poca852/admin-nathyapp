@@ -22,6 +22,8 @@
         <p>
           {{ r.ciudad || '—' }}, {{ r.pais || '—' }} · {{ empresaLabel() }}
           <ion-badge *ngIf="isOrphan()" color="warning" mode="md">Sin empresa</ion-badge>
+          <ion-badge *ngIf="r.isLocked" color="warning" mode="md">Bloqueada</ion-badge>
+          <ion-badge *ngIf="!r.status" color="medium" mode="md">Cerrada</ion-badge>
         </p>
       </div>
     </section>
@@ -46,6 +48,27 @@
     </div>
 
     <div class="sa-actions">
+      <button
+        type="button"
+        class="sa-action-card"
+        [disabled]="lockBusy() || (!r.isLocked && !r.status)"
+        (click)="confirmToggleLock()">
+        <div class="icon" [class.danger]="!r.isLocked" [class.warning]="r.isLocked">
+          <ion-icon [name]="r.isLocked ? 'lock-open-outline' : 'lock-closed-outline'"></ion-icon>
+        </div>
+        <div class="copy">
+          <h2>{{ r.isLocked ? 'Desbloquear ruta' : 'Bloquear ruta' }}</h2>
+          <p>
+            {{ r.isLocked
+              ? 'El cobrador podrá volver a operar'
+              : (r.status
+                ? 'Corta el acceso del cobrador sin cerrar la caja'
+                : 'Abre la ruta antes de poder bloquearla') }}
+          </p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="chevron"></ion-icon>
+      </button>
+
       <button
         *ngIf="isOrphan()"
         type="button"

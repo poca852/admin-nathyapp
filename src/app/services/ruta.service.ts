@@ -84,6 +84,20 @@ export class RutaService {
     return this.http.patch<boolean>(url, {}, { headers })
   }
 
+  lockRuta(idRuta: string): Observable<{ ok: boolean; ruta: string; isLocked: boolean }> {
+    const url = `${this.baseUrl}/ruta/lock/${idRuta}`;
+    const headers = new HttpHeaders()
+      .append('authorization', `Bearer ${this.user.token}`);
+    return this.http.patch<{ ok: boolean; ruta: string; isLocked: boolean }>(url, {}, { headers });
+  }
+
+  unlockRuta(idRuta: string): Observable<{ ok: boolean; ruta: string; isLocked: boolean }> {
+    const url = `${this.baseUrl}/ruta/unlock/${idRuta}`;
+    const headers = new HttpHeaders()
+      .append('authorization', `Bearer ${this.user.token}`);
+    return this.http.patch<{ ok: boolean; ruta: string; isLocked: boolean }>(url, {}, { headers });
+  }
+
   getRutasByEmpresa(): Observable<Empresa> {
     const url: string = `${this.baseUrl}/empresa`;
 

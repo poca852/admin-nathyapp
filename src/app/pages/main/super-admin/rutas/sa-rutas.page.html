@@ -58,10 +58,12 @@
         <h2>
           {{ ruta.nombre }}
           <ion-badge *ngIf="isOrphan(ruta)" color="warning" mode="md">Sin empresa</ion-badge>
+          <ion-badge *ngIf="ruta.isLocked" color="warning" mode="md">Bloqueada</ion-badge>
         </h2>
         <p>
           {{ empresaName(ruta) }} · {{ ruta.ciudad || '—' }}, {{ ruta.pais || '—' }}
           · {{ ruta.status ? 'Abierta' : 'Cerrada' }}
+          <ng-container *ngIf="ruta.isLocked"> · Bloqueada</ng-container>
         </p>
       </ion-label>
     </ion-item>

@@ -24,6 +24,7 @@ export class SaRutaDetailPage {
 
   readonly loading = signal(true);
   readonly ruta = signal<Ruta | null>(null);
+  readonly lockBusy = signal(false);
 
   readonly empresaLabel = computed(() => {
     const r = this.ruta();
@@ -102,6 +103,74 @@ export class SaRutaDetailPage {
       this.ctx.invalidate();
       this.resolveRuta();
     }
+  }
+
+  confirmToggleLock(): void {
+    const ruta = this.ruta();
+    if (!ruta || this.lockBusy()) return;
+
+    const willLock = !ruta.isLocked;
+
+    if (willLock && !ruta.status) {
+      this.utilsSvc.presentToast({
+        message: 'No se puede bloquear una ruta cerrada. Ábrela primero.',
+        color: 'warning',
+        duration: 3500,
+        icon: 'alert-circle-outline',
+      });
+      return;
+    }
+
+    const nombre = ruta.nombre || 'esta ruta';
+    this.utilsSvc.presentAlert({
+      header: willLock ? 'Bloquear ruta' : 'Desbloquear ruta',
+      message: willLock
+        ? `Se bloqueará "${nombre}". El cobrador no podrá operar hasta desbloquearla.`
+        : `Se desbloqueará "${nombre}" para continuar operaciones.`,
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: willLock ? 'Bloquear' : 'Desbloquear',
+          role: willLock ? 'destructive' : undefined,
+          handler: () => this.doToggleLock(ruta, willLock),
+        },
+      ],
+    });
+  }
+
+  private doToggleLock(ruta: Ruta, willLock: boolean): void {
+    const id = ruta.id || (ruta as any)._id;
+    if (!id) return;
+
+    this.lockBusy.set(true);
+    const req$ = willLock
+      ? this.rutaSvc.lockRuta(id)
+      : this.rutaSvc.unlockRuta(id);
+
+    req$.subscribe({
+      next: () => {
+        this.ruta.update((current) =>
+          current ? { ...current, isLocked: willLock } : current,
+        );
+        this.empresaSvc.updateRutaLock(id, willLock);
+        this.lockBusy.set(false);
+        this.utilsSvc.presentToast({
+          message: willLock ? 'Ruta bloqueada' : 'Ruta desbloqueada',
+          duration: 2500,
+          color: willLock ? 'warning' : 'success',
+          icon: willLock ? 'lock-closed-outline' : 'lock-open-outline',
+        });
+      },
+      error: (err) => {
+        this.lockBusy.set(false);
+        this.utilsSvc.presentToast({
+          message: err.error?.message || 'No se pudo cambiar el bloqueo',
+          duration: 3500,
+          color: 'danger',
+          icon: 'alert-circle-outline',
+        });
+      },
+    });
   }
 
   async assignEmpresa(): Promise<void> {
