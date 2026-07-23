@@ -72,18 +72,11 @@ export class MainPage implements OnInit {
     let success = await this.utilsSvc.presentModal({
       component: UpdateUserComponent,
       cssClass: 'add-update-modal',
-      componentProps: {user: this.user()}
+      componentProps: { user: this.user()}
     })
 
-    if( success ){
-
-      this.utilsSvc.presentToast({
-        message: 'Usuario actualizado',
-        duration: 2400,
-        color: 'success',
-        icon: 'checkmark'
-      })
-
+    if (success) {
+      // El modal ya muestra toast de éxito; el menú se refresca vía localStorage.
     }
 
   }

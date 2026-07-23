@@ -13,8 +13,8 @@
     <ion-button 
       expand="block" 
       fill="clear"
-      color="light"
       size="large"
+      class="menu-user-btn"
       (click)="updateUser()">
       {{user().username | titlecase}}
       <ion-icon slot="end" name="pencil"></ion-icon>
@@ -43,7 +43,7 @@
 
       <ion-item lines="none" (click)="signOut()">
         <ion-icon slot="start" name="log-out-outline"></ion-icon>
-        <ion-label>Cerrar Sesion</ion-label>
+        <ion-label>Cerrar Sesión</ion-label>
       </ion-item>
 
     </ion-menu-toggle>

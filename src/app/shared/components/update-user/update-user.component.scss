@@ -1,0 +1,153 @@
+.form-hero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(var(--ion-color-primary-rgb), 0.08);
+  border: 1px solid rgba(var(--ion-color-primary-rgb), 0.12);
+}
+
+.form-hero-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: rgba(var(--ion-color-primary-rgb), 0.16);
+
+  ion-icon {
+    font-size: 1.5rem;
+    color: var(--ion-color-primary);
+  }
+
+  &.edit {
+    background: rgba(var(--ion-color-warning-rgb, 255, 196, 9), 0.18);
+
+    ion-icon {
+      color: var(--ion-color-warning-shade, var(--ion-color-warning));
+    }
+  }
+}
+
+.form-hero-text {
+  min-width: 0;
+
+  h2 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--ion-text-color);
+  }
+
+  p {
+    margin: 4px 0 0;
+    font-size: 0.82rem;
+    line-height: 1.35;
+    color: var(--ion-color-medium);
+  }
+}
+
+.form-section {
+  margin-bottom: 18px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px 2px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--ion-color-medium);
+
+  ion-icon {
+    font-size: 1rem;
+    color: var(--ion-color-primary);
+  }
+}
+
+.profile-form {
+  custom-input {
+    display: block;
+    margin-bottom: 12px;
+  }
+}
+
+:host ::ng-deep custom-input .custom-input {
+  --background: var(--ion-color-step-50, rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.04));
+  --border-radius: 14px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --inner-padding-end: 8px;
+  border: 1px solid rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.06);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.validators {
+  color: var(--ion-color-danger);
+  font-size: 0.82rem;
+  margin: -4px 0 10px 4px;
+
+  div {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+  }
+
+  ion-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+}
+
+.role-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: -2px 2px 10px;
+  font-size: 0.78rem;
+  color: var(--ion-color-medium);
+  line-height: 1.35;
+
+  ion-icon {
+    margin-top: 1px;
+    color: var(--ion-color-primary);
+    flex-shrink: 0;
+  }
+}
+
+.submit-btn {
+  --border-radius: 14px;
+  --padding-top: 16px;
+  --padding-bottom: 16px;
+  height: 52px;
+  font-weight: 700;
+  margin-top: 8px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 14px rgba(var(--ion-color-primary-rgb), 0.25);
+
+  ion-spinner {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+}
+
+:host-context(.dark),
+:host-context(html.ion-palette-dark) {
+  :host ::ng-deep custom-input .custom-input {
+    --background: var(--ion-color-step-100, rgba(255, 255, 255, 0.06));
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .form-hero {
+    background: rgba(var(--ion-color-primary-rgb), 0.14);
+  }
+}

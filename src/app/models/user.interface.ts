@@ -1,25 +1,24 @@
 import { Empresa, Ruta } from "./";
 
 export interface User {
-   _id: string;
+   _id?: string;
+   id?: string;
    nombre: string;
    rol: string;
    estado: boolean;
    username: string;
    password?: string;
    ruta?: Ruta;
-   rutas?: string[];
+   rutas?: Array<Ruta | string>;
    empresa: string;
    token?: string;
-   ubication: number[];
+   ubication?: number[];
  }
-
  export interface AddUser{
   nombre: string;
   username: string;
-  password: string;
+  password?: string;
   ruta?: string;
   rutas?: string[];
-  rol: any[];
-  close_ruta?: boolean;
+  rol: string;
  }

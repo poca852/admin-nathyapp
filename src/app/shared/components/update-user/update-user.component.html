@@ -1,37 +1,78 @@
-<app-header 
-  title='Editar Usuario'
-  [isModal]="true"
-/>
+<app-header title="Editar perfil" [isModal]="true" />
 
 <ion-content class="ion-padding">
+  <div class="form-hero">
+    <div class="form-hero-icon edit">
+      <ion-icon name="person-outline"></ion-icon>
+    </div>
+    <div class="form-hero-text">
+      <h2>{{ user?.nombre | titlecase }}</h2>
+      <p>
+        {{ user?.rol | titlecase }}
+        @if (user?.username) {
+          · {{ user.username }}
+        }
+      </p>
+    </div>
+  </div>
 
-  <form [formGroup]="form" (submit)="updateUser()">
+  <form [formGroup]="form" (ngSubmit)="updateUser()" class="profile-form">
+    <section class="form-section">
+      <div class="section-title">
+        <ion-icon name="id-card-outline"></ion-icon>
+        <span>Datos de acceso</span>
+      </div>
 
-    <custom-input 
-      [control]='form.controls.nombre'
-      type="text"
-      label="Nombre"
-      autocomplete="off"
-    />
+      <custom-input
+        [control]="form.controls.nombre"
+        type="text"
+        label="Nombre"
+        autocomplete="name"
+        icon="person-outline"
+      />
 
-    <custom-input 
-      [control]="form.controls.username"
-      type="text"
-      label="Usuario"
-      autocomplete="off"
-    />
+      <custom-input
+        [control]="form.controls.username"
+        type="text"
+        label="Usuario"
+        autocomplete="username"
+        icon="at-outline"
+      />
 
-    <custom-input 
-      [control]="form.controls.password"
-      type="password"
-      label="Contraseña"
-      autocomplete="off"
-    />
+      <custom-input
+        [control]="form.controls.password"
+        type="password"
+        label="Contraseña (opcional)"
+        autocomplete="new-password"
+        icon="lock-closed-outline"
+      />
 
-    <ion-button type="submit" expand="block">
-      Actualizar
+      <div
+        class="validators"
+        *ngIf="form.controls.password.errors && form.controls.password.touched"
+      >
+        <div *ngIf="form.controls.password.errors?.['minlength']">
+          <ion-icon name="alert-circle-outline"></ion-icon>
+          Mínimo 6 caracteres
+        </div>
+      </div>
+
+      <p class="role-hint">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        Deja la contraseña vacía si no quieres cambiarla.
+      </p>
+    </section>
+
+    <ion-button
+      type="submit"
+      expand="block"
+      class="submit-btn"
+      [disabled]="form.invalid || saving">
+      @if (saving) {
+        <ion-spinner name="crescent"></ion-spinner>
+      } @else {
+        Guardar cambios
+      }
     </ion-button>
-
   </form>
-
 </ion-content>

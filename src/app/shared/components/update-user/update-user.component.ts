@@ -1,7 +1,7 @@
-import { Component, Input, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { User } from 'src/app/models';
-import { EmpleadosService } from 'src/app/services/empleados.service';
+import { AuthService } from 'src/app/services/auth.service';
 import { UtilsService } from 'src/app/services/utils.service';
 
 @Component({
@@ -9,62 +9,68 @@ import { UtilsService } from 'src/app/services/utils.service';
   templateUrl: './update-user.component.html',
   styleUrls: ['./update-user.component.scss'],
 })
-export class UpdateUserComponent implements OnDestroy {
-
+export class UpdateUserComponent implements OnInit {
   @Input() user: User;
 
-  public form = new FormGroup({
-    nombre: new FormControl('', [Validators.required]),
-    username: new FormControl('', [Validators.required]),
+  form = new FormGroup({
+    nombre: new FormControl('', [Validators.required, Validators.minLength(3)]),
+    username: new FormControl('', [Validators.required, Validators.minLength(3)]),
     password: new FormControl('', [Validators.minLength(6)]),
-  })
+  });
+
+  saving = false;
 
   constructor(
     private readonly utilsSvc: UtilsService,
-    private readonly empleadoSvc: EmpleadosService,
-  ) { }
+    private readonly authSvc: AuthService,
+  ) {}
 
-  ionViewWillEnter() {
-    
-    if(!!this.user){
+  ngOnInit(): void {
+    if (this.user) {
       this.form.patchValue({
-        ...this.user,
-        password: null
-      })
+        nombre: this.user.nombre || '',
+        username: this.user.username || '',
+        password: '',
+      });
+    }
+  }
+
+  updateUser(): void {
+    if (this.form.invalid || this.saving) return;
+
+    const { nombre, username, password } = this.form.getRawValue();
+    const payload: { nombre?: string; username?: string; password?: string } = {
+      nombre: nombre?.trim() || undefined,
+      username: username?.trim() || undefined,
+    };
+
+    const pwd = password?.trim();
+    if (pwd) {
+      payload.password = pwd;
     }
 
+    this.saving = true;
+    this.authSvc.updateMe(payload).subscribe({
+      next: () => {
+        this.saving = false;
+        this.utilsSvc.presentToast({
+          message: 'Perfil actualizado correctamente',
+          duration: 2500,
+          color: 'success',
+          icon: 'checkmark-circle-outline',
+        });
+        this.utilsSvc.dismissModal({ success: true });
+      },
+      error: async (err) => {
+        this.saving = false;
+        await this.utilsSvc.presentAlert({
+          header: 'No se pudo actualizar',
+          message:
+            err?.error?.message ||
+            'Revisa los datos e inténtalo de nuevo.',
+          buttons: ['OK'],
+        });
+      },
+    });
   }
-
-  ngOnDestroy(): void {
-    this.form.reset()
-  }
-
-  public updateUser = async () => {
-    this.empleadoSvc.updateEmploye(this.user._id, this.form.value)
-      .subscribe({
-        next: () => {
-
-          let { nombre, username } = this.form.value;
-
-          this.utilsSvc.saveInLocalStorage('user', {
-            ...this.user,
-            nombre, username
-          })
-          
-          this.utilsSvc.dismissModal({ success: true })
-
-        },
-        error: async (err) => {
-          await this.utilsSvc.presentAlert({
-            header: 'Alerta',
-            message: err.error.message,
-            buttons: ['OK']
-          })
-          this.utilsSvc.dismissModal({ success: false })
-        },
-      })
-  }
-
-
-
 }

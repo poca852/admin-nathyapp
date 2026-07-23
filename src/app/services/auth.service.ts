@@ -89,6 +89,29 @@ export class AuthService {
     localStorage.removeItem('user');
   }
 
-
+  /** Actualiza el perfil del usuario autenticado (nombre / username / password). */
+  updateMe(payload: {
+    nombre?: string;
+    username?: string;
+    password?: string;
+  }): Observable<User> {
+    const url = `${this.baseUrl}/auth/me`;
+    return this.http.patch<User>(url, payload).pipe(
+      map((user) => {
+        const current = this.utilsSvc.getFromLocalStorage('user') as User | null;
+        const token = current?.token;
+        const merged: User = {
+          ...current,
+          ...user,
+          id: user.id || user._id || current?.id || current?._id,
+          _id: user._id || user.id || current?._id || current?.id,
+          token,
+        };
+        this._currentUser.set(merged);
+        this.utilsSvc.saveInLocalStorage('user', merged);
+        return merged;
+      }),
+    );
+  }
 
 }

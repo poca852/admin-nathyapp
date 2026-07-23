@@ -6,20 +6,31 @@ ion-content {
 
 ion-item {
    font-size: 14px;
-   color: var(--ion-color-ligth);
+   --color: var(--ion-color-primary-contrast);
    --background: var(--ion-color-primary);
+   color: var(--ion-color-primary-contrast);
 
-   ion-icon{
-      color: var(--ion-color-ligth)
+   ion-icon {
+      color: var(--ion-color-primary-contrast);
    }
 
    &.active {
+      --color: var(--ion-color-warning);
       color: var(--ion-color-warning);
 
       ion-icon {
-         color: var(--ion-color-warning)
+         color: var(--ion-color-warning);
       }
    }
+}
+
+ion-button {
+   --color: var(--ion-color-primary-contrast);
+}
+
+.menu-user-btn {
+   --color: var(--ion-color-primary-contrast);
+   font-weight: 600;
 }
 
 h4 {
