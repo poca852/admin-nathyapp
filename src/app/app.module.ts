@@ -25,7 +25,12 @@ const config: SocketIoConfig = {
   options: {
     autoConnect: false,
     reconnection: true,
-    reconnectionAttempts: 10,
+    // Prod detrás de nginx: no limitar a 10 intentos (deja al admin sordo).
+    reconnectionAttempts: Infinity,
+    reconnectionDelay: 1_000,
+    reconnectionDelayMax: 10_000,
+    timeout: 20_000,
+    transports: ['websocket', 'polling'],
   },
 };
 
