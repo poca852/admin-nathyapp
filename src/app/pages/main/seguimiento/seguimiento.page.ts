@@ -92,6 +92,8 @@ export class SeguimientoPage implements OnDestroy {
     this.clearSnapshotTimer();
     this.subs.unsubscribe();
     this.subs = new Subscription();
+    // Evita conservar `online` stale si se perdió el evento offline al salir.
+    this.cobradores = [];
     this.destroyMap();
   }
 
@@ -310,10 +312,18 @@ export class SeguimientoPage implements OnDestroy {
   }
 
   private bindSocket(): void {
+    // Si el socket conecta/reconecta con cobradores ya online, el evento
+    // `cobrador:presence` no se reemite: hay que pedir el snapshot de nuevo.
+    this.subs.add(
+      this.ws.onConnect().subscribe(() => {
+        this.ws.requestTrackingSnapshot();
+      }),
+    );
+
     this.subs.add(
       this.ws.onTrackingSnapshot().subscribe((snap: TrackingSnapshotEvent) => {
         this.ngZone.run(() => {
-          this.mergeCobradores(snap.cobradores ?? []);
+          this.mergeCobradores(snap.cobradores ?? [], { authoritativeOnline: true });
           this.refreshPagoColors();
           this.syncMarkers();
           this.drawAllTrails();
@@ -349,13 +359,26 @@ export class SeguimientoPage implements OnDestroy {
     );
   }
 
-  private mergeCobradores(list: CobradorTrackingHoy[]): void {
+  /**
+   * @param authoritativeOnline Si true (snapshot WS), el flag `online` del
+   * servidor manda. Si false (HTTP), no se degrada un online ya recibido por
+   * presencia: evita la carrera presence→true luego HTTP→false.
+   */
+  private mergeCobradores(
+    list: CobradorTrackingHoy[],
+    options?: { authoritativeOnline?: boolean },
+  ): void {
+    const authoritative = options?.authoritativeOnline === true;
     const map = new Map(this.cobradores.map((c) => [c.cobradorId, c]));
     for (const item of list) {
       const prev = map.get(item.cobradorId);
+      const online = authoritative
+        ? !!item.online
+        : !!(item.online || prev?.online);
       map.set(item.cobradorId, {
         ...prev,
         ...item,
+        online,
         puntos: item.puntos?.length ? item.puntos : prev?.puntos ?? [],
       });
     }

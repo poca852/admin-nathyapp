@@ -88,7 +88,13 @@ export class WsService {
     return !!this.socket.ioSocket?.connected;
   }
 
+  /** Observable de conexión / reconexión (útil para re-pedir snapshots). */
+  onConnect(): Observable<void> {
+    return this.socket.fromEvent<void>('connect');
+  }
+
   emit(event: string, payload?: any, callback?: Function) {
+    if (!this.connected) return;
     if (typeof callback === 'function') {
       this.socket.emit(event, payload, callback);
       return;

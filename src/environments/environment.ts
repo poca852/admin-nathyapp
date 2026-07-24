@@ -2,6 +2,8 @@
 // `ng build` replaces `environment.ts` with `environment.prod.ts`.
 // The list of file replacements can be found in `angular.json`.
 
+import { resolveSocketUrl } from '../app/helpers/socket-url.helpers';
+
 export const environment = {
   production: false,
   version: '1.6.4',
@@ -10,7 +12,10 @@ export const environment = {
     'Correcciones generales y mejoras de rendimiento.',
   ],
   baseUrl: import.meta.env.NG_APP_DEV_API,
-  socketUrl: import.meta.env.NG_APP_URL_DEV_SOCKET,
+  socketUrl: resolveSocketUrl(
+    import.meta.env.NG_APP_URL_DEV_SOCKET,
+    import.meta.env.NG_APP_DEV_API,
+  ),
   mapbox_token: import.meta.env.NG_APP_MAP_BOX,
   firebase: {
     projectId: import.meta.env.NG_APP_PROJECTID,
