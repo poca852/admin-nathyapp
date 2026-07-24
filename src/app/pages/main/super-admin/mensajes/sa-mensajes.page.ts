@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { ModalController } from '@ionic/angular';
 import { finalize } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 
@@ -13,6 +14,7 @@ import {
 import { AnnouncementsService } from 'src/app/services/announcements.service';
 import { SuperAdminContextService } from 'src/app/services/super-admin-context.service';
 import { UtilsService } from 'src/app/services/utils.service';
+import { AnnouncementReceiptsModalComponent } from 'src/app/shared/components/announcement-receipts-modal/announcement-receipts-modal.component';
 
 @Component({
   selector: 'app-sa-mensajes',
@@ -22,6 +24,7 @@ import { UtilsService } from 'src/app/services/utils.service';
 export class SaMensajesPage implements OnInit, OnDestroy {
   private readonly announcementsSvc = inject(AnnouncementsService);
   private readonly utilsSvc = inject(UtilsService);
+  private readonly modalCtrl = inject(ModalController);
   readonly ctx = inject(SuperAdminContextService);
 
   readonly loading = signal(false);
@@ -29,11 +32,20 @@ export class SaMensajesPage implements OnInit, OnDestroy {
   readonly saving = signal(false);
   readonly items = signal<Announcement[]>([]);
   readonly showForm = signal(false);
+  readonly editingId = signal<string | null>(null);
 
   private sub?: Subscription;
 
   readonly activeCount = computed(
     () => this.items().filter((a) => a.isActive).length,
+  );
+
+  readonly formTitle = computed(() =>
+    this.editingId() ? 'Editar aviso' : 'Nuevo aviso',
+  );
+
+  readonly submitLabel = computed(() =>
+    this.editingId() ? 'Guardar' : 'Enviar',
   );
 
   readonly types: { value: AnnouncementType; label: string }[] = [
@@ -109,6 +121,7 @@ export class SaMensajesPage implements OnInit, OnDestroy {
   }
 
   openCreate(): void {
+    this.editingId.set(null);
     this.form.reset({
       title: '',
       body: '',
@@ -123,8 +136,26 @@ export class SaMensajesPage implements OnInit, OnDestroy {
     this.showForm.set(true);
   }
 
+  openEdit(item: Announcement): void {
+    this.editingId.set(item.id);
+    const empresaIds = item.empresaIds || [];
+    this.form.reset({
+      title: item.title,
+      body: item.body,
+      type: item.type,
+      severity: item.severity,
+      scope: item.scope,
+      empresaId: item.scope === 'EMPRESA' ? empresaIds[0] || null : null,
+      empresaIds: item.scope === 'MULTI' ? [...empresaIds] : [],
+      dismissible: item.dismissible !== false,
+      requiresAck: !!item.requiresAck,
+    });
+    this.showForm.set(true);
+  }
+
   cancelForm(): void {
     this.showForm.set(false);
+    this.editingId.set(null);
   }
 
   severityColor(severity: AnnouncementSeverity): string {
@@ -165,38 +196,54 @@ export class SaMensajesPage implements OnInit, OnDestroy {
       }
     }
 
+    const payload = {
+      title: raw.title!.trim(),
+      body: raw.body!.trim(),
+      type: raw.type,
+      severity: raw.severity,
+      scope,
+      empresaIds,
+      dismissible: !!raw.dismissible,
+      requiresAck: !!raw.requiresAck,
+      audience: ['ADMIN', 'SUPERVISOR'] as Announcement['audience'],
+    };
+
+    const editId = this.editingId();
     this.saving.set(true);
-    this.announcementsSvc
-      .create({
-        title: raw.title!.trim(),
-        body: raw.body!.trim(),
-        type: raw.type,
-        severity: raw.severity,
-        scope,
-        empresaIds,
-        dismissible: !!raw.dismissible,
-        requiresAck: !!raw.requiresAck,
-        audience: ['ADMIN', 'SUPERVISOR'],
-      })
-      .pipe(finalize(() => this.saving.set(false)))
-      .subscribe({
-        next: () => {
-          this.showForm.set(false);
-          this.utilsSvc.presentToast({
-            message: 'Aviso enviado',
-            color: 'success',
-            duration: 2500,
-          });
-          this.refresh();
-        },
-        error: (err) => {
-          this.utilsSvc.presentToast({
-            message: err.error?.message || 'No se pudo crear el aviso',
-            color: 'danger',
-            duration: 3500,
-          });
-        },
-      });
+
+    const req$ = editId
+      ? this.announcementsSvc.update(editId, payload)
+      : this.announcementsSvc.create(payload);
+
+    req$.pipe(finalize(() => this.saving.set(false))).subscribe({
+      next: () => {
+        this.showForm.set(false);
+        this.editingId.set(null);
+        this.utilsSvc.presentToast({
+          message: editId ? 'Aviso actualizado' : 'Aviso enviado',
+          color: 'success',
+          duration: 2500,
+        });
+        this.refresh();
+      },
+      error: (err) => {
+        this.utilsSvc.presentToast({
+          message:
+            err.error?.message ||
+            (editId ? 'No se pudo actualizar el aviso' : 'No se pudo crear el aviso'),
+          color: 'danger',
+          duration: 3500,
+        });
+      },
+    });
+  }
+
+  async openReceipts(item: Announcement): Promise<void> {
+    const modal = await this.modalCtrl.create({
+      component: AnnouncementReceiptsModalComponent,
+      componentProps: { announcement: item },
+    });
+    await modal.present();
   }
 
   confirmDeactivate(item: Announcement): void {

@@ -1,4 +1,4 @@
-import { Component, Input, inject } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { Announcement } from 'src/app/models';
@@ -10,7 +10,7 @@ import { UtilsService } from 'src/app/services/utils.service';
   templateUrl: './announcement-alert-modal.component.html',
   styleUrls: ['./announcement-alert-modal.component.scss'],
 })
-export class AnnouncementAlertModalComponent {
+export class AnnouncementAlertModalComponent implements OnInit {
   @Input({ required: true }) announcement!: Announcement;
   @Input() queueTotal = 1;
   @Input() queueIndex = 1;
@@ -20,6 +20,12 @@ export class AnnouncementAlertModalComponent {
   private readonly utilsSvc = inject(UtilsService);
 
   busy = false;
+
+  ngOnInit(): void {
+    const id = this.announcement?.id;
+    if (!id) return;
+    this.announcementsSvc.markRead(id).subscribe({ error: () => undefined });
+  }
 
   get severity(): Announcement['severity'] {
     return this.announcement?.severity || 'info';

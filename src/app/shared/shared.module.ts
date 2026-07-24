@@ -32,6 +32,7 @@ import { UpdateCajaComponent } from './components/update-caja/update-caja.compon
 import { AnnouncementBannerComponent } from './components/announcement-banner/announcement-banner.component';
 import { AnnouncementsInboxModalComponent } from './components/announcements-inbox-modal/announcements-inbox-modal.component';
 import { AnnouncementAlertModalComponent } from './components/announcement-alert-modal/announcement-alert-modal.component';
+import { AnnouncementReceiptsModalComponent } from './components/announcement-receipts-modal/announcement-receipts-modal.component';
 import { InteresPercentPipe } from './pipes/interes-percent.pipe';
 import { MoneyPipe } from './pipes/money.pipe';
 import { HasRoleDirective } from './directives/has-role.directive';
@@ -69,6 +70,7 @@ mapboxgl.accessToken = environment.mapbox_token;
     AnnouncementBannerComponent,
     AnnouncementsInboxModalComponent,
     AnnouncementAlertModalComponent,
+    AnnouncementReceiptsModalComponent,
   ],
   exports: [
     ReactiveFormsModule,
@@ -99,6 +101,7 @@ mapboxgl.accessToken = environment.mapbox_token;
     AnnouncementBannerComponent,
     AnnouncementsInboxModalComponent,
     AnnouncementAlertModalComponent,
+    AnnouncementReceiptsModalComponent,
     InteresPercentPipe,
     MoneyPipe,
     HasRoleDirective,

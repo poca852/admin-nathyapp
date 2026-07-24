@@ -5,6 +5,7 @@ import { Observable, Subscription, tap } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import {
   Announcement,
+  AnnouncementReceiptsReport,
   AuthStatus,
   CreateAnnouncementPayload,
 } from '../models';
@@ -143,6 +144,23 @@ export class AnnouncementsService {
     return this.http.post<{ ok: boolean }>(
       `${this.baseUrl}/announcements/${id}/ack`,
       {},
+    );
+  }
+
+  markRead(id: string): Observable<{ ok: boolean }> {
+    this._items.update((list) =>
+      list.map((a) => (a.id === id ? { ...a, read: true } : a)),
+    );
+
+    return this.http.post<{ ok: boolean }>(
+      `${this.baseUrl}/announcements/${id}/read`,
+      {},
+    );
+  }
+
+  listReceipts(id: string): Observable<AnnouncementReceiptsReport> {
+    return this.http.get<AnnouncementReceiptsReport>(
+      `${this.baseUrl}/announcements/${id}/receipts`,
     );
   }
 

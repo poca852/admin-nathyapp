@@ -15,7 +15,7 @@
   </div>
 
   <section *ngIf="showForm()" class="sa-form-card" [formGroup]="form">
-    <h2>Nuevo aviso</h2>
+    <h2>{{ formTitle() }}</h2>
 
     <custom-input
       [control]="form.controls.title"
@@ -95,7 +95,7 @@
         fill="solid"
         (click)="submit()"
         [disabled]="form.invalid || saving()">
-        Enviar
+        {{ submitLabel() }}
       </ion-button>
     </div>
   </section>
@@ -126,6 +126,25 @@
           </ng-container>
         </p>
       </ion-label>
+
+      <ion-button
+        slot="end"
+        fill="clear"
+        color="primary"
+        (click)="openReceipts(item)"
+        aria-label="Quién lo vio">
+        <ion-icon slot="icon-only" name="people-outline"></ion-icon>
+      </ion-button>
+
+      <ion-button
+        slot="end"
+        fill="clear"
+        color="medium"
+        (click)="openEdit(item)"
+        aria-label="Editar">
+        <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+      </ion-button>
+
       <ion-button
         *ngIf="item.isActive"
         slot="end"

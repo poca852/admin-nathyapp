@@ -1,0 +1,75 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Quién lo vio</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()" aria-label="Cerrar">
+        <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <h2 class="receipts-title">{{ announcement?.title }}</h2>
+
+  <div *ngIf="loading()" class="receipts-loading">
+    <ion-spinner name="crescent"></ion-spinner>
+  </div>
+
+  <div *ngIf="!loading() && loadError()" class="receipts-empty">
+    <p>No se pudo cargar el reporte</p>
+    <ion-button fill="outline" (click)="reload()">Reintentar</ion-button>
+  </div>
+
+  <ng-container *ngIf="!loading() && !loadError() && report() as r">
+    <div class="receipts-summary">
+      <div class="stat">
+        <strong>{{ r.summary.read }}</strong>
+        <span>vistos</span>
+      </div>
+      <div class="stat">
+        <strong>{{ r.summary.unread }}</strong>
+        <span>pendientes</span>
+      </div>
+      <div class="stat">
+        <strong>{{ r.summary.acknowledged }}</strong>
+        <span>confirmados</span>
+      </div>
+      <div class="stat">
+        <strong>{{ r.summary.audienceTotal }}</strong>
+        <span>destino</span>
+      </div>
+    </div>
+
+    <div class="receipts-filters">
+      <ion-chip
+        *ngFor="let f of filters"
+        [outline]="filter() !== f.value"
+        [color]="filter() === f.value ? 'primary' : 'medium'"
+        (click)="setFilter(f.value)">
+        {{ f.label }}
+      </ion-chip>
+    </div>
+
+    <ion-list *ngIf="filteredRecipients().length; else emptyList">
+      <ion-item *ngFor="let item of filteredRecipients(); trackBy: trackByUser">
+        <ion-label>
+          <h2>
+            {{ item.name }}
+            <ion-badge mode="md" [color]="statusColor(item.status)">
+              {{ statusLabel(item.status) }}
+            </ion-badge>
+          </h2>
+          <p>{{ item.rol }} · {{ item.empresaName || 'Sin empresa' }}</p>
+          <p>Visto: {{ formatDate(item.readAt) }}</p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+
+    <ng-template #emptyList>
+      <div class="receipts-empty">
+        <p>No hay destinatarios en este filtro</p>
+      </div>
+    </ng-template>
+  </ng-container>
+</ion-content>

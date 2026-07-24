@@ -10,6 +10,12 @@ export type AnnouncementScope = 'GLOBAL' | 'EMPRESA' | 'MULTI';
 
 export type AnnouncementAudience = 'ADMIN' | 'SUPERVISOR';
 
+export type AnnouncementReceiptStatus =
+  | 'unread'
+  | 'read'
+  | 'acknowledged'
+  | 'dismissed';
+
 export interface Announcement {
   id: string;
   title: string;
@@ -29,6 +35,7 @@ export interface Announcement {
   updatedAt?: string | null;
   dismissed?: boolean;
   acknowledged?: boolean;
+  read?: boolean;
 }
 
 export type CreateAnnouncementPayload = {
@@ -45,3 +52,31 @@ export type CreateAnnouncementPayload = {
   requiresAck?: boolean;
   isActive?: boolean;
 };
+
+export interface AnnouncementReceiptSummary {
+  audienceTotal: number;
+  read: number;
+  acknowledged: number;
+  dismissed: number;
+  unread: number;
+}
+
+export interface AnnouncementReceiptRecipient {
+  userId: string;
+  name: string;
+  username?: string;
+  rol: string;
+  empresaId?: string | null;
+  empresaName?: string | null;
+  readAt: string | null;
+  acknowledgedAt: string | null;
+  dismissedAt: string | null;
+  status: AnnouncementReceiptStatus;
+}
+
+export interface AnnouncementReceiptsReport {
+  announcementId: string;
+  title: string;
+  summary: AnnouncementReceiptSummary;
+  recipients: AnnouncementReceiptRecipient[];
+}
