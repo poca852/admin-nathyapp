@@ -228,6 +228,9 @@
     <section class="sa-section">
       <div class="sa-section-head">
         <h2>Empleados</h2>
+        <ion-button fill="clear" size="small" (click)="createEmpleado()">
+          <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+        </ion-button>
       </div>
 
       <ion-list *ngIf="empleados().length > 0" lines="none" class="sa-entity-list">

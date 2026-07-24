@@ -9,6 +9,8 @@ import { SuperAdminContextService } from 'src/app/services/super-admin-context.s
 import { UtilsService } from 'src/app/services/utils.service';
 import { AddUpdateEmployeComponent } from 'src/app/shared/components/add-update-employe/add-update-employe.component';
 
+const DEFAULT_RETURN_URL = '/main/super-admin/usuarios';
+
 @Component({
   selector: 'app-sa-usuario-detail',
   templateUrl: './sa-usuario-detail.page.html',
@@ -23,6 +25,7 @@ export class SaUsuarioDetailPage {
 
   readonly loading = signal(true);
   readonly user = signal<User | null>(null);
+  readonly returnUrl = signal(DEFAULT_RETURN_URL);
 
   readonly empresaLabel = computed(() => {
     const u = this.user();
@@ -35,8 +38,22 @@ export class SaUsuarioDetailPage {
     return emp.name || emp.id || '—';
   });
 
-  ngOnInit(): void {
+  ionViewWillEnter(): void {
+    this.returnUrl.set(this.resolveReturnUrl());
     this.resolveUser();
+  }
+
+  ngOnInit(): void {
+    this.returnUrl.set(this.resolveReturnUrl());
+    this.resolveUser();
+  }
+
+  private resolveReturnUrl(): string {
+    const state = history.state as { returnUrl?: string } | null;
+    const url = state?.returnUrl;
+    return typeof url === 'string' && url.startsWith('/main/super-admin/')
+      ? url
+      : DEFAULT_RETURN_URL;
   }
 
   private async resolveUser(): Promise<void> {
@@ -168,7 +185,7 @@ export class SaUsuarioDetailPage {
         });
         this.ctx.clearDetailPayload();
         this.ctx.invalidate();
-        this.utilsSvc.routerLink('/main/super-admin/usuarios');
+        this.utilsSvc.routerLink(this.returnUrl());
       },
       error: async (err) => {
         loading.dismiss();

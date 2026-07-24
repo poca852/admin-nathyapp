@@ -1,6 +1,6 @@
 <app-header
   title="Usuario"
-  [backButton]="'/main/super-admin/usuarios'" />
+  [backButton]="returnUrl()" />
 
 <ion-content [fullscreen]="true" class="ion-padding">
   <div *ngIf="loading()" class="skeleton-block">

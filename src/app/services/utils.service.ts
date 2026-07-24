@@ -67,7 +67,7 @@ export class UtilsService {
   }
 
   // enrutar a cualquier pagina disponible
-  routerLink(url: string, params?: Record<string, any>) {
+  routerLink(url: string, params?: Record<string, any>, extras?: { state?: Record<string, unknown> }) {
 
     if (params) {
       Object.keys(params).forEach(key => {
@@ -75,7 +75,7 @@ export class UtilsService {
       });
     }
 
-    return this.router.navigateByUrl(url);
+    return this.router.navigateByUrl(url, extras);
   }
 
   // guarda un elemento en localStorage

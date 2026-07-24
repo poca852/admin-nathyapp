@@ -116,7 +116,11 @@ export class SaUsuariosPage implements OnDestroy {
   openDetail(user: User): void {
     const id = user._id || user.id!;
     this.ctx.setDetailPayload(user);
-    this.utilsSvc.routerLink('/main/super-admin/usuarios/:id', { id });
+    this.utilsSvc.routerLink(
+      '/main/super-admin/usuarios/:id',
+      { id },
+      { state: { returnUrl: '/main/super-admin/usuarios' } },
+    );
   }
 
   async addUpdate(user?: User): Promise<void> {

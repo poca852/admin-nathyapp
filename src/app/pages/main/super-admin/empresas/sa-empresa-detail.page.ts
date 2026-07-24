@@ -9,6 +9,7 @@ import { SuperAdminContextService } from 'src/app/services/super-admin-context.s
 import { UtilsService } from 'src/app/services/utils.service';
 import { UpdateEmpresaComponent } from 'src/app/shared/components/update-empresa/update-empresa.component';
 import { AddUpdateRutaComponent } from 'src/app/shared/components/add-update-ruta/add-update-ruta.component';
+import { AddUpdateEmployeComponent } from 'src/app/shared/components/add-update-employe/add-update-employe.component';
 
 @Component({
   selector: 'app-sa-empresa-detail',
@@ -318,8 +319,19 @@ export class SaEmpresaDetailPage {
 
   openUsuario(user: User): void {
     const id = user._id || user.id!;
+    const empresaId = this.empresa()?.id;
     this.ctx.setDetailPayload(user);
-    this.utilsSvc.routerLink('/main/super-admin/usuarios/:id', { id });
+    this.utilsSvc.routerLink(
+      '/main/super-admin/usuarios/:id',
+      { id },
+      {
+        state: {
+          returnUrl: empresaId
+            ? `/main/super-admin/empresas/${empresaId}`
+            : '/main/super-admin/usuarios',
+        },
+      },
+    );
   }
 
   openOwner(): void {
@@ -335,6 +347,24 @@ export class SaEmpresaDetailPage {
       component: AddUpdateRutaComponent,
       cssClass: 'add-update-modal',
       componentProps: { empresaId: empresa.id },
+    });
+    if (result?.success) {
+      this.ctx.invalidate();
+      this.load();
+    }
+  }
+
+  async createEmpleado(): Promise<void> {
+    const empresa = this.empresa();
+    if (!empresa?.id) return;
+    const result = await this.utilsSvc.presentModal({
+      component: AddUpdateEmployeComponent,
+      cssClass: 'add-update-modal',
+      componentProps: {
+        allowSuperAdmin: true,
+        empresaId: empresa.id,
+        rutasOverride: this.rutas(),
+      },
     });
     if (result?.success) {
       this.ctx.invalidate();
