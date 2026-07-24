@@ -23,7 +23,16 @@ ion-button {
   animation: payment-pulse 1.8s ease-in-out infinite;
 }
 
+.offline-btn {
+  animation: offline-pulse 1.8s ease-in-out infinite;
+}
+
 @keyframes payment-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.55; }
+}
+
+@keyframes offline-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
 }

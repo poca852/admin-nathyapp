@@ -5,6 +5,7 @@ import { PeticionesService } from 'src/app/services/peticiones.service';
 import { AnnouncementsService } from 'src/app/services/announcements.service';
 import { EmpresaService } from 'src/app/services/empresa.service';
 import { RoleService } from 'src/app/services/role.service';
+import { OfflineService } from 'src/app/services/offline.service';
 import { Roles } from 'src/app/models/roles.enum';
 import { NotificacionesModalComponent } from '../notificaciones-modal/notificaciones-modal.component';
 import { AnnouncementsInboxModalComponent } from '../announcements-inbox-modal/announcements-inbox-modal.component';
@@ -32,10 +33,12 @@ export class HeaderComponent implements OnInit {
   announcementsSvc = inject(AnnouncementsService);
   empresaSvc = inject(EmpresaService);
   roleSvc = inject(RoleService);
+  offlineSvc = inject(OfflineService);
   private readonly modalCtrl = inject(ModalController);
 
   cantidadPendientes = computed(() => this.peticionesSvc.cantidadPendientes());
   avisosCount = computed(() => this.announcementsSvc.unreadCount());
+  isOffline = computed(() => this.offlineSvc.isOffline());
   showAvisos = computed(() => {
     const rol = this.roleSvc.rol();
     return rol === Roles.admin || rol === Roles.supervisor;
@@ -51,6 +54,16 @@ export class HeaderComponent implements OnInit {
 
   dismissModal() {
     this.utilsSvc.dismissModal();
+  }
+
+  async mostrarAvisoOffline(): Promise<void> {
+    await this.utilsSvc.presentToast({
+      message: 'Sin conexión a internet. Algunas funciones no están disponibles.',
+      duration: 2500,
+      color: 'warning',
+      position: 'top',
+      icon: 'cloud-offline-outline',
+    });
   }
 
   async installPwa() {

@@ -1,56 +1,35 @@
-import { Injectable } from '@angular/core';
-import { ToastController } from '@ionic/angular';
-import { BehaviorSubject } from 'rxjs';
+import { Injectable, signal } from '@angular/core';
 
+/**
+ * Estado de conectividad del dispositivo.
+ * La UI (header) consume `isOffline`; no muestra toasts invasivos.
+ */
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class OfflineService {
-  private isOffline = new BehaviorSubject<boolean>(!navigator.onLine);
-  isOffline$ = this.isOffline.asObservable();
+  private readonly _isOffline = signal(!navigator.onLine);
+  readonly isOffline = this._isOffline.asReadonly();
 
-  private offlineToast: HTMLIonToastElement | null = null;
-
-  constructor(private toastController: ToastController) {
-    window.addEventListener('online', () => this.updateOnlineStatus());
-    window.addEventListener('offline', () => this.updateOnlineStatus());
+  constructor() {
+    window.addEventListener('online', () => this.setOffline(false));
+    window.addEventListener('offline', () => this.setOffline(true));
   }
 
-  private updateOnlineStatus(): void {
-    const offline = !navigator.onLine;
-    this.isOffline.next(offline);
-    if (offline) {
-      this.showOfflineWarning();
-    } else {
-      this.dismissOfflineWarning();
-    }
-  }
-
-  async showOfflineWarning(): Promise<void> {
-    if (this.offlineToast) {
+  private setOffline(offline: boolean): void {
+    if (this._isOffline() === offline) {
       return;
     }
-    this.offlineToast = await this.toastController.create({
-      message: 'You are currently offline. Some features may be unavailable.',
-      color: 'warning',
-      duration: 0, // persistent
-      buttons: [
-        {
-          text: 'Dismiss',
-          role: 'cancel',
-          handler: () => {
-            this.offlineToast = null;
-          }
-        }
-      ]
-    });
-    await this.offlineToast.present();
+    this._isOffline.set(offline);
   }
 
-  private async dismissOfflineWarning(): Promise<void> {
-    if (this.offlineToast) {
-      await this.offlineToast.dismiss();
-      this.offlineToast = null;
+  /**
+   * Sincroniza estado cuando un HTTP falla con status 0 (red caída).
+   * No marca offline por timeouts/504 del servidor.
+   */
+  reportNetworkFailure(): void {
+    if (!navigator.onLine) {
+      this.setOffline(true);
     }
   }
 }

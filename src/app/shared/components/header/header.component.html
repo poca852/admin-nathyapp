@@ -22,6 +22,15 @@
 
     <ion-buttons slot="end">
       <ion-button
+        *ngIf="isOffline()"
+        (click)="mostrarAvisoOffline()"
+        fill="clear"
+        size="small"
+        class="offline-btn"
+        aria-label="Sin conexión a internet">
+        <ion-icon name="cloud-offline-outline" color="warning"></ion-icon>
+      </ion-button>
+      <ion-button
         *ngIf="showPaymentDue()"
         (click)="abrirPagoPendiente()"
         fill="clear"

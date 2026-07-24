@@ -1,9 +1,10 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { NotificacionesService } from './services/notificaciones.service';
 import { Subscription } from 'rxjs';
 import { EmpresaService } from './services/empresa.service';
 import { CajaCloseEvent, CajaLockEvent, WsService } from './services/ws.service';
 import { UtilsService } from './services/utils.service';
+import { OfflineService } from './services/offline.service';
 
 @Component({
   selector: 'app-root',
@@ -13,6 +14,8 @@ import { UtilsService } from './services/utils.service';
 export class AppComponent implements OnInit, OnDestroy {
 
   private subscriptions = new Subscription();
+  /** Bootstrap temprano: registra listeners online/offline al arrancar. */
+  private readonly offlineSvc = inject(OfflineService);
 
   constructor(
     private notificacionesSvc: NotificacionesService,
@@ -26,6 +29,8 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    void this.offlineSvc.isOffline();
+
     this.subscriptions.add(
       this.notificacionesSvc.logOut$.subscribe(() => {
         this.empresaSvc.removeRuta();
