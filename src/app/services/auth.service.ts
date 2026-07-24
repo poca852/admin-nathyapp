@@ -41,6 +41,15 @@ export class AuthService {
 
     if (empresaId) {
       this.empresaSvc.setEmpresa(empresaId);
+    } else if (user.rol !== 'SUPERADMIN') {
+      // Sin empresa no hay rooms admin:/empresa: → presencia y caja realtime muertos.
+      this.utilsSvc.presentToast({
+        message:
+          'Tu usuario no tiene empresa asignada. El seguimiento en tiempo real no estará disponible.',
+        duration: 4000,
+        color: 'warning',
+        position: 'bottom',
+      });
     }
 
     this.ws.connect(token);

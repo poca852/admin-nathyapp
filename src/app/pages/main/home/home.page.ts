@@ -15,7 +15,7 @@ import {
 } from 'src/app/services/ws.service';
 import { formatMoney, resolveRutaCurrency } from 'src/app/helpers/money.helpers';
 
-const WS_ACTION_TIMEOUT_MS = 10_000;
+const ACTION_TIMEOUT_MS = 15_000;
 
 @Component({
   selector: 'app-home',
@@ -25,7 +25,7 @@ const WS_ACTION_TIMEOUT_MS = 10_000;
 export class HomePage implements OnDestroy {
   loading = true;
   loadError = false;
-  /** Ruta id con acción en curso (HTTP o WS). */
+  /** Ruta id con acción en curso (HTTP; WS solo refuerza feedback UI). */
   actionPendingId: string | null = null;
 
   readonly resumen = computed(() => {
@@ -74,6 +74,7 @@ export class HomePage implements OnDestroy {
     this.subs.unsubscribe();
   }
 
+  /** Eco WS: si el server ya emitió, limpia pending (HTTP también lo limpia). */
   private bindWsFeedback(): void {
     this.subs.unsubscribe();
     this.subs = new Subscription();
@@ -82,6 +83,7 @@ export class HomePage implements OnDestroy {
       this.ws.onCloseCaja().subscribe((event: CajaCloseEvent) => {
         if (event?.ruta && this.matchesPending(event.ruta)) {
           this.clearPending();
+          this.loadRutas();
         }
       }),
     );
@@ -89,6 +91,7 @@ export class HomePage implements OnDestroy {
       this.ws.onBlockCaja().subscribe((event: CajaLockEvent) => {
         if (event?.ruta && this.matchesPending(event.ruta)) {
           this.clearPending();
+          this.loadRutas();
         }
       }),
     );
@@ -96,6 +99,7 @@ export class HomePage implements OnDestroy {
       this.ws.onUnblockCaja().subscribe((event: CajaLockEvent) => {
         if (event?.ruta && this.matchesPending(event.ruta)) {
           this.clearPending();
+          this.loadRutas();
         }
       }),
     );
@@ -210,14 +214,16 @@ export class HomePage implements OnDestroy {
   async toggleRutaStatus(ruta: Ruta): Promise<void> {
     if (this.actionPendingId) return;
 
-    if (ruta.status) {
-      this.beginPending(ruta.id);
-      this.ws.closeCaja(ruta.id);
-      return;
-    }
+    const rutaId = ruta.id || ruta._id;
+    if (!rutaId) return;
 
-    this.beginPending(ruta.id);
-    this.rutaSvc.newCaja(ruta.id).subscribe({
+    this.beginPending(rutaId);
+
+    const req$ = ruta.status
+      ? this.rutaSvc.closeCaja(rutaId)
+      : this.rutaSvc.newCaja(rutaId);
+
+    req$.subscribe({
       next: () => {
         this.clearPending();
         this.loadRutas();
@@ -225,8 +231,10 @@ export class HomePage implements OnDestroy {
       error: () => {
         this.clearPending();
         this.utilsSvc.presentToast({
-          message: 'Error al abrir la ruta',
-          duration: 2000,
+          message: ruta.status
+            ? 'Error al cerrar la ruta'
+            : 'Error al abrir la ruta',
+          duration: 2500,
           position: 'bottom',
           color: 'danger',
         });
@@ -259,12 +267,33 @@ export class HomePage implements OnDestroy {
 
   toggleRutaLock(ruta: Ruta): void {
     if (this.actionPendingId) return;
-    this.beginPending(ruta.id);
-    if (ruta.isLocked) {
-      this.ws.unblockCaja(ruta.id);
-    } else {
-      this.ws.blockCaja(ruta.id);
-    }
+
+    const rutaId = ruta.id || ruta._id;
+    if (!rutaId) return;
+
+    this.beginPending(rutaId);
+
+    const req$ = ruta.isLocked
+      ? this.rutaSvc.unlockRuta(rutaId)
+      : this.rutaSvc.lockRuta(rutaId);
+
+    req$.subscribe({
+      next: () => {
+        this.clearPending();
+        this.loadRutas();
+      },
+      error: () => {
+        this.clearPending();
+        this.utilsSvc.presentToast({
+          message: ruta.isLocked
+            ? 'Error al desbloquear la caja'
+            : 'Error al bloquear la caja',
+          duration: 2500,
+          position: 'bottom',
+          color: 'danger',
+        });
+      },
+    });
   }
 
   private beginPending(rutaId: string): void {
@@ -277,12 +306,12 @@ export class HomePage implements OnDestroy {
       this.pendingTimer = null;
       this.cdr.markForCheck();
       this.utilsSvc.presentToast({
-        message: 'No se pudo confirmar la acción. Desliza para actualizar.',
+        message: 'La acción está tardando. Desliza para actualizar.',
         duration: 3000,
         position: 'bottom',
         color: 'warning',
       });
-    }, WS_ACTION_TIMEOUT_MS);
+    }, ACTION_TIMEOUT_MS);
   }
 
   private clearPending(): void {
