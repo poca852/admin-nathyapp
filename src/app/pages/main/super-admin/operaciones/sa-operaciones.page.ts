@@ -5,15 +5,28 @@ import { finalize } from 'rxjs/operators';
 
 import { Caja, Cliente, Credito, Empresa, Ruta } from 'src/app/models';
 import { MovimientoCaja } from 'src/app/models/movimiento-caja.interface';
+import { SubTipo } from 'src/app/models/sub-tipo.enum';
 import { CajaService } from 'src/app/services/caja.service';
 import { ClienteService } from 'src/app/services/cliente.service';
 import { CreditosService } from 'src/app/services/creditos.service';
 import { EmpresaService } from 'src/app/services/empresa.service';
+import { OficinaService } from 'src/app/services/oficina.service';
 import { PagosService } from 'src/app/services/pagos.service';
 import { SuperAdminContextService } from 'src/app/services/super-admin-context.service';
 import { UtilsService } from 'src/app/services/utils.service';
+import { MovimientoResumen } from 'src/app/pages/main/oficina/interfaces/resumen-oficina.interface';
 
-type OpsTab = 'creditos' | 'clientes' | 'pagos' | 'cajas';
+export interface SaMovimientoOficina {
+  id: string;
+  subTipo: SubTipo;
+  concepto?: string;
+  valor: number;
+  fecha: Date | string;
+  comentario?: string;
+  categoriaGasto?: string;
+}
+
+type OpsTab = 'creditos' | 'clientes' | 'pagos' | 'cajas' | 'oficina';
 
 @Component({
   selector: 'app-sa-operaciones',
@@ -26,11 +39,13 @@ export class SaOperacionesPage implements OnDestroy {
   private readonly creditoSvc = inject(CreditosService);
   private readonly pagosSvc = inject(PagosService);
   private readonly cajaSvc = inject(CajaService);
+  private readonly oficinaSvc = inject(OficinaService);
   private readonly utilsSvc = inject(UtilsService);
   private readonly router = inject(Router);
   readonly ctx = inject(SuperAdminContextService);
   private navSub?: Subscription;
 
+  readonly SubTipo = SubTipo;
   readonly tab = signal<OpsTab>('creditos');
   readonly loading = signal(false);
   readonly rutas = signal<Ruta[]>([]);
@@ -42,6 +57,7 @@ export class SaOperacionesPage implements OnDestroy {
   readonly clientes = signal<Cliente[]>([]);
   readonly pagos = signal<MovimientoCaja[]>([]);
   readonly caja = signal<Caja | null>(null);
+  readonly oficinaMovimientos = signal<SaMovimientoOficina[]>([]);
 
   ngOnInit(): void {
     this.navSub = this.router.events
@@ -113,6 +129,7 @@ export class SaOperacionesPage implements OnDestroy {
     this.clientes.set([]);
     this.pagos.set([]);
     this.caja.set(null);
+    this.oficinaMovimientos.set([]);
   }
 
   reloadData(): void {
@@ -164,6 +181,28 @@ export class SaOperacionesPage implements OnDestroy {
       return;
     }
 
+    if (tab === 'oficina') {
+      const fecha = this.selectedDate().slice(0, 10);
+      this.oficinaSvc.getResumen(rutaId, fecha).pipe(
+        finalize(() => this.loading.set(false)),
+      ).subscribe({
+        next: (res) => {
+          const movimientos: SaMovimientoOficina[] = [
+            ...this.mapOficinaMovimientos(res.gastos?.movimientos || [], SubTipo.GASTO),
+            ...this.mapOficinaMovimientos(res.inversiones?.movimientos || [], SubTipo.INVERSION),
+            ...this.mapOficinaMovimientos(res.retiros?.movimientos || [], SubTipo.RETIRO),
+          ];
+          movimientos.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+          this.oficinaMovimientos.set(movimientos);
+        },
+        error: () => {
+          this.oficinaMovimientos.set([]);
+          this.toastError('No se pudieron cargar movimientos de oficina');
+        },
+      });
+      return;
+    }
+
     this.cajaSvc.getCajaByRutaAndDate(rutaId, this.selectedDate()).pipe(
       finalize(() => this.loading.set(false)),
     ).subscribe({
@@ -173,6 +212,27 @@ export class SaOperacionesPage implements OnDestroy {
         this.toastError('No se pudo cargar la caja');
       },
     });
+  }
+
+  private mapOficinaMovimientos(movs: MovimientoResumen[], subTipo: SubTipo): SaMovimientoOficina[] {
+    return movs.map((m) => ({
+      id: m.id,
+      subTipo,
+      concepto: m.concepto,
+      valor: m.monto,
+      fecha: m.fecha,
+      comentario: m.comentario,
+      categoriaGasto: m.categoriaGasto,
+    }));
+  }
+
+  getSubTipoLabel(subTipo: SubTipo): string {
+    const labels: Record<string, string> = {
+      [SubTipo.GASTO]: 'Gasto',
+      [SubTipo.INVERSION]: 'Inversión',
+      [SubTipo.RETIRO]: 'Retiro',
+    };
+    return labels[subTipo] ?? subTipo;
   }
 
   private toastError(message: string): void {
@@ -211,5 +271,15 @@ export class SaOperacionesPage implements OnDestroy {
     const id = current.id || (current as any)._id || 'caja';
     this.ctx.setDetailPayload({ data: current });
     this.utilsSvc.routerLink('/main/super-admin/operaciones/caja/:id', { id });
+  }
+
+  openOficina(movimiento: SaMovimientoOficina): void {
+    const ruta = this.rutas().find((r) => this.rutaId(r) === this.selectedRutaId()) || null;
+    this.ctx.setDetailPayload({
+      data: movimiento,
+      ruta,
+      fecha: this.selectedDate().slice(0, 10),
+    });
+    this.utilsSvc.routerLink('/main/super-admin/operaciones/oficina/:id', { id: movimiento.id });
   }
 }

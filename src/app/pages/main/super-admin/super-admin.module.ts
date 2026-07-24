@@ -21,6 +21,7 @@ import { SaCreditoDetailPage } from './operaciones/sa-credito-detail.page';
 import { SaClienteDetailPage } from './operaciones/sa-cliente-detail.page';
 import { SaPagoDetailPage } from './operaciones/sa-pago-detail.page';
 import { SaCajaDetailPage } from './operaciones/sa-caja-detail.page';
+import { SaOficinaDetailPage } from './operaciones/sa-oficina-detail.page';
 import { SaMensajesPage } from './mensajes/sa-mensajes.page';
 
 const routes: Routes = [
@@ -44,6 +45,7 @@ const routes: Routes = [
       { path: 'operaciones/cliente/:id', component: SaClienteDetailPage },
       { path: 'operaciones/pago/:id', component: SaPagoDetailPage },
       { path: 'operaciones/caja/:id', component: SaCajaDetailPage },
+      { path: 'operaciones/oficina/:id', component: SaOficinaDetailPage },
     ],
   },
 ];
@@ -72,6 +74,7 @@ const routes: Routes = [
     SaClienteDetailPage,
     SaPagoDetailPage,
     SaCajaDetailPage,
+    SaOficinaDetailPage,
   ],
 })
 export class SuperAdminPageModule {}

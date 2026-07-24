@@ -16,6 +16,7 @@ export class AddUpdateMovimientoComponent implements OnInit {
   @Input() type: SubTipo;
   @Input() ruta: Ruta;
   @Input() fechaSeleccionada: Date;
+  @Input() allowAnyDate = false;
 
   private readonly utilsSvc = inject(UtilsService);
   private readonly oficinaSvc = inject(OficinaService);
@@ -41,6 +42,11 @@ export class AddUpdateMovimientoComponent implements OnInit {
   }
 
   private checkIfIsSameDay() {
+    if (this.allowAnyDate) {
+      this.isEditable.set(true);
+      return;
+    }
+
     const today = new Date();
     const targetDate = this.movimiento ? new Date(this.movimiento.fecha) : this.fechaSeleccionada;
 
