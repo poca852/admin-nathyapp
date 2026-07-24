@@ -23,17 +23,17 @@ export class UpdateEmpresaComponent implements OnInit {
     {
       value: 'VALOR_CUOTA',
       label: 'Valor de la cuota',
-      tip: 'La mora se calcula como un % sobre el valor de la cuota.',
+      tip: 'La mora sugerida es un % sobre el valor de la cuota, acumulado por cada día hábil de atraso (cuota × % × días).',
     },
     {
       value: 'SALDO',
       label: 'Saldo',
-      tip: 'La mora se calcula como un % sobre el saldo pendiente del crédito.',
+      tip: 'La mora se calcula como un % sobre el saldo pendiente del crédito (sin acumular por días).',
     },
     {
       value: 'VALOR_CREDITO',
       label: 'Valor del crédito',
-      tip: 'La mora se calcula como un % sobre el valor original del crédito.',
+      tip: 'La mora se calcula como un % sobre el valor original del crédito (sin acumular por días).',
     },
   ];
 
@@ -43,9 +43,9 @@ export class UpdateEmpresaComponent implements OnInit {
     permiteMoraVoluntaria:
       'Si está activo, el cobrador puede decidir aplicar mora en el momento del cobro, además de la mora ya registrada en el crédito.',
     porcentajeMora:
-      'Porcentaje usado para calcular la mora sugerida según la base seleccionada (cuota, saldo o valor del crédito).',
+      'Porcentaje usado para calcular la mora sugerida según la base seleccionada. Con base en la cuota, se multiplica también por los días de atraso.',
     baseCalculoMora:
-      'Define sobre qué monto se aplica el porcentaje de mora para obtener el valor sugerido.',
+      'Define sobre qué monto se aplica el porcentaje de mora. Si eliges valor de la cuota, la sugerida se acumula por días hábiles de atraso.',
   };
 
   form = new FormGroup({

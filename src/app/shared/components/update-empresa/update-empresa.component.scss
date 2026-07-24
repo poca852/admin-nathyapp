@@ -181,6 +181,15 @@
   margin-top: 0.35rem;
 }
 
+.mora-base-hint {
+  display: block;
+  margin-top: 0.45rem;
+  padding: 0 0.15rem;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--ion-color-medium-shade, #6e7077);
+}
+
 .tip-content {
   max-width: 260px;
   padding: 0.9rem 1rem;

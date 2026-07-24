@@ -179,6 +179,13 @@
                   }
                 </ion-select>
               </ion-item>
+
+              @if (form.controls.baseCalculoMora.value === 'VALOR_CUOTA') {
+                <small class="mora-base-hint">
+                  Con esta base, la mora sugerida se acumula por cada día hábil de atraso
+                  (cuota × % × días).
+                </small>
+              }
             </div>
 
             <ion-popover trigger="tip-base-mora" triggerAction="click" side="bottom" alignment="start">
