@@ -5,6 +5,7 @@ import { EmpresaService } from './services/empresa.service';
 import { CajaCloseEvent, CajaLockEvent, WsService } from './services/ws.service';
 import { UtilsService } from './services/utils.service';
 import { OfflineService } from './services/offline.service';
+import { PwaUpdateService } from './services/pwa-update.service';
 
 @Component({
   selector: 'app-root',
@@ -16,6 +17,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();
   /** Bootstrap temprano: registra listeners online/offline al arrancar. */
   private readonly offlineSvc = inject(OfflineService);
+  private readonly pwaUpdateSvc = inject(PwaUpdateService);
 
   constructor(
     private notificacionesSvc: NotificacionesService,
@@ -30,6 +32,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     void this.offlineSvc.isOffline();
+    this.pwaUpdateSvc.init();
 
     this.subscriptions.add(
       this.notificacionesSvc.logOut$.subscribe(() => {

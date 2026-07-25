@@ -1,55 +1,51 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
+}
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PwaInstallService {
-  private deferredPrompt: any = null;
-  private isStandalone = false;
+  private deferredPrompt: BeforeInstallPromptEvent | null = null;
+
+  private readonly _canInstall = signal(false);
+  private readonly _installed = signal(false);
+
+  readonly canInstall = this._canInstall.asReadonly();
+  readonly installed = this._installed.asReadonly();
 
   constructor() {
-    // Detect if the app is already installed (display mode standalone)
-    this.isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
+    const standalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
 
-    // Capture the beforeinstallprompt event
-    window.addEventListener('beforeinstallprompt', (e) => {
+    this._installed.set(standalone);
+
+    window.addEventListener('beforeinstallprompt', (e: Event) => {
       e.preventDefault();
-      this.deferredPrompt = e;
+      this.deferredPrompt = e as BeforeInstallPromptEvent;
+      this._canInstall.set(!this._installed());
     });
 
-    // Track app installation
     window.addEventListener('appinstalled', () => {
       this.deferredPrompt = null;
-      this.isStandalone = true;
+      this._canInstall.set(false);
+      this._installed.set(true);
     });
   }
 
-  /**
-   * Whether the app can be installed (PWA install prompt available)
-   */
-  get canInstall(): boolean {
-    return this.deferredPrompt !== null && !this.isStandalone;
-  }
-
-  /**
-   * Whether the app is running in standalone mode (already installed)
-   */
-  get installed(): boolean {
-    return this.isStandalone;
-  }
-
-  /**
-   * Show the install prompt to the user
-   * @returns Promise that resolves after user choice
-   */
   async showInstallPrompt(): Promise<void> {
     if (!this.deferredPrompt) {
       throw new Error('Install prompt not available');
     }
-    this.deferredPrompt.prompt();
+    await this.deferredPrompt.prompt();
     const choiceResult = await this.deferredPrompt.userChoice;
     if (choiceResult.outcome === 'accepted') {
       this.deferredPrompt = null;
+      this._canInstall.set(false);
     }
   }
 }
