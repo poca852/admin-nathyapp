@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { UtilsService } from '../../../services/utils.service';
 import { EmpresaService } from '../../../services/empresa.service';
 import { OficinaService } from '../../../services/oficina.service';
+import { RoleService } from '../../../services/role.service';
 import { Ruta } from 'src/app/models';
 import { SubTipo } from 'src/app/models/sub-tipo.enum';
 import { AddUpdateMovimientoComponent } from 'src/app/shared/components/add-update-movimiento/add-update-movimiento.component';
@@ -29,6 +30,7 @@ export class OficinaPage {
   private readonly utilsSvc = inject(UtilsService);
   private readonly empresaSvc = inject(EmpresaService);
   private readonly oficinaSvc = inject(OficinaService);
+  private readonly roleSvc = inject(RoleService);
   private readonly route = inject(ActivatedRoute);
 
   @ViewChild('modalOficina') modalOficina!: IonModal;
@@ -40,6 +42,9 @@ export class OficinaPage {
   public readonly resumen = signal<ResumenOficinaResponse | null>(null);
   public readonly movimientos = signal<MovimientoOficina[]>([]);
   public readonly rutas = computed(() => this.empresaSvc.rutas());
+
+  /** Solo admin/superAdmin pueden crear/editar; supervisor es solo lectura. */
+  public readonly canEdit = computed(() => this.roleSvc.isAdminOrSuperAdmin());
 
   public readonly totalGastos = computed(() => this.resumen()?.gastos?.total || 0);
   public readonly totalInversiones = computed(() => this.resumen()?.inversiones?.total || 0);
@@ -110,6 +115,16 @@ export class OficinaPage {
   }
 
   async addOrUpdateMovimiento(type: SubTipo, movimiento?: MovimientoOficina) {
+    if (!this.canEdit()) {
+      this.utilsSvc.presentToast({
+        message: 'No tienes permiso para crear o editar movimientos de oficina',
+        duration: 3000,
+        color: 'warning',
+        icon: 'lock-closed-outline',
+      });
+      return;
+    }
+
     const success = await this.utilsSvc.presentModal({
       component: AddUpdateMovimientoComponent,
       componentProps: {

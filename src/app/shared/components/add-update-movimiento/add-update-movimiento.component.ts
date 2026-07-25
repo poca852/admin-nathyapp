@@ -3,6 +3,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { SubTipo } from 'src/app/models/sub-tipo.enum';
 import { UtilsService } from 'src/app/services/utils.service';
 import { OficinaService } from 'src/app/services/oficina.service';
+import { RoleService } from 'src/app/services/role.service';
 import { Ruta, CategoriaGasto } from 'src/app/models';
 
 @Component({
@@ -20,6 +21,7 @@ export class AddUpdateMovimientoComponent implements OnInit {
 
   private readonly utilsSvc = inject(UtilsService);
   private readonly oficinaSvc = inject(OficinaService);
+  private readonly roleSvc = inject(RoleService);
 
   public readonly SubTipo = SubTipo;
   public readonly CategoriaGasto = CategoriaGasto;
@@ -42,6 +44,18 @@ export class AddUpdateMovimientoComponent implements OnInit {
   }
 
   private checkIfIsSameDay() {
+    if (!this.roleSvc.isAdminOrSuperAdmin()) {
+      this.isEditable.set(false);
+      this.form.disable();
+      this.utilsSvc.presentToast({
+        message: 'No tienes permiso para crear o editar movimientos de oficina',
+        duration: 3000,
+        color: 'warning',
+        icon: 'lock-closed-outline',
+      });
+      return;
+    }
+
     if (this.allowAnyDate) {
       this.isEditable.set(true);
       return;

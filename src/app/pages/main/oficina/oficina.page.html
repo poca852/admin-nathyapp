@@ -60,9 +60,11 @@
           <span class="summary-label">Gastos</span>
           <span class="summary-value">{{ totalGastos() | money }}</span>
         </div>
+        @if (canEdit()) {
         <ion-button fill="clear" color="danger" size="small" (click)="addOrUpdateMovimiento(SubTipo.GASTO)">
           <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
         </ion-button>
+        }
       </div>
       <div class="summary-card inversion">
         <ion-icon name="trending-up-outline"></ion-icon>
@@ -70,9 +72,11 @@
           <span class="summary-label">Inversiones</span>
           <span class="summary-value">{{ totalInversiones() | money }}</span>
         </div>
+        @if (canEdit()) {
         <ion-button fill="clear" color="primary" size="small" (click)="addOrUpdateMovimiento(SubTipo.INVERSION)">
           <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
         </ion-button>
+        }
       </div>
       <div class="summary-card retiro">
         <ion-icon name="wallet-outline"></ion-icon>
@@ -80,9 +84,11 @@
           <span class="summary-label">Retiros</span>
           <span class="summary-value">{{ totalRetiros() | money }}</span>
         </div>
+        @if (canEdit()) {
         <ion-button fill="clear" color="warning" size="small" (click)="addOrUpdateMovimiento(SubTipo.RETIRO)">
           <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
         </ion-button>
+        }
       </div>
     </div>
 
@@ -98,8 +104,11 @@
     <!-- Movements List -->
     <div class="movements-list">
       @for (mov of movimientos(); track mov.id; let i = $index) {
-      <div class="movement-card animate__animated animate__fadeInUp" [style.animation-delay]="i * 40 + 'ms'"
-        (click)="addOrUpdateMovimiento(mov.subTipo, mov)">
+      <div
+        class="movement-card animate__animated animate__fadeInUp"
+        [class.readonly]="!canEdit()"
+        [style.animation-delay]="i * 40 + 'ms'"
+        (click)="canEdit() && addOrUpdateMovimiento(mov.subTipo, mov)">
 
         <div class="type-indicator" [ngClass]="mov.subTipo"></div>
 
