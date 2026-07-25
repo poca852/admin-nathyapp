@@ -1,9 +1,11 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, Injector, computed, inject, runInInjectionContext, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { UtilsService } from './utils.service';
 import { Empresa, MoraConfig, Ruta, User } from '../models';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
+import { RoleService } from './role.service';
+import { Roles } from '../models/roles.enum';
 
 @Injectable({
   providedIn: 'root'
@@ -13,6 +15,9 @@ export class EmpresaService {
   private readonly http = inject(HttpClient);
   private readonly utilsSvc = inject(UtilsService);
   private readonly baseUrl: string = environment.baseUrl;
+
+  /** Injector raíz para lazy injection (rompe ciclo Auth↔Empresa↔Role). */
+  private readonly injector = inject(Injector);
 
   // --- Signals (State Management) ---
   private readonly _empresa = signal<Empresa | null>(null);
@@ -96,11 +101,26 @@ export class EmpresaService {
 
   /**
    * Applies company payload into local signals (rutas / empleados).
+   * SUPERVISOR: solo rutas asignadas y sin empleados (defensa en profundidad).
+   * Usa runInInjectionContext para lazy-inyectar RoleService y romper el ciclo.
    */
   applyEmpresa(empresa: Empresa): void {
-    this._empresa.set(empresa);
-    this.setRutas(empresa.rutas || []);
-    this._employes.set(empresa.employes || []);
+    let rutas = empresa.rutas || [];
+    let employes = empresa.employes || [];
+
+    // Lazy injection para romper el ciclo AuthService → EmpresaService → RoleService → AuthService
+    runInInjectionContext(this.injector, () => {
+      const roleSvc = inject(RoleService);
+      if (roleSvc.rol() === Roles.supervisor) {
+        const allowed = new Set(roleSvc.assignedRutaIds());
+        rutas = rutas.filter((r) => allowed.has(String(r.id || r._id)));
+        employes = [];
+      }
+    });
+
+    this._empresa.set({ ...empresa, rutas, employes });
+    this.setRutas(rutas);
+    this._employes.set(employes);
   }
 
   /** Actualiza solo flags de suscripción (p. ej. vía WebSocket). */

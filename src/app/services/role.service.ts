@@ -19,9 +19,28 @@ export class RoleService {
 
   readonly isSuperAdmin = computed(() => this.rol() === Roles.superAdmin);
 
+  readonly isSupervisor = computed(() => this.rol() === Roles.supervisor);
+
   readonly isAdminOrSuperAdmin = computed(() => {
     const r = this.rol();
     return r === Roles.admin || r === Roles.superAdmin;
+  });
+
+  /** IDs de rutas asignadas al SUPERVISOR (vacío para otros roles). */
+  readonly assignedRutaIds = computed(() => {
+    const user = this.currentUser();
+    if (!user || user.rol !== Roles.supervisor) return [] as string[];
+    if (!Array.isArray(user.rutas)) return [] as string[];
+    return user.rutas
+      .map((r) => {
+        if (typeof r === 'string') return r;
+        if (r && typeof r === 'object') {
+          const obj = r as { id?: string; _id?: string };
+          return obj.id || obj._id || '';
+        }
+        return '';
+      })
+      .filter((id): id is string => !!id);
   });
 
   hasAnyRole(...roles: Array<Roles | string>): boolean {

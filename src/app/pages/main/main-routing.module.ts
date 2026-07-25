@@ -28,7 +28,8 @@ const routes: Routes = [
       },
       {
         path: 'empleados',
-        canActivate: [tenantAdminGuard],
+        canActivate: [tenantAdminGuard, roleGuard],
+        data: { roles: [Roles.admin, Roles.superAdmin] },
         loadChildren: () => import('./empleados/empleados.module').then(m => m.EmpleadosPageModule)
       },
       {
@@ -78,7 +79,8 @@ const routes: Routes = [
       },
       {
         path: 'reportes',
-        canActivate: [tenantAdminGuard],
+        canActivate: [tenantAdminGuard, roleGuard],
+        data: { roles: [Roles.admin, Roles.superAdmin] },
         loadChildren: () => import('./reportes/reportes.module').then(m => m.ReportesPageModule)
       },
       {
