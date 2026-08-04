@@ -1,5 +1,5 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, NgZone, computed, inject, signal } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { AuthStatus, LoginResponse, User } from '../models';
 import { Observable, catchError, map, of } from 'rxjs';
@@ -18,14 +18,41 @@ export class AuthService {
   notificacionesSvc = inject(NotificacionesService);
   ws = inject(WsService);
   empresaSvc = inject(EmpresaService);
+  private readonly ngZone = inject(NgZone);
 
   private baseUrl: string = environment.baseUrl;
   private _currentUser = signal<User | null>(null);
   private _authStatus = signal<AuthStatus>(AuthStatus.checking);
   public currentUser = computed(() => this._currentUser());
   public authStatus = computed(() => this._authStatus());
+  private sessionRevokedListenerStarted = false;
 
   constructor() {
+    this.initSessionRevokedListener();
+  }
+
+  private initSessionRevokedListener(): void {
+    if (this.sessionRevokedListenerStarted) {
+      return;
+    }
+    this.sessionRevokedListenerStarted = true;
+
+    this.ws.listen('session-revoked').subscribe(() => {
+      this.ngZone.run(() => {
+        if (this._authStatus() !== AuthStatus.authenticated) {
+          const stored = this.utilsSvc.getFromLocalStorage('user');
+          if (!stored) return;
+        }
+
+        this.utilsSvc.presentToast({
+          message: 'Sesión cerrada por un administrador.',
+          duration: 4000,
+          color: 'warning',
+          position: 'bottom',
+        });
+        this.logout({ skipServer: true });
+      });
+    });
   }
 
   private setAuthentication(user: User, token: string): boolean {
@@ -93,18 +120,38 @@ export class AuthService {
         map(({ user, token }) => this.setAuthentication(user, token)),
         catchError((err) => {
           this._authStatus.set(AuthStatus.noAuthenticated);
-          this.logout();
+          this.logout({ skipServer: true });
           return of(false)
         })
       )
   }
 
-  logout() {
-    this.notificacionesSvc.notificarLogout();
-    this.ws.disconnect();
-    this._authStatus.set(AuthStatus.noAuthenticated);
-    this._currentUser.set(null);
-    localStorage.removeItem('user');
+  logout(options?: { skipServer?: boolean }) {
+    const finish = () => {
+      this.notificacionesSvc.notificarLogout();
+      this.ws.disconnect();
+      this._authStatus.set(AuthStatus.noAuthenticated);
+      this._currentUser.set(null);
+      localStorage.removeItem('user');
+    };
+
+    if (options?.skipServer) {
+      finish();
+      return;
+    }
+
+    const stored = this.utilsSvc.getFromLocalStorage('user') as User | null;
+    const token = stored?.token;
+    if (!token) {
+      finish();
+      return;
+    }
+
+    const headers = new HttpHeaders().set('authorization', `Bearer ${token}`);
+    this.http
+      .post(`${this.baseUrl}/auth/logout`, {}, { headers })
+      .pipe(catchError(() => of(null)))
+      .subscribe(() => finish());
   }
 
   /** Actualiza el perfil del usuario autenticado (nombre / username / password). */

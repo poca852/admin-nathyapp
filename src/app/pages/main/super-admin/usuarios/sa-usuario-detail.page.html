@@ -32,6 +32,10 @@
         <span>Empresa</span>
         <strong>{{ empresaLabel() }}</strong>
       </div>
+      <div class="item">
+        <span>Sesión</span>
+        <strong>{{ u.hasActiveSession ? 'Activa' : 'Libre' }}</strong>
+      </div>
     </div>
 
     <div class="sa-actions">
@@ -42,6 +46,25 @@
         <div class="copy">
           <h2>Editar usuario</h2>
           <p>Datos, rol, empresa y ruta</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="chevron"></ion-icon>
+      </button>
+
+      <button
+        type="button"
+        class="sa-action-card"
+        [disabled]="!u.hasActiveSession"
+        (click)="confirmClearSession()">
+        <div class="icon warning">
+          <ion-icon name="log-out-outline"></ion-icon>
+        </div>
+        <div class="copy">
+          <h2>Liberar sesión</h2>
+          <p>
+            {{ u.hasActiveSession
+              ? 'Cierra la sesión activa en otro dispositivo'
+              : 'No hay sesión activa' }}
+          </p>
         </div>
         <ion-icon name="chevron-forward-outline" class="chevron"></ion-icon>
       </button>

@@ -41,6 +41,9 @@
         <h2>{{ user.nombre }}</h2>
         <p>{{ user.username }} · {{ user.rol }} · {{ empresaName(user) }}</p>
       </ion-label>
+      <ion-badge *ngIf="user.hasActiveSession" slot="end" color="warning" mode="md">
+        En sesión
+      </ion-badge>
     </ion-item>
   </ion-list>
 

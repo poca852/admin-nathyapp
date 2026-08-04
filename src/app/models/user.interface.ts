@@ -13,6 +13,9 @@ export interface User {
    empresa: string;
    token?: string;
    ubication?: number[];
+   /** Sesión única activa (expuesto por API para admins). */
+   hasActiveSession?: boolean;
+   activeSessionExpiresAt?: string | Date | null;
  }
  export interface AddUser{
   nombre: string;

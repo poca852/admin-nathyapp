@@ -114,6 +114,9 @@
           </div>
 
           <div class="employe-status">
+            <ion-badge *ngIf="employe.hasActiveSession" color="warning" mode="md">
+              En sesión
+            </ion-badge>
             <ion-badge [color]="employe.estado ? 'success' : 'danger'" mode="md">
               {{ employe.estado ? 'Activo' : 'Bloqueado' }}
             </ion-badge>

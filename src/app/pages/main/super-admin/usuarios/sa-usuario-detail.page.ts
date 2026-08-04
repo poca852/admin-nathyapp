@@ -127,7 +127,12 @@ export class SaUsuarioDetailPage {
     const next = !user.estado;
     this.employeSvc.updateEmploye(id, { estado: next }).subscribe({
       next: () => {
-        this.user.set({ ...user, estado: next });
+        this.user.set({
+          ...user,
+          estado: next,
+          hasActiveSession: next ? user.hasActiveSession : false,
+          activeSessionExpiresAt: next ? user.activeSessionExpiresAt : null,
+        });
         this.ctx.invalidate();
         this.utilsSvc.presentToast({
           message: next ? 'Usuario desbloqueado' : 'Usuario bloqueado',
@@ -140,6 +145,50 @@ export class SaUsuarioDetailPage {
         color: 'danger',
         duration: 3000,
       }),
+    });
+  }
+
+  confirmClearSession(): void {
+    const user = this.user();
+    if (!user?.hasActiveSession) return;
+    this.utilsSvc.presentAlert({
+      header: 'Liberar sesión',
+      message: `¿Cerrar la sesión activa de ${user.nombre}? Podrá iniciar sesión de nuevo.`,
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Liberar',
+          handler: () => this.clearSession(user),
+        },
+      ],
+    });
+  }
+
+  private clearSession(user: User): void {
+    const id = String(user._id || user.id || '').trim();
+    if (!id) return;
+
+    this.employeSvc.clearSession(id).subscribe({
+      next: () => {
+        this.user.set({
+          ...user,
+          hasActiveSession: false,
+          activeSessionExpiresAt: null,
+        });
+        this.ctx.invalidate();
+        this.utilsSvc.presentToast({
+          message: 'Sesión liberada',
+          color: 'success',
+          duration: 2500,
+        });
+      },
+      error: (err) => {
+        this.utilsSvc.presentToast({
+          message: err.error?.message || 'No se pudo liberar la sesión',
+          color: 'danger',
+          duration: 3000,
+        });
+      },
     });
   }
 

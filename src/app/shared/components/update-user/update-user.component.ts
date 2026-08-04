@@ -54,12 +54,17 @@ export class UpdateUserComponent implements OnInit {
       next: () => {
         this.saving = false;
         this.utilsSvc.presentToast({
-          message: 'Perfil actualizado correctamente',
+          message: payload.password
+            ? 'Contraseña actualizada. Inicia sesión de nuevo.'
+            : 'Perfil actualizado correctamente',
           duration: 2500,
           color: 'success',
           icon: 'checkmark-circle-outline',
         });
         this.utilsSvc.dismissModal({ success: true });
+        if (payload.password) {
+          this.authSvc.logout({ skipServer: true });
+        }
       },
       error: async (err) => {
         this.saving = false;

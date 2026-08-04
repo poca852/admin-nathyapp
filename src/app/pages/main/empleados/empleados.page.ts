@@ -209,6 +209,29 @@ export class EmpleadosPage {
             setTimeout(() => this.addUpdateEmploye(employe), 200);
           },
         },
+        ...(employe.hasActiveSession
+          ? [
+              {
+                text: 'Liberar sesión',
+                handler: async () => {
+                  await this.utilsSvc.presentAlert({
+                    header: 'Liberar sesión',
+                    message: `¿Cerrar la sesión activa de ${employe.nombre}?`,
+                    buttons: [
+                      {
+                        text: 'Sí',
+                        handler: () => this.clearSession(employe),
+                      },
+                      {
+                        text: 'Cancelar',
+                        role: 'cancel',
+                      },
+                    ],
+                  });
+                },
+              },
+            ]
+          : []),
         {
           text,
           handler: async () => {
@@ -254,6 +277,36 @@ export class EmpleadosPage {
           handler: () => this.employeSvc.removeCurrentEmploye(),
         },
       ],
+    });
+  }
+
+  async clearSession(employe: User): Promise<void> {
+    const id = employe._id || employe.id;
+    if (!id) return;
+
+    const loading = await this.utilsSvc.loading();
+    await loading.present();
+
+    this.employeSvc.clearSession(id).subscribe({
+      next: () => {
+        loading.dismiss();
+        this.utilsSvc.presentToast({
+          message: 'Sesión liberada',
+          duration: 2500,
+          color: 'success',
+          icon: 'checkmark-outline',
+        });
+        this.loadEmpleados();
+      },
+      error: (err) => {
+        loading.dismiss();
+        this.utilsSvc.presentToast({
+          message: err.error?.message || 'No se pudo liberar la sesión',
+          duration: 3000,
+          color: 'danger',
+          icon: 'alert-circle-outline',
+        });
+      },
     });
   }
 

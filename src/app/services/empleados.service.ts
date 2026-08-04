@@ -65,4 +65,9 @@ export class EmpleadosService {
     return this.http.delete<{ ok?: boolean; id?: string }>(`${this.baseUrl}/auth/${id}`);
   }
 
+  clearSession(idUser: string): Observable<{ ok: true }> {
+    const id = String(idUser || '').trim();
+    return this.http.post<{ ok: true }>(`${this.baseUrl}/auth/clear-session/${id}`, {});
+  }
+
 }
