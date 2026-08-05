@@ -10,7 +10,7 @@
       size="large"
       class="menu-user-btn"
       (click)="updateUser()">
-      {{ user().username | titlecase }}
+      {{ user()?.username | titlecase }}
       <ion-icon slot="end" name="pencil"></ion-icon>
     </ion-button>
 

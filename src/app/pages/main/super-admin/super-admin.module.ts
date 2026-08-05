@@ -23,6 +23,7 @@ import { SaPagoDetailPage } from './operaciones/sa-pago-detail.page';
 import { SaCajaDetailPage } from './operaciones/sa-caja-detail.page';
 import { SaOficinaDetailPage } from './operaciones/sa-oficina-detail.page';
 import { SaMensajesPage } from './mensajes/sa-mensajes.page';
+import { SaSolicitudesPage } from './solicitudes/sa-solicitudes.page';
 
 const routes: Routes = [
   {
@@ -34,6 +35,7 @@ const routes: Routes = [
       { path: '', redirectTo: 'empresas', pathMatch: 'full' },
       { path: 'empresas', component: SaEmpresasPage },
       { path: 'empresas/:id', component: SaEmpresaDetailPage },
+      { path: 'solicitudes', component: SaSolicitudesPage },
       { path: 'usuarios', component: SaUsuariosPage },
       { path: 'usuarios/:id', component: SaUsuarioDetailPage },
       { path: 'rutas', component: SaRutasPage },
@@ -63,6 +65,7 @@ const routes: Routes = [
     SuperAdminPage,
     SaEmpresasPage,
     SaEmpresaDetailPage,
+    SaSolicitudesPage,
     SaUsuariosPage,
     SaUsuarioDetailPage,
     SaRutasPage,

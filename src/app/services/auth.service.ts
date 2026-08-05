@@ -26,6 +26,7 @@ export class AuthService {
   public currentUser = computed(() => this._currentUser());
   public authStatus = computed(() => this._authStatus());
   private sessionRevokedListenerStarted = false;
+  private forcingLogout = false;
 
   constructor() {
     this.initSessionRevokedListener();
@@ -37,22 +38,55 @@ export class AuthService {
     }
     this.sessionRevokedListenerStarted = true;
 
-    this.ws.listen('session-revoked').subscribe(() => {
+    this.ws.listen<{ reason?: string }>('session-revoked').subscribe((payload) => {
       this.ngZone.run(() => {
-        if (this._authStatus() !== AuthStatus.authenticated) {
-          const stored = this.utilsSvc.getFromLocalStorage('user');
-          if (!stored) return;
-        }
-
-        this.utilsSvc.presentToast({
-          message: 'Sesión cerrada por un administrador.',
-          duration: 4000,
-          color: 'warning',
-          position: 'bottom',
-        });
-        this.logout({ skipServer: true });
+        this.handleRemoteSessionEnd(payload?.reason);
       });
     });
+
+    // Respaldo: session:state llega a adminRoom; si es nuestro userId y sesión libre → logout.
+    this.ws.onSessionState().subscribe((ev) => {
+      this.ngZone.run(() => {
+        if (ev?.hasActiveSession) return;
+        const me =
+          this._currentUser() ??
+          (this.utilsSvc.getFromLocalStorage('user') as User | null);
+        const myId = me?.id || me?._id;
+        if (!myId || String(ev?.userId) !== String(myId)) return;
+        this.handleRemoteSessionEnd(ev?.reason);
+      });
+    });
+  }
+
+  private handleRemoteSessionEnd(reason?: string): void {
+    if (this.forcingLogout) return;
+    if (
+      this._authStatus() !== AuthStatus.authenticated &&
+      !this.utilsSvc.getFromLocalStorage('user')
+    ) {
+      return;
+    }
+
+    this.forcingLogout = true;
+    const message =
+      reason === 'ADMIN_CLEAR'
+        ? 'Sesión cerrada por un administrador.'
+        : reason === 'USER_BLOCKED'
+          ? 'Tu usuario fue bloqueado. Contacta a un administrador.'
+          : reason === 'PASSWORD_CHANGED'
+            ? 'Tu contraseña cambió. Inicia sesión de nuevo.'
+            : 'Tu sesión se cerró porque se inició en otro lugar.';
+
+    this.utilsSvc.presentToast({
+      message,
+      duration: 4000,
+      color: 'warning',
+      position: 'bottom',
+    });
+    this.logout({ skipServer: true });
+    setTimeout(() => {
+      this.forcingLogout = false;
+    }, 1500);
   }
 
   private setAuthentication(user: User, token: string): boolean {
@@ -127,31 +161,30 @@ export class AuthService {
   }
 
   logout(options?: { skipServer?: boolean }) {
+    const stored = this.utilsSvc.getFromLocalStorage('user') as User | null;
+    const token = stored?.token;
+
     const finish = () => {
       this.notificacionesSvc.notificarLogout();
       this.ws.disconnect();
       this._authStatus.set(AuthStatus.noAuthenticated);
       this._currentUser.set(null);
       localStorage.removeItem('user');
+      this.utilsSvc.routerLink('/auth');
     };
 
-    if (options?.skipServer) {
+    if (options?.skipServer || !token) {
       finish();
       return;
     }
 
-    const stored = this.utilsSvc.getFromLocalStorage('user') as User | null;
-    const token = stored?.token;
-    if (!token) {
-      finish();
-      return;
-    }
-
+    // Limpia UI de inmediato; notifica al servidor en background con el token capturado.
     const headers = new HttpHeaders().set('authorization', `Bearer ${token}`);
+    finish();
     this.http
       .post(`${this.baseUrl}/auth/logout`, {}, { headers })
       .pipe(catchError(() => of(null)))
-      .subscribe(() => finish());
+      .subscribe();
   }
 
   /** Actualiza el perfil del usuario autenticado (nombre / username / password). */

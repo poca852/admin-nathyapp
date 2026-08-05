@@ -1,12 +1,13 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { firstValueFrom } from 'rxjs';
+import { Subscription, firstValueFrom } from 'rxjs';
 
 import { User } from 'src/app/models';
 import { EmpleadosService } from 'src/app/services/empleados.service';
 import { EmpresaService } from 'src/app/services/empresa.service';
 import { SuperAdminContextService } from 'src/app/services/super-admin-context.service';
 import { UtilsService } from 'src/app/services/utils.service';
+import { SessionStateEvent, WsService } from 'src/app/services/ws.service';
 import { AddUpdateEmployeComponent } from 'src/app/shared/components/add-update-employe/add-update-employe.component';
 
 const DEFAULT_RETURN_URL = '/main/super-admin/usuarios';
@@ -16,12 +17,14 @@ const DEFAULT_RETURN_URL = '/main/super-admin/usuarios';
   templateUrl: './sa-usuario-detail.page.html',
   styleUrls: ['./sa-usuario-detail.page.scss'],
 })
-export class SaUsuarioDetailPage {
+export class SaUsuarioDetailPage implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly employeSvc = inject(EmpleadosService);
   private readonly empresaSvc = inject(EmpresaService);
   private readonly utilsSvc = inject(UtilsService);
   private readonly ctx = inject(SuperAdminContextService);
+  private readonly ws = inject(WsService);
+  private sessionSub?: Subscription;
 
   readonly loading = signal(true);
   readonly user = signal<User | null>(null);
@@ -46,6 +49,28 @@ export class SaUsuarioDetailPage {
   ngOnInit(): void {
     this.returnUrl.set(this.resolveReturnUrl());
     this.resolveUser();
+    this.sessionSub = this.ws.onSessionState().subscribe((ev) => {
+      this.applySessionState(ev);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.sessionSub?.unsubscribe();
+  }
+
+  private applySessionState(ev: SessionStateEvent): void {
+    const current = this.user();
+    if (!current || !ev?.userId) return;
+    const id = String(current._id || current.id || '');
+    if (id !== String(ev.userId)) return;
+
+    this.user.set({
+      ...current,
+      hasActiveSession: !!ev.hasActiveSession,
+      activeSessionExpiresAt: ev.hasActiveSession
+        ? (ev.activeSessionExpiresAt ?? current.activeSessionExpiresAt)
+        : null,
+    });
   }
 
   private resolveReturnUrl(): string {

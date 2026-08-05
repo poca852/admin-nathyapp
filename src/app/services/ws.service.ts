@@ -50,6 +50,15 @@ export interface TrackingSnapshotEvent {
   cobradores: CobradorTrackingHoy[];
 }
 
+export interface SessionStateEvent {
+  userId: string;
+  hasActiveSession: boolean;
+  activeSessionExpiresAt?: string | null;
+  empresaId?: string | null;
+  reason?: string;
+  at?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -148,5 +157,9 @@ export class WsService {
 
   onTrackingSnapshot(): Observable<TrackingSnapshotEvent> {
     return this.listen<TrackingSnapshotEvent>('tracking:snapshot');
+  }
+
+  onSessionState(): Observable<SessionStateEvent> {
+    return this.listen<SessionStateEvent>('session:state');
   }
 }

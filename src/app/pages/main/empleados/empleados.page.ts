@@ -1,4 +1,5 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
 import { EmpleadosService } from 'src/app/services/empleados.service';
@@ -7,6 +8,7 @@ import { User } from 'src/app/models';
 import { AddUpdateEmployeComponent } from '../../../shared/components/add-update-employe/add-update-employe.component';
 import { EmpresaService } from '../../../services/empresa.service';
 import { RoleService } from 'src/app/services/role.service';
+import { SessionStateEvent, WsService } from 'src/app/services/ws.service';
 
 type EmployeFilter = 'all' | 'active' | 'blocked' | 'cobrador' | 'supervisor' | 'admin';
 
@@ -15,11 +17,13 @@ type EmployeFilter = 'all' | 'active' | 'blocked' | 'cobrador' | 'supervisor' | 
   templateUrl: './empleados.page.html',
   styleUrls: ['./empleados.page.scss'],
 })
-export class EmpleadosPage {
+export class EmpleadosPage implements OnInit, OnDestroy {
   private readonly employeSvc = inject(EmpleadosService);
   private readonly utilsSvc = inject(UtilsService);
   private readonly empresaSvc = inject(EmpresaService);
   private readonly roleSvc = inject(RoleService);
+  private readonly ws = inject(WsService);
+  private sessionSub?: Subscription;
 
   readonly loading = signal(false);
   readonly loadError = signal(false);
@@ -62,6 +66,34 @@ export class EmpleadosPage {
 
   ionViewWillEnter(): void {
     this.loadEmpleados();
+  }
+
+  ngOnInit(): void {
+    this.sessionSub = this.ws.onSessionState().subscribe((ev) => {
+      this.applySessionState(ev);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.sessionSub?.unsubscribe();
+  }
+
+  private applySessionState(ev: SessionStateEvent): void {
+    if (!ev?.userId) return;
+    const uid = String(ev.userId);
+    this.employes.update((list) =>
+      list.map((u) => {
+        const id = String(u._id || u.id || '');
+        if (id !== uid) return u;
+        return {
+          ...u,
+          hasActiveSession: !!ev.hasActiveSession,
+          activeSessionExpiresAt: ev.hasActiveSession
+            ? (ev.activeSessionExpiresAt ?? u.activeSessionExpiresAt)
+            : null,
+        };
+      }),
+    );
   }
 
   get canManage(): boolean {

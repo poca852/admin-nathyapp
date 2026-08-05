@@ -9,6 +9,7 @@ import { EmpleadosService } from 'src/app/services/empleados.service';
 import { EmpresaService } from 'src/app/services/empresa.service';
 import { SuperAdminContextService } from 'src/app/services/super-admin-context.service';
 import { UtilsService } from 'src/app/services/utils.service';
+import { SessionStateEvent, WsService } from 'src/app/services/ws.service';
 import { AddUpdateEmployeComponent } from 'src/app/shared/components/add-update-employe/add-update-employe.component';
 
 @Component({
@@ -21,8 +22,10 @@ export class SaUsuariosPage implements OnDestroy {
   private readonly empresaSvc = inject(EmpresaService);
   private readonly utilsSvc = inject(UtilsService);
   private readonly router = inject(Router);
+  private readonly ws = inject(WsService);
   readonly ctx = inject(SuperAdminContextService);
   private navSub?: Subscription;
+  private sessionSub?: Subscription;
 
   readonly loading = signal(false);
   readonly users = signal<User[]>([]);
@@ -49,11 +52,33 @@ export class SaUsuariosPage implements OnDestroy {
           this.ensureEmpresasAndLoad();
         }
       });
+    this.sessionSub = this.ws.onSessionState().subscribe((ev) => {
+      this.applySessionState(ev);
+    });
     this.ensureEmpresasAndLoad();
   }
 
   ngOnDestroy(): void {
     this.navSub?.unsubscribe();
+    this.sessionSub?.unsubscribe();
+  }
+
+  private applySessionState(ev: SessionStateEvent): void {
+    if (!ev?.userId) return;
+    const uid = String(ev.userId);
+    this.users.update((list) =>
+      list.map((u) => {
+        const id = String(u._id || u.id || '');
+        if (id !== uid) return u;
+        return {
+          ...u,
+          hasActiveSession: !!ev.hasActiveSession,
+          activeSessionExpiresAt: ev.hasActiveSession
+            ? (ev.activeSessionExpiresAt ?? u.activeSessionExpiresAt)
+            : null,
+        };
+      }),
+    );
   }
 
   ionViewWillEnter(): void {

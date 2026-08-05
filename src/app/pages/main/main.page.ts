@@ -53,6 +53,7 @@ export class MainPage implements OnInit {
   /** Menú exclusivo de SUPERADMIN (operación global / multi-empresa). */
   private readonly superAdminPages: MenuPage[] = [
     { title: 'Empresas', url: '/main/super-admin/empresas', icon: 'business-outline' },
+    { title: 'Solicitudes', url: '/main/super-admin/solicitudes', icon: 'mail-unread-outline' },
     { title: 'Usuarios', url: '/main/super-admin/usuarios', icon: 'people-outline' },
     { title: 'Rutas', url: '/main/super-admin/rutas', icon: 'layers-outline' },
     { title: 'Mensajes', url: '/main/super-admin/mensajes', icon: 'megaphone-outline' },
@@ -95,7 +96,7 @@ export class MainPage implements OnInit {
     this.empresaSvc.removeRutas();
   }
 
-  user(): User {
+  user(): User | null {
     return this.utilsSvc.getFromLocalStorage('user');
   }
 
@@ -105,14 +106,15 @@ export class MainPage implements OnInit {
 
   signOut() {
     this.authSvc.logout();
-    this.utilsSvc.routerLink('/auth');
   }
 
   public updateUser = async () => {
+    const user = this.user();
+    if (!user) return;
     await this.utilsSvc.presentModal({
       component: UpdateUserComponent,
       cssClass: 'add-update-modal',
-      componentProps: { user: this.user() },
+      componentProps: { user },
     });
   };
 

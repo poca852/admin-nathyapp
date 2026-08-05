@@ -82,11 +82,13 @@ export class AuthPage implements OnInit {
             : (raw || 'Ocurrió un error inesperado');
           const suspended = err?.error?.error === 'SUBSCRIPTION_SUSPENDED';
           const sessionActive = err?.error?.error === 'SESSION_ALREADY_ACTIVE';
+          const blocked = err?.error?.error === 'USER_BLOCKED';
+          const critical = suspended || sessionActive || blocked;
 
           this.utilsSvc.presentToast({
             message,
-            duration: suspended || sessionActive ? 4000 : 2000,
-            color: suspended || sessionActive ? 'danger' : 'primary',
+            duration: critical ? 4000 : 2000,
+            color: critical ? 'danger' : 'primary',
             position: 'middle',
             icon: 'alert-circle-outline'
           })
