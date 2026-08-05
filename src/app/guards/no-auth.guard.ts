@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, RouterStateSnapshot, UrlTree } from '@angular/router';
-import { Observable } from 'rxjs';
+import { CanActivate, UrlTree } from '@angular/router';
+import { Observable, map, of } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { UtilsService } from '../services/utils.service';
 
@@ -9,26 +9,23 @@ import { UtilsService } from '../services/utils.service';
 })
 export class NoAuthGuard implements CanActivate {
 
-  authSvc = inject(AuthService);
-  utilsSvc = inject(UtilsService);
+  private readonly authSvc = inject(AuthService);
+  private readonly utilsSvc = inject(UtilsService);
 
-  canActivate(
-    route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
-    return new Promise((resolve) => {
+  canActivate(): Observable<boolean | UrlTree> {
+    if (!this.authSvc.hasStoredToken()) {
+      return of(true);
+    }
 
-      this.authSvc.revalidarToken().subscribe((isAuth) => {
+    // force=true: valida sesión real antes de redirigir al main
+    return this.authSvc.revalidarToken(true).pipe(
+      map((isAuth) => {
         if (!isAuth) {
-          localStorage.removeItem('user');
-          resolve(true);
-        } else {
-          this.utilsSvc.routerLink('/main/home')
-          resolve(false)
+          return true;
         }
-
-      })
-
-    })
+        this.utilsSvc.routerLink('/main/home');
+        return false;
+      }),
+    );
   }
-
 }

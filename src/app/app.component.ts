@@ -6,6 +6,7 @@ import { CajaCloseEvent, CajaLockEvent, WsService } from './services/ws.service'
 import { UtilsService } from './services/utils.service';
 import { OfflineService } from './services/offline.service';
 import { PwaUpdateService } from './services/pwa-update.service';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -18,6 +19,12 @@ export class AppComponent implements OnInit, OnDestroy {
   /** Bootstrap temprano: registra listeners online/offline al arrancar. */
   private readonly offlineSvc = inject(OfflineService);
   private readonly pwaUpdateSvc = inject(PwaUpdateService);
+  private readonly authSvc = inject(AuthService);
+  private onVisibilityChange = () => {
+    if (document.visibilityState === 'visible' && this.authSvc.hasStoredToken()) {
+      this.authSvc.revalidarToken(true).subscribe();
+    }
+  };
 
   constructor(
     private notificacionesSvc: NotificacionesService,
@@ -28,11 +35,13 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+    document.removeEventListener('visibilitychange', this.onVisibilityChange);
   }
 
   ngOnInit(): void {
     void this.offlineSvc.isOffline();
     this.pwaUpdateSvc.init();
+    document.addEventListener('visibilitychange', this.onVisibilityChange);
 
     this.subscriptions.add(
       this.notificacionesSvc.logOut$.subscribe(() => {

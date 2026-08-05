@@ -27,9 +27,27 @@ export class AuthService {
   public authStatus = computed(() => this._authStatus());
   private sessionRevokedListenerStarted = false;
   private forcingLogout = false;
+  private revalidacionVersion = 0;
 
   constructor() {
     this.initSessionRevokedListener();
+  }
+
+  hasStoredToken(): boolean {
+    const user = this.utilsSvc.getFromLocalStorage('user') as User | null;
+    return !!user?.token;
+  }
+
+  clearStoredSession(): void {
+    this.notificacionesSvc.notificarLogout();
+    this.ws.disconnect();
+    this._authStatus.set(AuthStatus.noAuthenticated);
+    this._currentUser.set(null);
+    localStorage.removeItem('user');
+  }
+
+  private invalidarRevalidaciones(): void {
+    this.revalidacionVersion++;
   }
 
   private initSessionRevokedListener(): void {
@@ -137,39 +155,55 @@ export class AuthService {
       )
   }
 
-  revalidarToken(): Observable<boolean> {
-
-    const url: string = `${this.baseUrl}/auth/revalidar`;
-    const user = this.utilsSvc.getFromLocalStorage('user');
-    if (!user) {
+  /**
+   * @param force Si true, ignora la sesión en memoria y consulta siempre al API.
+   * Guards / resume deben usar force=true.
+   */
+  revalidarToken(force = false): Observable<boolean> {
+    if (!this.hasStoredToken()) {
       this._authStatus.set(AuthStatus.noAuthenticated);
       return of(false);
     }
 
-    const headers = new HttpHeaders()
-      .set('authorization', `Bearer ${user.token}`)
+    const storedUser = this.utilsSvc.getFromLocalStorage('user') as User;
+    const currentUser = this._currentUser();
 
-    return this.http.get<LoginResponse>(url, { headers })
-      .pipe(
-        map(({ user, token }) => this.setAuthentication(user, token)),
-        catchError((err) => {
+    if (
+      !force
+      && currentUser?.token === storedUser.token
+      && this._authStatus() === AuthStatus.authenticated
+    ) {
+      return of(true);
+    }
+
+    const url: string = `${this.baseUrl}/auth/revalidar`;
+    const version = this.revalidacionVersion;
+
+    return this.http.get<LoginResponse>(url).pipe(
+      map(({ user, token }) => {
+        if (version !== this.revalidacionVersion) {
+          return false;
+        }
+        return this.setAuthentication(user, token);
+      }),
+      catchError(() => {
+        if (version === this.revalidacionVersion) {
           this._authStatus.set(AuthStatus.noAuthenticated);
           this.logout({ skipServer: true });
-          return of(false)
-        })
-      )
+        }
+        return of(false);
+      }),
+    );
   }
 
   logout(options?: { skipServer?: boolean }) {
+    this.invalidarRevalidaciones();
+
     const stored = this.utilsSvc.getFromLocalStorage('user') as User | null;
     const token = stored?.token;
 
     const finish = () => {
-      this.notificacionesSvc.notificarLogout();
-      this.ws.disconnect();
-      this._authStatus.set(AuthStatus.noAuthenticated);
-      this._currentUser.set(null);
-      localStorage.removeItem('user');
+      this.clearStoredSession();
       this.utilsSvc.routerLink('/auth');
     };
 
@@ -178,7 +212,8 @@ export class AuthService {
       return;
     }
 
-    // Limpia UI de inmediato; notifica al servidor en background con el token capturado.
+    // Limpia UI de inmediato; notifica al servidor en background con el token capturado
+    // (el interceptor ya no tiene token tras finish()).
     const headers = new HttpHeaders().set('authorization', `Bearer ${token}`);
     finish();
     this.http

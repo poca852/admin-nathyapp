@@ -19,4 +19,9 @@ export * from './categoria-gasto.enum';
 export * from './peticiones-ubicacion.interface';
 export * from './reportes.interface';
 export * from './announcement.interface';
-export * from './lead.interface';
+export type {
+  Lead,
+  LeadStatus,
+  ConvertLeadPayload,
+  ConvertLeadResponse,
+} from './lead.interface';

@@ -44,7 +44,12 @@ describe('AuthService.updateMe', () => {
           provide: NotificacionesService,
           useValue: { notificarLogout: jasmine.createSpy() },
         },
-        { provide: WsService, useValue: { connect: jasmine.createSpy(), disconnect: jasmine.createSpy() } },
+        { provide: WsService, useValue: {
+          connect: jasmine.createSpy(),
+          disconnect: jasmine.createSpy(),
+          listen: jasmine.createSpy().and.returnValue({ subscribe: () => ({ unsubscribe() {} }) }),
+          onSessionState: jasmine.createSpy().and.returnValue({ subscribe: () => ({ unsubscribe() {} }) }),
+        } },
         { provide: EmpresaService, useValue: { setEmpresa: jasmine.createSpy() } },
       ],
     });
