@@ -18,10 +18,69 @@
   }
 }
 
+.date-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 16px 0;
+}
+
+.date-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.04);
+  border: 1px solid rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.06);
+
+  ion-datetime-button {
+    --background: transparent;
+    align-self: stretch;
+
+    &::part(native) {
+      width: 100%;
+      justify-content: flex-start;
+      padding-inline: 0;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+  }
+}
+
+.date-field-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--ion-color-medium);
+}
+
+@media (min-width: 576px) {
+  .date-fields {
+    flex-direction: row;
+    gap: 12px;
+  }
+
+  .date-field {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.controls-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 0 16px 4px;
+}
+
 .periodo-hint {
-  margin: 0 16px 8px;
+  margin: 10px 16px 8px;
   font-size: 0.85rem;
   color: var(--ion-color-medium);
+  line-height: 1.35;
 }
 
 .refresh-btn {
@@ -30,8 +89,84 @@
   font-weight: 600;
 }
 
+.glossary-panel {
+  background: var(--ion-card-background, var(--ion-item-background, #fff));
+  border: 1px solid rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.08);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+
+  h3 {
+    margin: 0 0 12px;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  dl {
+    margin: 0;
+  }
+
+  dt {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: var(--ion-color-primary);
+    margin-top: 10px;
+  }
+
+  dd {
+    margin: 2px 0 0;
+    font-size: 0.88rem;
+    color: var(--ion-color-step-600, #555);
+    line-height: 1.35;
+  }
+}
+
 ion-segment {
   margin-bottom: 16px;
+}
+
+/* Scroll horizontal fiable en Android/WebView (ion-segment scrollable falla en pantallas angostas) */
+.segment-scroll-wrap {
+  width: 100%;
+  margin: 0 0 16px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x pinch-zoom;
+  scrollbar-width: thin;
+
+  &::-webkit-scrollbar {
+    height: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.25);
+    border-radius: 999px;
+  }
+}
+
+.reportes-segment {
+  margin-bottom: 0;
+  display: inline-flex;
+  width: max-content;
+  min-width: 100%;
+  --background: rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.04);
+
+  ion-segment-button {
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --indicator-box-shadow: none;
+    min-width: 5.75rem;
+    max-width: none;
+    flex: 0 0 auto;
+    text-transform: none;
+    font-size: 0.85rem;
+    letter-spacing: 0;
+    white-space: nowrap;
+  }
 }
 
 .error-banner {
@@ -68,7 +203,7 @@ ion-segment {
   flex-direction: column;
   gap: 4px;
 
-  ion-icon {
+  > ion-icon {
     font-size: 1.4rem;
     color: var(--ion-color-primary);
   }
@@ -78,15 +213,15 @@ ion-segment {
     background: rgba(var(--ion-color-primary-rgb), 0.05);
   }
 
-  &.success ion-icon {
+  &.success > ion-icon {
     color: var(--ion-color-success);
   }
 
-  &.warning ion-icon {
+  &.warning > ion-icon {
     color: var(--ion-color-warning);
   }
 
-  &.danger ion-icon {
+  &.danger > ion-icon {
     color: var(--ion-color-danger);
   }
 }
@@ -96,11 +231,24 @@ ion-segment {
   text-transform: uppercase;
   letter-spacing: 0.4px;
   color: var(--ion-color-medium);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tip-icon {
+  font-size: 0.85rem;
+  opacity: 0.7;
 }
 
 .metric-value {
   font-size: 1.15rem;
   font-weight: 800;
+}
+
+.metric-sub {
+  font-size: 0.7rem;
+  color: var(--ion-color-medium);
 }
 
 .distribution-row {
@@ -115,6 +263,59 @@ ion-segment {
   font-weight: 700;
   margin: 8px 0 12px;
   color: var(--ion-color-step-600, #555);
+}
+
+.mini-chart {
+  background: var(--ion-card-background, var(--ion-item-background, #fff));
+  border-radius: 16px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.06);
+}
+
+.mini-chart-row {
+  display: grid;
+  grid-template-columns: 90px 1fr 88px;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.mini-chart-label {
+  font-size: 0.72rem;
+  color: var(--ion-color-medium);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mini-chart-bar-track {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.06);
+  overflow: hidden;
+}
+
+.mini-chart-bar {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--ion-color-primary);
+  min-width: 2px;
+  transition: width 0.25s ease;
+
+  &.caja {
+    background: var(--ion-color-success);
+  }
+}
+
+.mini-chart-value {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: right;
 }
 
 .series-list {
@@ -168,5 +369,131 @@ ion-segment {
   h3 {
     margin: 12px 0 4px;
     color: var(--ion-color-step-600, #666);
+  }
+
+  &.compact {
+    padding: 24px 16px;
+
+    ion-icon {
+      font-size: 40px;
+    }
+  }
+}
+
+.chart-card {
+  margin-bottom: 14px;
+  border-radius: 16px;
+
+  ion-card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+
+  ion-card-subtitle {
+    font-size: 0.8rem;
+    margin-top: 4px;
+  }
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--ion-color-medium);
+
+  i {
+    width: 12px;
+    height: 12px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+
+  &.cobrado i {
+    background: var(--ion-color-primary);
+  }
+
+  &.prestado i {
+    background: var(--ion-color-warning);
+  }
+
+  &.ganancia i {
+    background: var(--ion-color-success);
+  }
+
+  &.gastos i {
+    background: var(--ion-color-danger);
+  }
+}
+
+.dual-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.dual-chart-row {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 8px;
+  align-items: start;
+}
+
+.dual-chart-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ion-color-medium);
+  padding-top: 2px;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.dual-chart-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.dual-bar-line {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+
+  span {
+    font-size: 0.7rem;
+    font-weight: 700;
+    min-width: 64px;
+    text-align: right;
+  }
+}
+
+.dual-bar {
+  height: 10px;
+  border-radius: 999px;
+  min-width: 2px;
+  transition: width 0.25s ease;
+
+  &.cobrado {
+    background: var(--ion-color-primary);
+  }
+
+  &.prestado {
+    background: var(--ion-color-warning);
+  }
+
+  &.ganancia {
+    background: var(--ion-color-success);
+  }
+
+  &.gastos {
+    background: var(--ion-color-danger);
   }
 }

@@ -87,4 +87,12 @@ export class ReportesService {
       params,
     });
   }
+
+  /** Descarga CSV de backup de créditos de la empresa. */
+  downloadBackup(): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/reportes/backup`, {
+      headers: this.authHeaders(),
+      responseType: 'blob',
+    });
+  }
 }

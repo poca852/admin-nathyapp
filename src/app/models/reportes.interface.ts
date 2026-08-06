@@ -12,9 +12,17 @@ export interface DistribucionEstado {
 export interface TotalesCarteraEmpresa {
   cartera: number;
   capitalPrestado: number;
+  /** @deprecated Alias de interesContractual */
   gananciaPotencial: number;
+  interesContractual: number;
+  interesPendiente: number;
+  interesCobradoAcumulado: number;
+  cajaTotalEmpresa: number;
+  liquidezOperativa: number;
   totalClientes: number;
   clientesActivos: number;
+  creditosActivos: number;
+  /** Créditos REGULAR o MALO (nombre histórico) */
   clientesMorosos: number;
   porcentajeMorosidad: number;
   distribucionEstado: DistribucionEstado;
@@ -26,8 +34,14 @@ export interface ReporteCarteraRuta {
   cartera: number;
   capitalPrestado: number;
   gananciaPotencial: number;
+  interesContractual: number;
+  interesPendiente: number;
+  interesCobradoAcumulado: number;
+  cajaActual: number;
+  liquidezOperativa: number;
   totalClientes: number;
   clientesActivos: number;
+  creditosActivos: number;
   clientesMorosos: number;
   distribucionEstado: DistribucionEstado;
 }
@@ -46,6 +60,7 @@ export interface TotalesFinancieroEmpresa {
   gastos: number;
   retiros: number;
   inversiones: number;
+  resultadoPeriodo: number;
 }
 
 export interface SerieDiariaFinanciero {
@@ -136,6 +151,7 @@ export interface TotalesCajaHistoricoEmpresa {
   gasto: number;
   retiro: number;
   inversion: number;
+  cajaFinalUltimoDia: number;
   promedioEficienciaCobro: number;
 }
 
@@ -154,10 +170,62 @@ export interface ReporteCajaHistoricoResponse {
   rutas: ReporteCajaHistoricoRuta[];
 }
 
-export type ReporteTab = 'cartera' | 'financiero' | 'oficina' | 'caja';
+export type ReporteTab = 'cartera' | 'financiero' | 'oficina' | 'caja' | 'graficas';
+
+export interface ChartPeriodPoint {
+  label: string;
+  cobros: number;
+  prestamos: number;
+  ganancia: number;
+  gastos: number;
+}
+
+export interface ChartRutaPoint {
+  rutaId: string;
+  nombre: string;
+  cobros: number;
+  prestamos: number;
+  ganancia: number;
+  gastos: number;
+}
 
 export interface ReporteQueryParams {
   fechaInicio?: string;
   fechaFin?: string;
   rutaId?: string;
 }
+
+/** Textos de ayuda en lenguaje sencillo para el administrador. */
+export const METRIC_GLOSSARY: Record<string, string> = {
+  cartera:
+    'Lo que todavía te deben los clientes con crédito activo.',
+  capitalPrestado:
+    'Cuánto dinero prestaste en total (el monto original de cada crédito).',
+  interesContractual:
+    'La ganancia completa que tendrías si todos los créditos activos se pagan hasta el final. No es lo que ya cobraste.',
+  interesPendiente:
+    'De esa ganancia, cuánto todavía te falta por cobrar.',
+  interesCobradoAcumulado:
+    'De esa ganancia, cuánto ya te han pagado.',
+  cajaTotalEmpresa:
+    'El dinero que hay ahora en las cajas de todas las rutas.',
+  liquidezOperativa:
+    'El dinero en caja más lo que te deben. Es como ver “todo tu dinero” junto.',
+  morosidad:
+    'De cada 100 créditos, cuántos van atrasados (Regular o Malo).',
+  interesCobrado:
+    'Cuánto de lo cobrado en estas fechas corresponde a ganancia (interés), no a capital.',
+  cobros: 'Todo el dinero que entró por pagos de clientes en estas fechas.',
+  prestamos: 'Todo el dinero que salió en préstamos nuevos en estas fechas.',
+  gastos: 'Todo lo que se gastó en estas fechas.',
+  retiros: 'Dinero que se sacó de la caja en estas fechas.',
+  inversiones: 'Dinero que se metió a la caja en estas fechas.',
+  resultadoPeriodo: 'La ganancia cobrada menos los gastos de estas fechas.',
+  netoCapital: 'Dinero metido a la caja menos dinero sacado.',
+  pretendido: 'La meta de cobro del día (lo que se esperaba cobrar).',
+  eficienciaCobro: 'De la meta del día, qué porcentaje se logró cobrar.',
+  cajaFinal:
+    'Cuánto dinero quedó en la caja al final del día.',
+  cajaFinalUltimoDia:
+    'Cuánto dinero había en caja el último día con registro en estas fechas.',
+};

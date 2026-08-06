@@ -20,22 +20,18 @@
       </ion-item>
 
       @if (hasDateRange()) {
-        <ion-row>
-          <ion-col size="6">
-            <ion-item lines="none">
-              <ion-label position="stacked">Desde</ion-label>
-              <ion-datetime-button datetime="fechaInicioReportes"></ion-datetime-button>
-            </ion-item>
-          </ion-col>
-          <ion-col size="6">
-            <ion-item lines="none">
-              <ion-label position="stacked">Hasta</ion-label>
-              <ion-datetime-button datetime="fechaFinReportes"></ion-datetime-button>
-            </ion-item>
-          </ion-col>
-        </ion-row>
+        <div class="date-fields">
+          <div class="date-field">
+            <span class="date-field-label">Desde</span>
+            <ion-datetime-button datetime="fechaInicioReportes"></ion-datetime-button>
+          </div>
+          <div class="date-field">
+            <span class="date-field-label">Hasta</span>
+            <ion-datetime-button datetime="fechaFinReportes"></ion-datetime-button>
+          </div>
+        </div>
         <p class="periodo-hint">
-          Periodo: {{ formatDisplayDate(fechaInicio()) }} — {{ formatDisplayDate(fechaFin()) }}
+          Del {{ formatDisplayDate(fechaInicio()) }} al {{ formatDisplayDate(fechaFin()) }}
         </p>
 
         <ion-modal [keepContentsMounted]="true">
@@ -62,7 +58,7 @@
           </ng-template>
         </ion-modal>
       } @else {
-        <p class="periodo-hint">Snapshot actual de cartera y riesgo (sin rango de fechas).</p>
+        <p class="periodo-hint">Datos de ahora: lo que te deben, el dinero en caja y los atrasos. Aquí no se eligen fechas.</p>
       }
 
       <ion-button expand="block" shape="round" class="refresh-btn" (click)="refresh()" [disabled]="loading()">
@@ -74,23 +70,74 @@
           Actualizar
         }
       </ion-button>
+
+      <div class="controls-actions">
+        <ion-button fill="outline" size="small" (click)="toggleGlossary()">
+          <ion-icon name="help-circle-outline" slot="start"></ion-icon>
+          {{ showGlossary() ? 'Ocultar ayuda' : '¿Qué significa cada número?' }}
+        </ion-button>
+        <ion-button fill="outline" size="small" (click)="exportBackup()" [disabled]="exporting()">
+          @if (exporting()) {
+            <ion-spinner name="crescent" slot="start"></ion-spinner>
+          } @else {
+            <ion-icon name="download-outline" slot="start"></ion-icon>
+          }
+          Descargar copia
+        </ion-button>
+      </div>
     </div>
 
+    @if (showGlossary()) {
+      <div class="glossary-panel">
+        <h3>¿Qué significa cada número?</h3>
+        <dl>
+          <dt>Cartera</dt>
+          <dd>{{ tip('cartera') }}</dd>
+          <dt>Dinero en caja</dt>
+          <dd>{{ tip('cajaTotalEmpresa') }}</dd>
+          <dt>Dinero total</dt>
+          <dd>{{ tip('liquidezOperativa') }}</dd>
+          <dt>Ganancia total</dt>
+          <dd>{{ tip('interesContractual') }}</dd>
+          <dt>Ganancia por cobrar</dt>
+          <dd>{{ tip('interesPendiente') }}</dd>
+          <dt>Ganancia cobrada (estas fechas)</dt>
+          <dd>{{ tip('interesCobrado') }}</dd>
+          <dt>Resultado</dt>
+          <dd>{{ tip('resultadoPeriodo') }}</dd>
+          <dt>Metido − Sacado</dt>
+          <dd>{{ tip('netoCapital') }}</dd>
+          <dt>Caja del día</dt>
+          <dd>{{ tip('cajaFinal') }}</dd>
+          <dt>Atrasos</dt>
+          <dd>{{ tip('morosidad') }}</dd>
+        </dl>
+      </div>
+    }
+
     <!-- Tabs -->
-    <ion-segment [value]="activeTab()" (ionChange)="onTabChange($event)" mode="md" scrollable="true">
-      <ion-segment-button value="cartera">
-        <ion-label>Cartera</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="financiero">
-        <ion-label>Financiero</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="oficina">
-        <ion-label>Oficina</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="caja">
-        <ion-label>Caja</ion-label>
-      </ion-segment-button>
-    </ion-segment>
+    <div class="segment-scroll-wrap">
+      <ion-segment
+        class="reportes-segment"
+        [value]="activeTab()"
+        (ionChange)="onTabChange($event)">
+        <ion-segment-button value="cartera">
+          <ion-label>Cartera</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="financiero">
+          <ion-label>Financiero</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="oficina">
+          <ion-label>Oficina</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="caja">
+          <ion-label>Caja</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="graficas">
+          <ion-label>Gráficas</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+    </div>
 
     @if (error()) {
       <div class="error-banner">
@@ -117,25 +164,49 @@
       <!-- CARTERA -->
       @if (activeTab() === 'cartera' && reporteCartera(); as report) {
         <div class="metrics-grid">
-          <div class="metric-card highlight">
+          <div class="metric-card highlight" [title]="tip('cartera')">
             <ion-icon name="wallet-outline"></ion-icon>
-            <span class="metric-label">Cartera</span>
+            <span class="metric-label">Cartera <ion-icon class="tip-icon" name="information-circle-outline"></ion-icon></span>
             <span class="metric-value">{{ report.totalesEmpresa.cartera | money:reportCurrency() }}</span>
+            <span class="metric-sub">Lo que te deben</span>
           </div>
-          <div class="metric-card">
+          <div class="metric-card" [title]="tip('cajaTotalEmpresa')">
+            <ion-icon name="briefcase-outline"></ion-icon>
+            <span class="metric-label">Dinero en caja <ion-icon class="tip-icon" name="information-circle-outline"></ion-icon></span>
+            <span class="metric-value">{{ report.totalesEmpresa.cajaTotalEmpresa | money:reportCurrency() }}</span>
+          </div>
+          <div class="metric-card highlight" [title]="tip('liquidezOperativa')">
+            <ion-icon name="layers-outline"></ion-icon>
+            <span class="metric-label">Dinero total <ion-icon class="tip-icon" name="information-circle-outline"></ion-icon></span>
+            <span class="metric-value">{{ report.totalesEmpresa.liquidezOperativa | money:reportCurrency() }}</span>
+            <span class="metric-sub">Caja + cartera</span>
+          </div>
+          <div class="metric-card" [title]="tip('capitalPrestado')">
             <ion-icon name="cash-outline"></ion-icon>
-            <span class="metric-label">Capital prestado</span>
+            <span class="metric-label">Dinero prestado</span>
             <span class="metric-value">{{ report.totalesEmpresa.capitalPrestado | money:reportCurrency() }}</span>
           </div>
-          <div class="metric-card success">
+          <div class="metric-card success" [title]="tip('interesContractual')">
             <ion-icon name="trending-up-outline"></ion-icon>
-            <span class="metric-label">Ganancia potencial</span>
-            <span class="metric-value">{{ report.totalesEmpresa.gananciaPotencial | money:reportCurrency() }}</span>
+            <span class="metric-label">Ganancia total <ion-icon class="tip-icon" name="information-circle-outline"></ion-icon></span>
+            <span class="metric-value">{{ report.totalesEmpresa.interesContractual | money:reportCurrency() }}</span>
+            <span class="metric-sub">Si todos pagan completo</span>
           </div>
-          <div class="metric-card warning">
+          <div class="metric-card" [title]="tip('interesPendiente')">
+            <ion-icon name="time-outline"></ion-icon>
+            <span class="metric-label">Ganancia por cobrar</span>
+            <span class="metric-value">{{ report.totalesEmpresa.interesPendiente | money:reportCurrency() }}</span>
+          </div>
+          <div class="metric-card" [title]="tip('interesCobradoAcumulado')">
+            <ion-icon name="checkmark-circle-outline"></ion-icon>
+            <span class="metric-label">Ganancia ya cobrada</span>
+            <span class="metric-value">{{ report.totalesEmpresa.interesCobradoAcumulado | money:reportCurrency() }}</span>
+          </div>
+          <div class="metric-card warning" [title]="tip('morosidad')">
             <ion-icon name="alert-circle-outline"></ion-icon>
-            <span class="metric-label">Morosidad</span>
+            <span class="metric-label">Atrasos</span>
             <span class="metric-value">{{ report.totalesEmpresa.porcentajeMorosidad | number:'1.0-1':'en' }}%</span>
+            <span class="metric-sub">{{ report.totalesEmpresa.clientesMorosos }} de {{ report.totalesEmpresa.creditosActivos }} créditos</span>
           </div>
         </div>
 
@@ -143,20 +214,23 @@
           <ion-badge color="success">Bueno: {{ report.totalesEmpresa.distribucionEstado.BUENO }}</ion-badge>
           <ion-badge color="warning">Regular: {{ report.totalesEmpresa.distribucionEstado.REGULAR }}</ion-badge>
           <ion-badge color="danger">Malo: {{ report.totalesEmpresa.distribucionEstado.MALO }}</ion-badge>
-          <ion-badge color="medium">{{ report.totalesEmpresa.clientesActivos }} activos</ion-badge>
+          <ion-badge color="medium">{{ report.totalesEmpresa.clientesActivos }} clientes activos</ion-badge>
         </div>
 
         @for (ruta of report.rutas; track trackByRutaId($index, ruta)) {
           <ion-card class="route-card">
             <ion-card-header>
               <ion-card-title>{{ ruta.nombre | titlecase }}</ion-card-title>
-              <ion-card-subtitle>{{ ruta.clientesMorosos }} morosos de {{ ruta.clientesActivos }} activos</ion-card-subtitle>
+              <ion-card-subtitle>{{ ruta.clientesMorosos }} atrasados de {{ ruta.creditosActivos }} créditos · {{ ruta.clientesActivos }} clientes activos</ion-card-subtitle>
             </ion-card-header>
             <ion-card-content>
               <div class="route-metrics">
                 <div><span>Cartera</span><strong>{{ ruta.cartera | money:currencyForRuta(ruta.rutaId) }}</strong></div>
-                <div><span>Capital</span><strong>{{ ruta.capitalPrestado | money:currencyForRuta(ruta.rutaId) }}</strong></div>
-                <div><span>Ganancia pot.</span><strong>{{ ruta.gananciaPotencial | money:currencyForRuta(ruta.rutaId) }}</strong></div>
+                <div><span>Dinero en caja</span><strong>{{ ruta.cajaActual | money:currencyForRuta(ruta.rutaId) }}</strong></div>
+                <div><span>Dinero total</span><strong>{{ ruta.liquidezOperativa | money:currencyForRuta(ruta.rutaId) }}</strong></div>
+                <div><span>Prestado</span><strong>{{ ruta.capitalPrestado | money:currencyForRuta(ruta.rutaId) }}</strong></div>
+                <div><span>Ganancia total</span><strong>{{ ruta.interesContractual | money:currencyForRuta(ruta.rutaId) }}</strong></div>
+                <div><span>Por cobrar</span><strong>{{ ruta.interesPendiente | money:currencyForRuta(ruta.rutaId) }}</strong></div>
               </div>
             </ion-card-content>
           </ion-card>
@@ -166,36 +240,71 @@
       <!-- FINANCIERO -->
       @if (activeTab() === 'financiero' && reporteFinanciero(); as report) {
         <div class="metrics-grid">
-          <div class="metric-card highlight success">
+          <div class="metric-card highlight success" [title]="tip('interesCobrado')">
             <ion-icon name="trending-up-outline"></ion-icon>
-            <span class="metric-label">Interés cobrado</span>
+            <span class="metric-label">Ganancia cobrada <ion-icon class="tip-icon" name="information-circle-outline"></ion-icon></span>
             <span class="metric-value">{{ report.totalesEmpresa.interesCobrado | money:reportCurrency() }}</span>
           </div>
-          <div class="metric-card">
+          <div class="metric-card highlight" [title]="tip('resultadoPeriodo')">
+            <ion-icon name="analytics-outline"></ion-icon>
+            <span class="metric-label">Resultado <ion-icon class="tip-icon" name="information-circle-outline"></ion-icon></span>
+            <span class="metric-value">{{ report.totalesEmpresa.resultadoPeriodo | money:reportCurrency() }}</span>
+            <span class="metric-sub">Ganancia − gastos</span>
+          </div>
+          <div class="metric-card" [title]="tip('cobros')">
             <ion-icon name="cash-outline"></ion-icon>
             <span class="metric-label">Cobros</span>
             <span class="metric-value">{{ report.totalesEmpresa.cobros | money:reportCurrency() }}</span>
           </div>
-          <div class="metric-card">
+          <div class="metric-card" [title]="tip('prestamos')">
             <ion-icon name="arrow-down-circle-outline"></ion-icon>
             <span class="metric-label">Préstamos</span>
             <span class="metric-value">{{ report.totalesEmpresa.prestamosOtorgados | money:reportCurrency() }}</span>
           </div>
-          <div class="metric-card">
+          <div class="metric-card" [title]="tip('gastos')">
             <ion-icon name="card-outline"></ion-icon>
             <span class="metric-label">Gastos</span>
             <span class="metric-value">{{ report.totalesEmpresa.gastos | money:reportCurrency() }}</span>
           </div>
+          <div class="metric-card warning" [title]="tip('retiros')">
+            <ion-icon name="wallet-outline"></ion-icon>
+            <span class="metric-label">Sacado de caja</span>
+            <span class="metric-value">{{ report.totalesEmpresa.retiros | money:reportCurrency() }}</span>
+          </div>
+          <div class="metric-card" [title]="tip('inversiones')">
+            <ion-icon name="arrow-up-circle-outline"></ion-icon>
+            <span class="metric-label">Metido a caja</span>
+            <span class="metric-value">{{ report.totalesEmpresa.inversiones | money:reportCurrency() }}</span>
+          </div>
         </div>
 
         @if (report.seriesDiarias.length > 0) {
-          <h3 class="section-title">Tendencia diaria</h3>
+          <h3 class="section-title">Día a día</h3>
+          <div class="mini-chart">
+            @for (dia of report.seriesDiarias; track trackByFecha($index, dia)) {
+              <div class="mini-chart-row">
+                <span class="mini-chart-label">{{ formatDisplayDate(dia.fecha) }}</span>
+                <div class="mini-chart-bar-track">
+                  <div
+                    class="mini-chart-bar"
+                    [style.width]="barWidth(dia.cobros, maxFinancieroCobros())">
+                  </div>
+                </div>
+                <span class="mini-chart-value">{{ dia.cobros | money:reportCurrency() }}</span>
+              </div>
+            }
+          </div>
           <ion-list lines="full" class="series-list">
             @for (dia of report.seriesDiarias; track trackByFecha($index, dia)) {
               <ion-item>
                 <ion-label>
                   <h3>{{ formatDisplayDate(dia.fecha) }}</h3>
-                  <p>Cobros: {{ dia.cobros | money:reportCurrency() }} · Interés: {{ dia.interesCobrado | money:reportCurrency() }}</p>
+                  <p>
+                    Cobros: {{ dia.cobros | money:reportCurrency() }}
+                    · Ganancia: {{ dia.interesCobrado | money:reportCurrency() }}
+                    · Préstamos: {{ dia.prestamosOtorgados | money:reportCurrency() }}
+                    · Gastos: {{ dia.gastos | money:reportCurrency() }}
+                  </p>
                 </ion-label>
                 <ion-note slot="end" color="success">{{ dia.interesCobrado | money:reportCurrency() }}</ion-note>
               </ion-item>
@@ -210,9 +319,12 @@
             </ion-card-header>
             <ion-card-content>
               <div class="route-metrics">
-                <div><span>Interés cobrado</span><strong>{{ ruta.interesCobrado | money:currencyForRuta(ruta.rutaId) }}</strong></div>
+                <div><span>Ganancia cobrada</span><strong>{{ ruta.interesCobrado | money:currencyForRuta(ruta.rutaId) }}</strong></div>
                 <div><span>Cobros</span><strong>{{ ruta.cobros | money:currencyForRuta(ruta.rutaId) }}</strong></div>
                 <div><span>Préstamos</span><strong>{{ ruta.prestamosOtorgados | money:currencyForRuta(ruta.rutaId) }}</strong></div>
+                <div><span>Gastos</span><strong>{{ ruta.gastos | money:currencyForRuta(ruta.rutaId) }}</strong></div>
+                <div><span>Sacado</span><strong>{{ ruta.retiros | money:currencyForRuta(ruta.rutaId) }}</strong></div>
+                <div><span>Metido</span><strong>{{ ruta.inversiones | money:currencyForRuta(ruta.rutaId) }}</strong></div>
               </div>
             </ion-card-content>
           </ion-card>
@@ -222,30 +334,30 @@
       <!-- OFICINA -->
       @if (activeTab() === 'oficina' && reporteOficina(); as report) {
         <div class="metrics-grid">
-          <div class="metric-card danger">
+          <div class="metric-card danger" [title]="tip('gastos')">
             <ion-icon name="card-outline"></ion-icon>
             <span class="metric-label">Gastos</span>
             <span class="metric-value">{{ report.totalesEmpresa.gastos | money:reportCurrency() }}</span>
           </div>
-          <div class="metric-card warning">
+          <div class="metric-card warning" [title]="tip('retiros')">
             <ion-icon name="wallet-outline"></ion-icon>
-            <span class="metric-label">Retiros</span>
+            <span class="metric-label">Sacado de caja</span>
             <span class="metric-value">{{ report.totalesEmpresa.retiros | money:reportCurrency() }}</span>
           </div>
-          <div class="metric-card">
+          <div class="metric-card" [title]="tip('inversiones')">
             <ion-icon name="trending-up-outline"></ion-icon>
-            <span class="metric-label">Inversiones</span>
+            <span class="metric-label">Metido a caja</span>
             <span class="metric-value">{{ report.totalesEmpresa.inversiones | money:reportCurrency() }}</span>
           </div>
-          <div class="metric-card highlight">
+          <div class="metric-card highlight" [title]="tip('netoCapital')">
             <ion-icon name="analytics-outline"></ion-icon>
-            <span class="metric-label">Neto capital</span>
+            <span class="metric-label">Metido − Sacado <ion-icon class="tip-icon" name="information-circle-outline"></ion-icon></span>
             <span class="metric-value">{{ report.totalesEmpresa.netoCapital | money:reportCurrency() }}</span>
           </div>
         </div>
 
         @if (gastosPorCategoriaEntries().length > 0) {
-          <h3 class="section-title">Gastos por categoría</h3>
+          <h3 class="section-title">Gastos por tipo</h3>
           <ion-list lines="full" class="series-list">
             @for (entry of gastosPorCategoriaEntries(); track entry[0]) {
               <ion-item>
@@ -264,8 +376,8 @@
             <ion-card-content>
               <div class="route-metrics">
                 <div><span>Gastos</span><strong>{{ ruta.gastos.total | money:ruta.currency }}</strong></div>
-                <div><span>Retiros</span><strong>{{ ruta.retiros.total | money:ruta.currency }}</strong></div>
-                <div><span>Inversiones</span><strong>{{ ruta.inversiones.total | money:ruta.currency }}</strong></div>
+                <div><span>Sacado</span><strong>{{ ruta.retiros.total | money:ruta.currency }}</strong></div>
+                <div><span>Metido</span><strong>{{ ruta.inversiones.total | money:ruta.currency }}</strong></div>
               </div>
             </ion-card-content>
           </ion-card>
@@ -275,6 +387,11 @@
       <!-- CAJA -->
       @if (activeTab() === 'caja' && reporteCaja(); as report) {
         <div class="metrics-grid">
+          <div class="metric-card highlight" [title]="tip('cajaFinalUltimoDia')">
+            <ion-icon name="briefcase-outline"></ion-icon>
+            <span class="metric-label">Caja del último día <ion-icon class="tip-icon" name="information-circle-outline"></ion-icon></span>
+            <span class="metric-value">{{ report.totalesEmpresa.cajaFinalUltimoDia | money:reportCurrency() }}</span>
+          </div>
           <div class="metric-card">
             <ion-icon name="cash-outline"></ion-icon>
             <span class="metric-label">Cobros</span>
@@ -290,21 +407,51 @@
             <span class="metric-label">Gastos</span>
             <span class="metric-value">{{ report.totalesEmpresa.gasto | money:reportCurrency() }}</span>
           </div>
-          <div class="metric-card highlight">
+          <div class="metric-card warning" [title]="tip('retiros')">
+            <ion-icon name="wallet-outline"></ion-icon>
+            <span class="metric-label">Sacado de caja</span>
+            <span class="metric-value">{{ report.totalesEmpresa.retiro | money:reportCurrency() }}</span>
+          </div>
+          <div class="metric-card" [title]="tip('inversiones')">
+            <ion-icon name="arrow-up-circle-outline"></ion-icon>
+            <span class="metric-label">Metido a caja</span>
+            <span class="metric-value">{{ report.totalesEmpresa.inversion | money:reportCurrency() }}</span>
+          </div>
+          <div class="metric-card" [title]="tip('eficienciaCobro')">
             <ion-icon name="speedometer-outline"></ion-icon>
-            <span class="metric-label">Eficiencia cobro</span>
+            <span class="metric-label">% de la meta</span>
             <span class="metric-value">{{ report.totalesEmpresa.promedioEficienciaCobro | number:'1.0-1':'en' }}%</span>
           </div>
         </div>
 
         @if (report.seriesDiarias.length > 0) {
-          <h3 class="section-title">Histórico diario</h3>
+          <h3 class="section-title">Cobros día a día</h3>
+          <div class="mini-chart">
+            @for (dia of report.seriesDiarias; track trackByFecha($index, dia)) {
+              <div class="mini-chart-row">
+                <span class="mini-chart-label">{{ formatDisplayDate(dia.fecha) }}</span>
+                <div class="mini-chart-bar-track">
+                  <div
+                    class="mini-chart-bar caja"
+                    [style.width]="barWidth(dia.cobro, maxCajaCobro())">
+                  </div>
+                </div>
+                <span class="mini-chart-value">{{ dia.cobro | money:reportCurrency() }}</span>
+              </div>
+            }
+          </div>
+
+          <h3 class="section-title">Detalle por día</h3>
           <ion-list lines="full" class="series-list">
             @for (dia of report.seriesDiarias; track trackByFecha($index, dia)) {
               <ion-item>
                 <ion-label>
                   <h3>{{ formatDisplayDate(dia.fecha) }}</h3>
-                  <p>Cobro: {{ dia.cobro | money:reportCurrency() }} · Pretendido: {{ dia.pretendido | money:reportCurrency() }}</p>
+                  <p>
+                    Cobro: {{ dia.cobro | money:reportCurrency() }}
+                    · Meta: {{ dia.pretendido | money:reportCurrency() }}
+                    · Quedó en caja: {{ dia.cajaFinal | money:reportCurrency() }}
+                  </p>
                 </ion-label>
                 <ion-note slot="end">
                   @if (dia.eficienciaCobro !== null) {
@@ -317,14 +464,199 @@
             }
           </ion-list>
         }
+
+        @for (ruta of report.rutas; track trackByRutaId($index, ruta)) {
+          <ion-card class="route-card">
+            <ion-card-header>
+              <ion-card-title>{{ ruta.nombre | titlecase }}</ion-card-title>
+              <ion-card-subtitle>
+                @if (ruta.seriesDiarias.length > 0) {
+                  Última caja: {{ ruta.seriesDiarias[ruta.seriesDiarias.length - 1].cajaFinal | money:currencyForRuta(ruta.rutaId) }}
+                } @else {
+                  No hay datos de caja en estas fechas
+                }
+              </ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              @if (ruta.seriesDiarias.length > 0) {
+                <div class="route-metrics">
+                  <div>
+                    <span>Días</span>
+                    <strong>{{ ruta.seriesDiarias.length }}</strong>
+                  </div>
+                  <div>
+                    <span>Último cobro</span>
+                    <strong>{{ ruta.seriesDiarias[ruta.seriesDiarias.length - 1].cobro | money:currencyForRuta(ruta.rutaId) }}</strong>
+                  </div>
+                  <div>
+                    <span>Quedó en caja</span>
+                    <strong>{{ ruta.seriesDiarias[ruta.seriesDiarias.length - 1].cajaFinal | money:currencyForRuta(ruta.rutaId) }}</strong>
+                  </div>
+                </div>
+              }
+            </ion-card-content>
+          </ion-card>
+        }
+      }
+
+      <!-- GRAFICAS -->
+      @if (activeTab() === 'graficas' && reporteGraficas(); as report) {
+        <div class="metrics-grid">
+          <div class="metric-card highlight">
+            <ion-icon name="cash-outline"></ion-icon>
+            <span class="metric-label">Cobrado</span>
+            <span class="metric-value">{{ report.totalesEmpresa.cobros | money:reportCurrency() }}</span>
+          </div>
+          <div class="metric-card">
+            <ion-icon name="arrow-down-circle-outline"></ion-icon>
+            <span class="metric-label">Prestado</span>
+            <span class="metric-value">{{ report.totalesEmpresa.prestamosOtorgados | money:reportCurrency() }}</span>
+          </div>
+          <div class="metric-card success">
+            <ion-icon name="trending-up-outline"></ion-icon>
+            <span class="metric-label">Ganancia cobrada</span>
+            <span class="metric-value">{{ report.totalesEmpresa.interesCobrado | money:reportCurrency() }}</span>
+          </div>
+          <div class="metric-card danger">
+            <ion-icon name="card-outline"></ion-icon>
+            <span class="metric-label">Gastos</span>
+            <span class="metric-value">{{ report.totalesEmpresa.gastos | money:reportCurrency() }}</span>
+          </div>
+        </div>
+
+        @if (chartPeriodPoints().length > 0) {
+          <ion-card class="chart-card">
+            <ion-card-header>
+              <ion-card-title>Cobrado vs prestado</ion-card-title>
+              <ion-card-subtitle>{{ chartPeriodHint() }}</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="chart-legend">
+                <span class="legend-item cobrado"><i></i> Cobrado</span>
+                <span class="legend-item prestado"><i></i> Prestado</span>
+              </div>
+              <div class="dual-chart">
+                @for (punto of chartPeriodPoints(); track trackByChartLabel($index, punto)) {
+                  <div class="dual-chart-row">
+                    <span class="dual-chart-label">{{ punto.label }}</span>
+                    <div class="dual-chart-bars">
+                      <div class="dual-bar-line">
+                        <div
+                          class="dual-bar cobrado"
+                          [style.width]="barWidth(punto.cobros, maxChartPrestadoCobrado())">
+                        </div>
+                        <span>{{ punto.cobros | money:reportCurrency() }}</span>
+                      </div>
+                      <div class="dual-bar-line">
+                        <div
+                          class="dual-bar prestado"
+                          [style.width]="barWidth(punto.prestamos, maxChartPrestadoCobrado())">
+                        </div>
+                        <span>{{ punto.prestamos | money:reportCurrency() }}</span>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </ion-card-content>
+          </ion-card>
+
+          <ion-card class="chart-card">
+            <ion-card-header>
+              <ion-card-title>Ganancia vs gastos</ion-card-title>
+              <ion-card-subtitle>Para ver si en estas fechas entró más ganancia que gasto</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="chart-legend">
+                <span class="legend-item ganancia"><i></i> Ganancia</span>
+                <span class="legend-item gastos"><i></i> Gastos</span>
+              </div>
+              <div class="dual-chart">
+                @for (punto of chartPeriodPoints(); track trackByChartLabel($index, punto)) {
+                  <div class="dual-chart-row">
+                    <span class="dual-chart-label">{{ punto.label }}</span>
+                    <div class="dual-chart-bars">
+                      <div class="dual-bar-line">
+                        <div
+                          class="dual-bar ganancia"
+                          [style.width]="barWidth(punto.ganancia, maxChartGananciaGastos())">
+                        </div>
+                        <span>{{ punto.ganancia | money:reportCurrency() }}</span>
+                      </div>
+                      <div class="dual-bar-line">
+                        <div
+                          class="dual-bar gastos"
+                          [style.width]="barWidth(punto.gastos, maxChartGananciaGastos())">
+                        </div>
+                        <span>{{ punto.gastos | money:reportCurrency() }}</span>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </ion-card-content>
+          </ion-card>
+        } @else {
+          <div class="empty-state compact">
+            <ion-icon name="bar-chart-outline"></ion-icon>
+            <h3>Sin movimientos</h3>
+            <p>En estas fechas no hay cobros ni préstamos para graficar.</p>
+          </div>
+        }
+
+        @if (chartRutaPoints().length > 0) {
+          <ion-card class="chart-card">
+            <ion-card-header>
+              <ion-card-title>Comparar rutas</ion-card-title>
+              <ion-card-subtitle>Quién cobró y prestó más en estas fechas</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="chart-legend">
+                <span class="legend-item cobrado"><i></i> Cobrado</span>
+                <span class="legend-item prestado"><i></i> Prestado</span>
+                <span class="legend-item ganancia"><i></i> Ganancia</span>
+              </div>
+              <div class="dual-chart">
+                @for (ruta of chartRutaPoints(); track trackByRutaId($index, ruta)) {
+                  <div class="dual-chart-row">
+                    <span class="dual-chart-label">{{ ruta.nombre | titlecase }}</span>
+                    <div class="dual-chart-bars">
+                      <div class="dual-bar-line">
+                        <div
+                          class="dual-bar cobrado"
+                          [style.width]="barWidth(ruta.cobros, maxChartRuta())">
+                        </div>
+                        <span>{{ ruta.cobros | money:currencyForRuta(ruta.rutaId) }}</span>
+                      </div>
+                      <div class="dual-bar-line">
+                        <div
+                          class="dual-bar prestado"
+                          [style.width]="barWidth(ruta.prestamos, maxChartRuta())">
+                        </div>
+                        <span>{{ ruta.prestamos | money:currencyForRuta(ruta.rutaId) }}</span>
+                      </div>
+                      <div class="dual-bar-line">
+                        <div
+                          class="dual-bar ganancia"
+                          [style.width]="barWidth(ruta.ganancia, maxChartRuta())">
+                        </div>
+                        <span>{{ ruta.ganancia | money:currencyForRuta(ruta.rutaId) }}</span>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </ion-card-content>
+          </ion-card>
+        }
       }
     }
 
     @if (!loading() && !hasReportData() && !error()) {
       <div class="empty-state">
         <ion-icon name="bar-chart-outline"></ion-icon>
-        <h3>Sin datos</h3>
-        <p>No hay información para los filtros seleccionados.</p>
+        <h3>No hay información</h3>
+        <p>Con estos filtros no aparecen datos. Prueba otras fechas o otra ruta.</p>
       </div>
     }
 
