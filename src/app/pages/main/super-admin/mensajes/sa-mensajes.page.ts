@@ -158,6 +158,14 @@ export class SaMensajesPage implements OnInit, OnDestroy {
     this.editingId.set(null);
   }
 
+  insertBullet(): void {
+    const control = this.form.controls.body;
+    const current = control.value || '';
+    const needsNewline = current.length > 0 && !current.endsWith('\n');
+    control.setValue(`${current}${needsNewline ? '\n' : ''}• `);
+    control.markAsDirty();
+  }
+
   severityColor(severity: AnnouncementSeverity): string {
     if (severity === 'critical') return 'danger';
     if (severity === 'warning') return 'warning';

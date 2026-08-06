@@ -164,5 +164,8 @@ ion-modal.announcement-alert-modal {
   &::part(content) {
     border-radius: 20px;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-height: min(88vh, 640px);
   }
 }

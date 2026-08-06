@@ -30,10 +30,24 @@
         label="Mensaje"
         labelPlacement="stacked"
         autoGrow="true"
-        rows="3"
-        placeholder="Texto del aviso">
+        rows="6"
+        placeholder="Escribe el aviso. Enter = salto de línea.&#10;• Usa viñetas así">
       </ion-textarea>
     </ion-item>
+    <div class="sa-body-tools">
+      <p class="sa-body-hint">
+        Enter para saltos de línea. Viñetas con <strong>•</strong>, <strong>-</strong> o el botón.
+      </p>
+      <ion-button
+        type="button"
+        size="small"
+        fill="outline"
+        color="medium"
+        (click)="insertBullet()">
+        <ion-icon slot="start" name="list-outline"></ion-icon>
+        Viñeta
+      </ion-button>
+    </div>
 
     <ion-item lines="none">
       <ion-select formControlName="type" label="Tipo" labelPlacement="stacked" interface="popover">
@@ -118,7 +132,7 @@
           <ion-badge mode="md" [color]="severityColor(item.severity)">{{ item.severity }}</ion-badge>
           <ion-badge *ngIf="!item.isActive" mode="md" color="medium">Inactivo</ion-badge>
         </h2>
-        <p>{{ item.body }}</p>
+        <p class="sa-body-preview">{{ item.body }}</p>
         <p>
           {{ item.type }} · {{ item.scope }}
           <ng-container *ngIf="item.empresaIds?.length">

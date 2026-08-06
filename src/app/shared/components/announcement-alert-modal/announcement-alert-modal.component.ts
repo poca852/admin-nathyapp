@@ -4,6 +4,10 @@ import { firstValueFrom } from 'rxjs';
 import { Announcement } from 'src/app/models';
 import { AnnouncementsService } from 'src/app/services/announcements.service';
 import { UtilsService } from 'src/app/services/utils.service';
+import {
+  AnnouncementBodyBlock,
+  parseAnnouncementBody,
+} from 'src/app/shared/utils/announcement-body.util';
 
 @Component({
   selector: 'app-announcement-alert-modal',
@@ -20,8 +24,10 @@ export class AnnouncementAlertModalComponent implements OnInit {
   private readonly utilsSvc = inject(UtilsService);
 
   busy = false;
+  bodyBlocks: AnnouncementBodyBlock[] = [];
 
   ngOnInit(): void {
+    this.bodyBlocks = parseAnnouncementBody(this.announcement?.body || '');
     const id = this.announcement?.id;
     if (!id) return;
     this.announcementsSvc.markRead(id).subscribe({ error: () => undefined });

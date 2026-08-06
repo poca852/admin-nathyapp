@@ -12,7 +12,12 @@
     </div>
 
     <div class="alert-body">
-      <p>{{ announcement.body }}</p>
+      <ng-container *ngFor="let block of bodyBlocks">
+        <p *ngIf="block.type === 'p'" class="alert-paragraph">{{ block.text }}</p>
+        <ul *ngIf="block.type === 'ul'" class="alert-list">
+          <li *ngFor="let item of block.items">{{ item }}</li>
+        </ul>
+      </ng-container>
     </div>
 
     <div class="alert-actions">

@@ -25,6 +25,31 @@
   margin-bottom: 6px;
 }
 
+.sa-body-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: -2px 0 10px;
+  padding: 0 4px;
+}
+
+.sa-body-hint {
+  margin: 0;
+  flex: 1;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: var(--ion-color-medium);
+}
+
+.sa-body-preview {
+  white-space: pre-wrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .sa-form-actions {
   display: flex;
   gap: 8px;
