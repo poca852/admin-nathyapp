@@ -1,0 +1,31 @@
+@import '../sa-shared.scss';
+
+.sa-filter-segment {
+  margin-bottom: 10px;
+}
+
+.noc-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.noc-item-end {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  max-width: 140px;
+  text-align: right;
+
+  small {
+    color: var(--ion-color-medium);
+    font-size: 11px;
+    line-height: 1.2;
+  }
+}
+
+.skeleton-block {
+  margin-top: 12px;
+}

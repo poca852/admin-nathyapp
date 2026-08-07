@@ -25,3 +25,9 @@ export type {
   ConvertLeadPayload,
   ConvertLeadResponse,
 } from './lead.interface';
+export type {
+  WsAuthEvent,
+  WsAuthEventsResponse,
+  WsAuthEventSummaryItem,
+  WsAuthFailureReason,
+} from './ws-auth-event.interface';

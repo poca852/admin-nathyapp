@@ -24,6 +24,7 @@ import { SaCajaDetailPage } from './operaciones/sa-caja-detail.page';
 import { SaOficinaDetailPage } from './operaciones/sa-oficina-detail.page';
 import { SaMensajesPage } from './mensajes/sa-mensajes.page';
 import { SaSolicitudesPage } from './solicitudes/sa-solicitudes.page';
+import { SaNocPage } from './noc/sa-noc.page';
 
 const routes: Routes = [
   {
@@ -41,6 +42,7 @@ const routes: Routes = [
       { path: 'rutas', component: SaRutasPage },
       { path: 'rutas/:id', component: SaRutaDetailPage },
       { path: 'mensajes', component: SaMensajesPage },
+      { path: 'noc', component: SaNocPage },
       { path: 'transferencias', component: SaTransferenciasPage },
       { path: 'operaciones', component: SaOperacionesPage },
       { path: 'operaciones/credito/:id', component: SaCreditoDetailPage },
@@ -71,6 +73,7 @@ const routes: Routes = [
     SaRutasPage,
     SaRutaDetailPage,
     SaMensajesPage,
+    SaNocPage,
     SaTransferenciasPage,
     SaOperacionesPage,
     SaCreditoDetailPage,

@@ -1,0 +1,179 @@
+<app-header title="NOC · WS" [showMenu]="true" />
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="sa-toolbar">
+    <ion-searchbar
+      class="sa-search"
+      debounce="250"
+      placeholder="Buscar por usuario, IP, mensaje…"
+      (ionInput)="onSearch($event)">
+    </ion-searchbar>
+  </div>
+
+  <ion-segment
+    class="sa-filter-segment"
+    [value]="hoursFilter()"
+    (ionChange)="onHoursFilterChange($event)"
+    scrollable="true">
+    <ion-segment-button [value]="6">
+      <ion-label>6h</ion-label>
+    </ion-segment-button>
+    <ion-segment-button [value]="24">
+      <ion-label>24h</ion-label>
+    </ion-segment-button>
+    <ion-segment-button [value]="48">
+      <ion-label>48h</ion-label>
+    </ion-segment-button>
+    <ion-segment-button [value]="168">
+      <ion-label>7d</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
+  <ion-segment
+    class="sa-filter-segment"
+    [value]="reasonFilter()"
+    (ionChange)="onReasonFilterChange($event)"
+    scrollable="true">
+    <ion-segment-button value="ALL">
+      <ion-label>Todos{{ summaryTotal() ? ' (' + summaryTotal() + ')' : '' }}</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="JWT_EXPIRED">
+      <ion-label>JWT expirado</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="NO_ACTIVE_SESSION">
+      <ion-label>Sin sesión</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="SESSION_MISMATCH">
+      <ion-label>Sesión distinta</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="USER_INACTIVE">
+      <ion-label>Inactivo</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="USER_NOT_FOUND">
+      <ion-label>No existe</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="NO_TOKEN">
+      <ion-label>Sin token</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="JWT_INVALID">
+      <ion-label>JWT inválido</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
+  <div class="noc-summary" *ngIf="!loading() && summary().length">
+    <ion-chip *ngFor="let s of summary()" [color]="reasonColor(s.reason)" outline="true">
+      {{ reasonLabel(s.reason) }}: {{ s.count }}
+    </ion-chip>
+  </div>
+
+  <div *ngIf="loading()" class="skeleton-block">
+    <ion-skeleton-text animated style="width: 100%; height: 64px; border-radius: 12px;"></ion-skeleton-text>
+  </div>
+
+  <div *ngIf="!loading() && loadError()" class="sa-empty">
+    <ion-icon name="cloud-offline-outline"></ion-icon>
+    <p>No se pudieron cargar los eventos</p>
+    <ion-button (click)="refresh()">Reintentar</ion-button>
+  </div>
+
+  <ion-list *ngIf="!loading() && !loadError()">
+    <ion-item
+      *ngFor="let e of filtered(); trackBy: trackById"
+      button
+      detail
+      (click)="openDetail(e)">
+      <ion-icon slot="start" name="warning-outline" [color]="reasonColor(e.reason)"></ion-icon>
+      <ion-label>
+        <h2>{{ whoLabel(e) }}</h2>
+        <p>{{ e.userRol || '—' }} · {{ e.ipAddress || 'sin IP' }}</p>
+        <p>{{ e.message }}</p>
+      </ion-label>
+      <div slot="end" class="noc-item-end">
+        <ion-badge mode="md" [color]="reasonColor(e.reason)">
+          {{ reasonLabel(e.reason) }}
+        </ion-badge>
+        <small>{{ formatDate(e.createdAt) }}</small>
+      </div>
+    </ion-item>
+  </ion-list>
+
+  <div *ngIf="!loading() && !loadError() && filtered().length === 0" class="sa-empty">
+    <ion-icon name="shield-checkmark-outline"></ion-icon>
+    <p>No hay rechazos WS en esta ventana</p>
+  </div>
+</ion-content>
+
+<ion-modal [isOpen]="!!selected()" (didDismiss)="closeDetail()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Detalle WS</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeDetail()">Cerrar</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding" *ngIf="selected() as e">
+      <ion-list lines="full">
+        <ion-item>
+          <ion-label>
+            <p>Motivo</p>
+            <h2>{{ reasonLabel(e.reason) }}</h2>
+          </ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-label>
+            <p>Mensaje</p>
+            <h2>{{ e.message }}</h2>
+          </ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-label>
+            <p>Usuario</p>
+            <h2>{{ whoLabel(e) }}</h2>
+            <p>{{ e.username || '—' }} · {{ e.userId || '—' }}</p>
+          </ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-label>
+            <p>Rol / Empresa</p>
+            <h2>{{ e.userRol || '—' }}</h2>
+            <p>{{ e.empresaId || 'sin empresa' }}</p>
+          </ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-label>
+            <p>Estado usuario</p>
+            <h2>{{ e.userEstado == null ? '—' : (e.userEstado ? 'Activo' : 'Inactivo') }}</h2>
+          </ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-label>
+            <p>Sesión</p>
+            <h2>{{ e.hasActiveSession ? 'Tiene sesión activa' : 'Sin sesión activa' }}</h2>
+            <p>Expira: {{ formatDate(e.activeSessionExpiresAt) }}</p>
+            <p>sid token: {{ e.tokenSid || '—' }}</p>
+          </ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-label>
+            <p>Red</p>
+            <h2>{{ e.ipAddress || '—' }}</h2>
+            <p>{{ e.userAgent || '—' }}</p>
+          </ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-label>
+            <p>Cuándo</p>
+            <h2>{{ formatDate(e.createdAt) }}</h2>
+            <p>socket: {{ e.socketId || '—' }}</p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-content>
+  </ng-template>
+</ion-modal>
