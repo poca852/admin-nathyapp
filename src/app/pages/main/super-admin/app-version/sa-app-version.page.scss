@@ -1,0 +1,13 @@
+@import '../sa-shared.scss';
+@import '../mensajes/sa-mensajes.page.scss';
+
+.sa-help {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--ion-color-medium-shade, #666);
+}
+
+.sa-help code {
+  font-size: 0.85em;
+}

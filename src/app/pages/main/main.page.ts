@@ -57,6 +57,7 @@ export class MainPage implements OnInit {
     { title: 'Usuarios', url: '/main/super-admin/usuarios', icon: 'people-outline' },
     { title: 'Rutas', url: '/main/super-admin/rutas', icon: 'layers-outline' },
     { title: 'Mensajes', url: '/main/super-admin/mensajes', icon: 'megaphone-outline' },
+    { title: 'App móvil', url: '/main/super-admin/app-version', icon: 'phone-portrait-outline' },
     { title: 'NOC', url: '/main/super-admin/noc', icon: 'pulse-outline' },
     { title: 'Transferencias', url: '/main/super-admin/transferencias', icon: 'swap-horizontal-outline' },
     { title: 'Operaciones', url: '/main/super-admin/operaciones', icon: 'construct-outline' },

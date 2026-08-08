@@ -1,0 +1,79 @@
+<app-header title="App móvil" [showMenu]="true" />
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <p class="sa-help">
+    Tras publicar un AAB en Play Store, pon
+    <strong>minVersionCode</strong> igual al
+    <code>versionCode</code> del build publicado para forzar la actualización.
+  </p>
+
+  <div *ngIf="loading()" class="ion-text-center ion-padding">
+    <ion-spinner name="crescent"></ion-spinner>
+  </div>
+
+  <div *ngIf="loadError() && !loading()" class="ion-text-center ion-padding">
+    <p>Error al cargar.</p>
+    <ion-button fill="outline" (click)="refresh()">Reintentar</ion-button>
+  </div>
+
+  <section *ngIf="!loading()" class="sa-form-card" [formGroup]="form">
+    <ion-item lines="none">
+      <ion-input
+        type="number"
+        label="minVersionCode"
+        labelPlacement="stacked"
+        formControlName="minVersionCode"
+        inputmode="numeric">
+      </ion-input>
+    </ion-item>
+
+    <ion-item lines="none">
+      <ion-input
+        type="number"
+        label="latestVersionCode"
+        labelPlacement="stacked"
+        formControlName="latestVersionCode"
+        inputmode="numeric">
+      </ion-input>
+    </ion-item>
+
+    <ion-item lines="none">
+      <ion-toggle formControlName="forceUpdate" justify="space-between">
+        Forzar actualización
+      </ion-toggle>
+    </ion-item>
+
+    <ion-item lines="none">
+      <ion-input
+        type="url"
+        label="URL Play Store"
+        labelPlacement="stacked"
+        formControlName="storeUrl">
+      </ion-input>
+    </ion-item>
+
+    <ion-item lines="none" class="sa-textarea-item">
+      <ion-textarea
+        formControlName="message"
+        label="Mensaje"
+        labelPlacement="stacked"
+        autoGrow="true"
+        rows="3">
+      </ion-textarea>
+    </ion-item>
+
+    <div class="sa-form-actions">
+      <ion-button
+        expand="block"
+        [disabled]="form.invalid || saving()"
+        (click)="save()">
+        <ion-spinner *ngIf="saving()" name="crescent" slot="start"></ion-spinner>
+        Guardar
+      </ion-button>
+    </div>
+  </section>
+</ion-content>

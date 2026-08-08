@@ -25,6 +25,7 @@ import { SaOficinaDetailPage } from './operaciones/sa-oficina-detail.page';
 import { SaMensajesPage } from './mensajes/sa-mensajes.page';
 import { SaSolicitudesPage } from './solicitudes/sa-solicitudes.page';
 import { SaNocPage } from './noc/sa-noc.page';
+import { SaAppVersionPage } from './app-version/sa-app-version.page';
 
 const routes: Routes = [
   {
@@ -42,6 +43,7 @@ const routes: Routes = [
       { path: 'rutas', component: SaRutasPage },
       { path: 'rutas/:id', component: SaRutaDetailPage },
       { path: 'mensajes', component: SaMensajesPage },
+      { path: 'app-version', component: SaAppVersionPage },
       { path: 'noc', component: SaNocPage },
       { path: 'transferencias', component: SaTransferenciasPage },
       { path: 'operaciones', component: SaOperacionesPage },
@@ -73,6 +75,7 @@ const routes: Routes = [
     SaRutasPage,
     SaRutaDetailPage,
     SaMensajesPage,
+    SaAppVersionPage,
     SaNocPage,
     SaTransferenciasPage,
     SaOperacionesPage,

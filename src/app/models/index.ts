@@ -31,3 +31,7 @@ export type {
   WsAuthEventSummaryItem,
   WsAuthFailureReason,
 } from './ws-auth-event.interface';
+export type {
+  AppConfig,
+  UpdateAppConfigPayload,
+} from './app-config.interface';
