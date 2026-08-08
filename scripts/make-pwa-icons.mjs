@@ -98,8 +98,8 @@ async function makeIcon(size, fillRatio, outName) {
   console.log('wrote', outName);
 }
 
-await makeIcon(192, 0.7, 'icon-192.png');
-await makeIcon(512, 0.7, 'icon-512.png');
-await makeIcon(512, 0.56, 'icon-512-maskable.png');
-await makeIcon(180, 0.7, 'apple-touch-icon.png');
+await makeIcon(192, 0.7, 'icon-192-v2.png');
+await makeIcon(512, 0.7, 'icon-512-v2.png');
+await makeIcon(512, 0.56, 'icon-512-maskable-v2.png');
+await makeIcon(180, 0.7, 'apple-touch-icon-v2.png');
 console.log('ok');
