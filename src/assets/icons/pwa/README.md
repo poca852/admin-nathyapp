@@ -12,10 +12,15 @@ Reemplaza estos archivos **manteniendo los mismos nombres**. No hace falta tocar
 | `favicon-16x16.png` | 16×16 | Favicon pequeño |
 | `og.png` | — | Open Graph / share preview |
 
-El logo de login vive en `src/assets/logo/logo.png`.
+El logo de marca completo vive en `src/assets/logo/logo.png`.
+Los iconos de instalación (`icon-192`, `icon-512`, maskable, apple-touch) deben ser
+el **símbolo** a buen tamaño sobre fondo sólido; el wordmark completo casi no se ve
+en la pantalla de inicio.
 
-## Pasos
+Para regenerarlos desde el logo:
 
-1. Exporta tus iconos de marca en PNG.
-2. Sobrescribe los archivos de esta carpeta (y el logo en `src/assets/logo/` si aplica).
-3. Rebuild y deploy (`ng build` / pipeline de producción).
+```bash
+node scripts/make-pwa-icons.mjs
+```
+
+(requiere `sharp`; el script usa `src/assets/logo/logo.png` como fuente).
