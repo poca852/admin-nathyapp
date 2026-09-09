@@ -16,6 +16,15 @@
       <div class="sa-hero-copy">
         <h1>{{ titulo() }}</h1>
         <p>{{ c.telefono || 'Sin teléfono' }} · DPI {{ c.dpi || '—' }}</p>
+        <ion-badge [color]="isOperativo() ? 'success' : 'medium'" mode="md">
+          {{ isOperativo() ? 'Activo' : 'Desactivado' }}
+        </ion-badge>
+        <ion-badge
+          class="ion-margin-start"
+          [color]="c.status ? 'primary' : 'medium'"
+          mode="md">
+          {{ c.status ? 'Con crédito' : 'Sin crédito' }}
+        </ion-badge>
       </div>
     </section>
 
@@ -42,13 +51,28 @@
         <ion-icon name="chevron-forward-outline" class="chevron"></ion-icon>
       </button>
 
+      <button type="button" class="sa-action-card" (click)="confirmToggleState()">
+        <div class="icon" [class.danger]="isOperativo()">
+          <ion-icon [name]="isOperativo() ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+        </div>
+        <div class="copy">
+          <h2>{{ isOperativo() ? 'Desactivar cliente' : 'Activar cliente' }}</h2>
+          <p>
+            {{ isOperativo()
+              ? 'Ocultarlo en admin y cobrador; conserva historial'
+              : 'Volver a mostrarlo como estaba' }}
+          </p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="chevron"></ion-icon>
+      </button>
+
       <button type="button" class="sa-action-card" (click)="confirmDelete()">
         <div class="icon danger">
           <ion-icon name="trash-outline"></ion-icon>
         </div>
         <div class="copy">
           <h2>Eliminar cliente</h2>
-          <p>Solo si no tiene crédito activo</p>
+          <p>Borrado permanente; solo si no tiene crédito activo</p>
         </div>
         <ion-icon name="chevron-forward-outline" class="chevron"></ion-icon>
       </button>

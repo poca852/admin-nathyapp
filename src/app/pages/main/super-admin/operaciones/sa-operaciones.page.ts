@@ -27,6 +27,7 @@ export interface SaMovimientoOficina {
 }
 
 type OpsTab = 'creditos' | 'clientes' | 'pagos' | 'cajas' | 'oficina';
+type ClienteStateFilter = 'all' | 'operativos' | 'desactivados';
 
 @Component({
   selector: 'app-sa-operaciones',
@@ -59,12 +60,17 @@ export class SaOperacionesPage implements OnDestroy {
   readonly caja = signal<Caja | null>(null);
   readonly oficinaMovimientos = signal<SaMovimientoOficina[]>([]);
   readonly searchQuery = signal('');
+  readonly clienteStateFilter = signal<ClienteStateFilter>('all');
 
   readonly filteredClientes = computed(() => {
     const q = this.searchQuery().trim().toLowerCase();
-    const list = this.clientes();
-    if (!q) return list;
-    return list.filter((c) => {
+    const stateFilter = this.clienteStateFilter();
+    return this.clientes().filter((c) => {
+      const operativo = c.state !== false;
+      if (stateFilter === 'operativos' && !operativo) return false;
+      if (stateFilter === 'desactivados' && operativo) return false;
+
+      if (!q) return true;
       const nombre = (c.nombre || '').toLowerCase();
       const alias = (c.alias || '').toLowerCase();
       const dpi = (c.dpi || '').toLowerCase();
@@ -128,7 +134,16 @@ export class SaOperacionesPage implements OnDestroy {
   setTab(value: OpsTab): void {
     this.tab.set(value);
     this.searchQuery.set('');
+    this.clienteStateFilter.set('all');
     this.reloadData();
+  }
+
+  setClienteStateFilter(value: ClienteStateFilter): void {
+    this.clienteStateFilter.set(value);
+  }
+
+  isClienteOperativo(cliente: Cliente): boolean {
+    return cliente.state !== false;
   }
 
   async onEmpresaChange(ev: CustomEvent): Promise<void> {
@@ -201,7 +216,7 @@ export class SaOperacionesPage implements OnDestroy {
     }
 
     if (tab === 'clientes') {
-      this.clienteSvc.getClientesByRuta(rutaId).pipe(
+      this.clienteSvc.getClientesByRuta(rutaId, true).pipe(
         finalize(() => this.loading.set(false)),
       ).subscribe({
         next: (list) => this.clientes.set(list || []),

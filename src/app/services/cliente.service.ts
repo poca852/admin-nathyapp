@@ -46,13 +46,17 @@ export class ClienteService {
     this._clientes.set([]);
   }
 
-  getClientesByRuta(idRuta: string): Observable<Cliente[]> {
+  getClientesByRuta(idRuta: string, includeInactive = false): Observable<Cliente[]> {
     const url: string = `${this.baseUrl}/cliente/admin`;
     const headers = new HttpHeaders()
       .append('authorization', `Bearer ${this.user.token}`);
 
-    const params = new HttpParams()
-      .append('idRuta', idRuta)
+    let params = new HttpParams()
+      .append('idRuta', idRuta);
+
+    if (includeInactive) {
+      params = params.append('includeInactive', 'true');
+    }
 
     return this.http.get<Cliente[]>(url, { headers, params })
 
@@ -66,9 +70,19 @@ export class ClienteService {
     return this.http.patch<boolean>(url, body, { headers });
   }
 
+  setClienteState(idCliente: string, state: boolean): Observable<Cliente> {
+    const url: string = `${this.baseUrl}/cliente/${idCliente}/state`;
+    const headers = new HttpHeaders()
+      .append('authorization', `Bearer ${this.user.token}`);
+
+    return this.http.patch<Cliente>(url, { state }, { headers });
+  }
+
   deleteCliente(idCliente: string): Observable<{ message: string }> {
     const url: string = `${this.baseUrl}/cliente/${idCliente}`;
-    return this.http.delete<{ message: string }>(url);
+    const headers = new HttpHeaders()
+      .append('authorization', `Bearer ${this.user.token}`);
+    return this.http.delete<{ message: string }>(url, { headers });
   }
 
   getClienteById(idCliente: string): Observable<ClienteDetail> {

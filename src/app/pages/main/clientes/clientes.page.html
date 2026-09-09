@@ -62,12 +62,12 @@
           <strong>{{ resumen().total }}</strong>
         </div>
         <div class="summary-item">
-          <span>Activos</span>
-          <strong>{{ resumen().activos }}</strong>
+          <span>Con crédito</span>
+          <strong>{{ resumen().conCredito }}</strong>
         </div>
         <div class="summary-item">
-          <span>Inactivos</span>
-          <strong>{{ resumen().inactivos }}</strong>
+          <span>Sin crédito</span>
+          <strong>{{ resumen().sinCredito }}</strong>
         </div>
       </div>
 
@@ -89,16 +89,16 @@
           <ion-label>Todos</ion-label>
         </ion-chip>
         <ion-chip
-          [color]="filter() === 'active' ? 'success' : 'medium'"
-          [outline]="filter() !== 'active'"
-          (click)="setFilter('active')">
-          <ion-label>Activos</ion-label>
+          [color]="filter() === 'conCredito' ? 'success' : 'medium'"
+          [outline]="filter() !== 'conCredito'"
+          (click)="setFilter('conCredito')">
+          <ion-label>Con crédito</ion-label>
         </ion-chip>
         <ion-chip
-          [color]="filter() === 'inactive' ? 'danger' : 'medium'"
-          [outline]="filter() !== 'inactive'"
-          (click)="setFilter('inactive')">
-          <ion-label>Inactivos</ion-label>
+          [color]="filter() === 'sinCredito' ? 'danger' : 'medium'"
+          [outline]="filter() !== 'sinCredito'"
+          (click)="setFilter('sinCredito')">
+          <ion-label>Sin crédito</ion-label>
         </ion-chip>
       </div>
 
@@ -135,7 +135,7 @@
 
           <div class="cliente-status">
             <ion-badge [color]="cliente.status ? 'success' : 'danger'" mode="md">
-              {{ cliente.status ? 'Activo' : 'Inactivo' }}
+              {{ cliente.status ? 'Con crédito' : 'Sin crédito' }}
             </ion-badge>
             <ion-icon
               *ngIf="hasUbication(cliente)"

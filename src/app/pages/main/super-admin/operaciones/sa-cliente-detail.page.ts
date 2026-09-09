@@ -19,10 +19,16 @@ export class SaClienteDetailPage {
   private readonly ctx = inject(SuperAdminContextService);
 
   readonly cliente = signal<Cliente | null>(null);
+  readonly togglingState = signal(false);
 
   readonly titulo = computed(() => {
     const c = this.cliente();
     return c?.nombre || c?.alias || 'Cliente';
+  });
+
+  readonly isOperativo = computed(() => {
+    const c = this.cliente();
+    return c ? c.state !== false : true;
   });
 
   ngOnInit(): void {
@@ -32,12 +38,27 @@ export class SaClienteDetailPage {
       this.cliente.set(payload.data);
       return;
     }
+    if (id) {
+      this.clienteSvc.getClienteById(id).subscribe({
+        next: (detail) => this.cliente.set(detail.cliente),
+        error: () => this.cliente.set(null),
+      });
+      return;
+    }
     this.cliente.set(null);
   }
 
   async editCliente(): Promise<void> {
     const cliente = this.cliente();
     if (!cliente) return;
+    if (!this.isOperativo()) {
+      this.utilsSvc.presentToast({
+        message: 'Reactiva el cliente antes de editarlo',
+        color: 'warning',
+        duration: 2500,
+      });
+      return;
+    }
     const result = await this.utilsSvc.presentModal({
       component: UpdateClienteComponent,
       cssClass: 'add-update-modal',
@@ -54,12 +75,58 @@ export class SaClienteDetailPage {
     }
   }
 
+  confirmToggleState(): void {
+    const cliente = this.cliente();
+    if (!cliente || this.togglingState()) return;
+    const next = !this.isOperativo();
+    this.utilsSvc.presentAlert({
+      header: next ? 'Activar cliente' : 'Desactivar cliente',
+      message: next
+        ? `¿Reactivar a ${cliente.nombre || cliente.alias}? Sus créditos e historial quedarán como estaban.`
+        : `¿Desactivar a ${cliente.nombre || cliente.alias}? Dejará de verse en admin y cobrador; el historial se conserva.`,
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: next ? 'Activar' : 'Desactivar',
+          role: next ? undefined : 'destructive',
+          handler: () => this.applyState(cliente, next),
+        },
+      ],
+    });
+  }
+
+  private applyState(cliente: Cliente, state: boolean): void {
+    const id = cliente.id || (cliente as any)._id;
+    if (!id) return;
+    this.togglingState.set(true);
+    this.clienteSvc.setClienteState(id, state).subscribe({
+      next: (updated) => {
+        this.togglingState.set(false);
+        this.cliente.set({ ...cliente, ...updated, state });
+        this.ctx.invalidate();
+        this.utilsSvc.presentToast({
+          message: state ? 'Cliente activado' : 'Cliente desactivado',
+          color: 'success',
+          duration: 2500,
+        });
+      },
+      error: (err) => {
+        this.togglingState.set(false);
+        this.utilsSvc.presentToast({
+          message: err.error?.message || 'Error al cambiar estado',
+          color: 'danger',
+          duration: 3000,
+        });
+      },
+    });
+  }
+
   confirmDelete(): void {
     const cliente = this.cliente();
     if (!cliente) return;
     this.utilsSvc.presentAlert({
       header: 'Eliminar cliente',
-      message: `¿Eliminar a ${cliente.nombre || cliente.alias}? Debe no tener crédito activo.`,
+      message: `¿Eliminar permanentemente a ${cliente.nombre || cliente.alias}? Debe no tener crédito activo. Esta acción no se puede deshacer.`,
       buttons: [
         { text: 'Cancelar', role: 'cancel' },
         {

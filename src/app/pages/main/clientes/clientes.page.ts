@@ -6,7 +6,7 @@ import { ClienteService } from '../../../services/cliente.service';
 import { Cliente, Ruta } from 'src/app/models';
 import { EmpresaService } from '../../../services/empresa.service';
 
-type ClienteFilter = 'all' | 'active' | 'inactive';
+type ClienteFilter = 'all' | 'conCredito' | 'sinCredito';
 
 @Component({
   selector: 'app-clientes',
@@ -30,8 +30,8 @@ export class ClientesPage {
     const list = this.clientes();
     return {
       total: list.length,
-      activos: list.filter((c) => c.status).length,
-      inactivos: list.filter((c) => !c.status).length,
+      conCredito: list.filter((c) => c.status).length,
+      sinCredito: list.filter((c) => !c.status).length,
     };
   });
 
@@ -40,8 +40,8 @@ export class ClientesPage {
     const f = this.filter();
 
     return this.clientes().filter((item) => {
-      if (f === 'active' && !item.status) return false;
-      if (f === 'inactive' && item.status) return false;
+      if (f === 'conCredito' && !item.status) return false;
+      if (f === 'sinCredito' && item.status) return false;
 
       if (!q) return true;
 

@@ -89,12 +89,39 @@
         (ionClear)="searchQuery.set('')">
       </ion-searchbar>
 
+      <div class="filter-chips ion-margin-bottom">
+        <ion-chip
+          [color]="clienteStateFilter() === 'all' ? 'primary' : 'medium'"
+          [outline]="clienteStateFilter() !== 'all'"
+          (click)="setClienteStateFilter('all')">
+          <ion-label>Todos</ion-label>
+        </ion-chip>
+        <ion-chip
+          [color]="clienteStateFilter() === 'operativos' ? 'success' : 'medium'"
+          [outline]="clienteStateFilter() !== 'operativos'"
+          (click)="setClienteStateFilter('operativos')">
+          <ion-label>Activos</ion-label>
+        </ion-chip>
+        <ion-chip
+          [color]="clienteStateFilter() === 'desactivados' ? 'warning' : 'medium'"
+          [outline]="clienteStateFilter() !== 'desactivados'"
+          (click)="setClienteStateFilter('desactivados')">
+          <ion-label>Desactivados</ion-label>
+        </ion-chip>
+      </div>
+
       <ion-list>
         <ion-item *ngFor="let c of filteredClientes()" button detail (click)="openCliente(c)">
           <ion-label>
             <h2>{{ c.nombre || c.alias }}</h2>
             <p>{{ c.telefono }} · DPI {{ c.dpi }}</p>
           </ion-label>
+          <ion-badge
+            slot="end"
+            [color]="isClienteOperativo(c) ? 'success' : 'medium'"
+            mode="md">
+            {{ isClienteOperativo(c) ? 'Activo' : 'Desactivado' }}
+          </ion-badge>
         </ion-item>
         <ion-item *ngIf="clientes().length === 0" lines="none">
           <ion-label color="medium">Sin clientes</ion-label>
