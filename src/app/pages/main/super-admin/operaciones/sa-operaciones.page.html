@@ -53,29 +53,57 @@
   </div>
 
   <ng-container *ngIf="!loading() && selectedRutaId()">
-    <ion-list *ngIf="tab() === 'creditos'">
-      <ion-item *ngFor="let c of creditos()" button detail (click)="openCredito(c)">
-        <ion-label>
-          <h2>{{ c.cliente?.nombre || c.cliente?.alias || 'Crédito' }}</h2>
-          <p>Saldo: {{ c.saldo || c.valor_credito }} · Estado: {{ c.status ? 'Activo' : 'Pagado' }}</p>
-        </ion-label>
-      </ion-item>
-      <ion-item *ngIf="creditos().length === 0" lines="none">
-        <ion-label color="medium">Sin créditos</ion-label>
-      </ion-item>
-    </ion-list>
+    <ng-container *ngIf="tab() === 'creditos'">
+      <ion-searchbar
+        class="sa-search"
+        debounce="250"
+        placeholder="Buscar por nombre, alias, DPI o teléfono"
+        [value]="searchQuery()"
+        (ionInput)="onSearch($event)"
+        (ionClear)="searchQuery.set('')">
+      </ion-searchbar>
 
-    <ion-list *ngIf="tab() === 'clientes'">
-      <ion-item *ngFor="let c of clientes()" button detail (click)="openCliente(c)">
-        <ion-label>
-          <h2>{{ c.nombre || c.alias }}</h2>
-          <p>{{ c.telefono }} · DPI {{ c.dpi }}</p>
-        </ion-label>
-      </ion-item>
-      <ion-item *ngIf="clientes().length === 0" lines="none">
-        <ion-label color="medium">Sin clientes</ion-label>
-      </ion-item>
-    </ion-list>
+      <ion-list>
+        <ion-item *ngFor="let c of filteredCreditos()" button detail (click)="openCredito(c)">
+          <ion-label>
+            <h2>{{ c.cliente?.nombre || c.cliente?.alias || 'Crédito' }}</h2>
+            <p>Saldo: {{ c.saldo || c.valor_credito }} · Estado: {{ c.status ? 'Activo' : 'Pagado' }}</p>
+          </ion-label>
+        </ion-item>
+        <ion-item *ngIf="creditos().length === 0" lines="none">
+          <ion-label color="medium">Sin créditos</ion-label>
+        </ion-item>
+        <ion-item *ngIf="creditos().length > 0 && filteredCreditos().length === 0" lines="none">
+          <ion-label color="medium">Ningún crédito coincide con la búsqueda</ion-label>
+        </ion-item>
+      </ion-list>
+    </ng-container>
+
+    <ng-container *ngIf="tab() === 'clientes'">
+      <ion-searchbar
+        class="sa-search"
+        debounce="250"
+        placeholder="Buscar por nombre, alias, DPI o teléfono"
+        [value]="searchQuery()"
+        (ionInput)="onSearch($event)"
+        (ionClear)="searchQuery.set('')">
+      </ion-searchbar>
+
+      <ion-list>
+        <ion-item *ngFor="let c of filteredClientes()" button detail (click)="openCliente(c)">
+          <ion-label>
+            <h2>{{ c.nombre || c.alias }}</h2>
+            <p>{{ c.telefono }} · DPI {{ c.dpi }}</p>
+          </ion-label>
+        </ion-item>
+        <ion-item *ngIf="clientes().length === 0" lines="none">
+          <ion-label color="medium">Sin clientes</ion-label>
+        </ion-item>
+        <ion-item *ngIf="clientes().length > 0 && filteredClientes().length === 0" lines="none">
+          <ion-label color="medium">Ningún cliente coincide con la búsqueda</ion-label>
+        </ion-item>
+      </ion-list>
+    </ng-container>
 
     <ion-list *ngIf="tab() === 'pagos'">
       <ion-item *ngFor="let p of pagos()" button detail (click)="openPago(p)">

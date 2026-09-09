@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnDestroy } from '@angular/core';
+import { Component, computed, inject, signal, OnDestroy } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { firstValueFrom, Subscription, filter } from 'rxjs';
 import { finalize } from 'rxjs/operators';
@@ -58,6 +58,44 @@ export class SaOperacionesPage implements OnDestroy {
   readonly pagos = signal<MovimientoCaja[]>([]);
   readonly caja = signal<Caja | null>(null);
   readonly oficinaMovimientos = signal<SaMovimientoOficina[]>([]);
+  readonly searchQuery = signal('');
+
+  readonly filteredClientes = computed(() => {
+    const q = this.searchQuery().trim().toLowerCase();
+    const list = this.clientes();
+    if (!q) return list;
+    return list.filter((c) => {
+      const nombre = (c.nombre || '').toLowerCase();
+      const alias = (c.alias || '').toLowerCase();
+      const dpi = (c.dpi || '').toLowerCase();
+      const telefono = (c.telefono || '').toLowerCase();
+      return (
+        nombre.includes(q) ||
+        alias.includes(q) ||
+        dpi.includes(q) ||
+        telefono.includes(q)
+      );
+    });
+  });
+
+  readonly filteredCreditos = computed(() => {
+    const q = this.searchQuery().trim().toLowerCase();
+    const list = this.creditos();
+    if (!q) return list;
+    return list.filter((c) => {
+      const cliente = c.cliente;
+      const nombre = (cliente?.nombre || '').toLowerCase();
+      const alias = (cliente?.alias || '').toLowerCase();
+      const dpi = (cliente?.dpi || '').toLowerCase();
+      const telefono = (cliente?.telefono || '').toLowerCase();
+      return (
+        nombre.includes(q) ||
+        alias.includes(q) ||
+        dpi.includes(q) ||
+        telefono.includes(q)
+      );
+    });
+  });
 
   ngOnInit(): void {
     this.navSub = this.router.events
@@ -89,6 +127,7 @@ export class SaOperacionesPage implements OnDestroy {
 
   setTab(value: OpsTab): void {
     this.tab.set(value);
+    this.searchQuery.set('');
     this.reloadData();
   }
 
@@ -96,6 +135,7 @@ export class SaOperacionesPage implements OnDestroy {
     const id = String(ev.detail?.value || '') || null;
     this.selectedEmpresaId.set(id);
     this.selectedRutaId.set(null);
+    this.searchQuery.set('');
     this.clearLists();
     if (!id) {
       this.rutas.set([]);
@@ -113,9 +153,14 @@ export class SaOperacionesPage implements OnDestroy {
   onRutaChange(ev: CustomEvent): void {
     const id = String(ev.detail?.value || '') || null;
     this.selectedRutaId.set(id);
+    this.searchQuery.set('');
     const ruta = this.rutas().find((r) => (r.id || (r as any)._id) === id) || null;
     this.ctx.selectRuta(ruta);
     this.reloadData();
+  }
+
+  onSearch(ev: CustomEvent): void {
+    this.searchQuery.set(String(ev.detail?.value ?? ''));
   }
 
   onDateChange(ev: CustomEvent): void {
