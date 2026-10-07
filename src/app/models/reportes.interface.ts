@@ -189,10 +189,35 @@ export interface ChartRutaPoint {
   gastos: number;
 }
 
+export type ClasificacionCartera = 'BUENO' | 'REGULAR' | 'MALO';
+
+export interface CarteraClienteItem {
+  creditoId: string;
+  clienteId: string;
+  nombre: string;
+  alias?: string;
+  telefono?: string;
+  dpi?: string;
+  rutaId: string;
+  rutaNombre: string;
+  state: ClasificacionCartera;
+  daysOverdue: number;
+  saldo: number;
+  valorCuota: number;
+  currency: string;
+}
+
+export interface ReporteCarteraClientesResponse {
+  items: CarteraClienteItem[];
+  total: number;
+  clasificacion: ClasificacionCartera | null;
+}
+
 export interface ReporteQueryParams {
   fechaInicio?: string;
   fechaFin?: string;
   rutaId?: string;
+  clasificacion?: ClasificacionCartera;
 }
 
 /** Textos de ayuda en lenguaje sencillo para el administrador. */

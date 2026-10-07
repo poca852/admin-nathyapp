@@ -211,11 +211,32 @@
         </div>
 
         <div class="distribution-row">
-          <ion-badge color="success">Bueno: {{ report.totalesEmpresa.distribucionEstado.BUENO }}</ion-badge>
-          <ion-badge color="warning">Regular: {{ report.totalesEmpresa.distribucionEstado.REGULAR }}</ion-badge>
-          <ion-badge color="danger">Malo: {{ report.totalesEmpresa.distribucionEstado.MALO }}</ion-badge>
-          <ion-badge color="medium">{{ report.totalesEmpresa.clientesActivos }} clientes activos</ion-badge>
+          <button
+            type="button"
+            class="distribution-badge"
+            (click)="openCarteraClientes('BUENO')">
+            <ion-badge color="success">Bueno: {{ report.totalesEmpresa.distribucionEstado.BUENO }}</ion-badge>
+          </button>
+          <button
+            type="button"
+            class="distribution-badge"
+            (click)="openCarteraClientes('REGULAR')">
+            <ion-badge color="warning">Regular: {{ report.totalesEmpresa.distribucionEstado.REGULAR }}</ion-badge>
+          </button>
+          <button
+            type="button"
+            class="distribution-badge"
+            (click)="openCarteraClientes('MALO')">
+            <ion-badge color="danger">Malo: {{ report.totalesEmpresa.distribucionEstado.MALO }}</ion-badge>
+          </button>
+          <button
+            type="button"
+            class="distribution-badge"
+            (click)="openCarteraClientes('all')">
+            <ion-badge color="medium">{{ report.totalesEmpresa.clientesActivos }} clientes activos</ion-badge>
+          </button>
         </div>
+        <p class="distribution-hint">Toca una categoría para ver el listado</p>
 
         @for (ruta of report.rutas; track trackByRutaId($index, ruta)) {
           <ion-card class="route-card">
@@ -662,3 +683,9 @@
 
   </div>
 </ion-content>
+
+<app-cartera-clientes-sheet
+  [isOpen]="carteraSheetOpen()"
+  [rutaId]="carteraSheetRutaId()"
+  [initialFilter]="carteraSheetFilter()"
+  (closed)="closeCarteraClientes()" />

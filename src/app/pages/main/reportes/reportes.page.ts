@@ -32,6 +32,7 @@ import { ReportesService } from 'src/app/services/reportes.service';
 import { RutaService } from 'src/app/services/ruta.service';
 import { UtilsService } from 'src/app/services/utils.service';
 import { resolveRutaCurrency } from 'src/app/helpers/money.helpers';
+import { CarteraSheetFilter } from './components/cartera-clientes-sheet/cartera-clientes-sheet.component';
 
 @Component({
   selector: 'app-reportes',
@@ -56,6 +57,8 @@ export class ReportesPage {
   public readonly refreshTrigger = signal(0);
   public readonly showGlossary = signal(false);
   public readonly exporting = signal(false);
+  public readonly carteraSheetOpen = signal(false);
+  public readonly carteraSheetFilter = signal<CarteraSheetFilter>('all');
 
   public readonly loading = signal(false);
   public readonly error = signal<string | null>(null);
@@ -79,6 +82,11 @@ export class ReportesPage {
     return first ? resolveRutaCurrency(first) : 'USD';
   });
   public readonly hasDateRange = computed(() => this.activeTab() !== 'cartera');
+  /** Ruta activa del reporte; undefined = todas las rutas de la empresa. */
+  public readonly carteraSheetRutaId = computed(() => {
+    const selected = this.selectedRouteId();
+    return selected === 'all' ? undefined : selected;
+  });
   public readonly hasReportData = computed(() => {
     switch (this.activeTab()) {
       case 'cartera':
@@ -169,6 +177,15 @@ export class ReportesPage {
 
   onRouteChange(event: CustomEvent): void {
     this.selectedRouteId.set(event.detail.value);
+  }
+
+  openCarteraClientes(filter: CarteraSheetFilter = 'all'): void {
+    this.carteraSheetFilter.set(filter);
+    this.carteraSheetOpen.set(true);
+  }
+
+  closeCarteraClientes(): void {
+    this.carteraSheetOpen.set(false);
   }
 
   onFechaInicioChange(event: CustomEvent): void {

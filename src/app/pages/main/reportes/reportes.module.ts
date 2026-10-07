@@ -5,6 +5,7 @@ import { IonicModule } from '@ionic/angular';
 import { ReportesPageRoutingModule } from './reportes-routing.module';
 import { ReportesPage } from './reportes.page';
 import { SharedModule } from '../../../shared/shared.module';
+import { CarteraClientesSheetComponent } from './components/cartera-clientes-sheet/cartera-clientes-sheet.component';
 
 @NgModule({
   imports: [
@@ -12,6 +13,7 @@ import { SharedModule } from '../../../shared/shared.module';
     IonicModule,
     SharedModule,
     ReportesPageRoutingModule,
+    CarteraClientesSheetComponent,
   ],
   declarations: [ReportesPage],
 })

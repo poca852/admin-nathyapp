@@ -255,7 +255,35 @@ ion-segment {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 16px;
+  margin-bottom: 6px;
+}
+
+.distribution-badge {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+
+  ion-badge {
+    pointer-events: none;
+    transition: transform 0.12s ease, opacity 0.12s ease;
+  }
+
+  &:active ion-badge {
+    transform: scale(0.96);
+    opacity: 0.9;
+  }
+}
+
+.distribution-hint {
+  margin: 0 0 16px;
+  font-size: 0.75rem;
+  color: var(--ion-color-medium);
 }
 
 .section-title {

@@ -3,7 +3,9 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import {
+  ClasificacionCartera,
   ReporteCajaHistoricoResponse,
+  ReporteCarteraClientesResponse,
   ReporteCarteraResponse,
   ReporteFinancieroResponse,
   ReporteOficinaResponse,
@@ -40,6 +42,9 @@ export class ReportesService {
     if (params.rutaId) {
       httpParams = httpParams.set('rutaId', params.rutaId);
     }
+    if (params.clasificacion) {
+      httpParams = httpParams.set('clasificacion', params.clasificacion);
+    }
 
     return httpParams;
   }
@@ -50,6 +55,20 @@ export class ReportesService {
       headers: this.authHeaders(),
       params,
     });
+  }
+
+  getCarteraClientes(
+    rutaId?: string,
+    clasificacion?: ClasificacionCartera,
+  ): Observable<ReporteCarteraClientesResponse> {
+    const params = this.buildParams({ rutaId, clasificacion });
+    return this.http.get<ReporteCarteraClientesResponse>(
+      `${this.baseUrl}/reportes/cartera/clientes`,
+      {
+        headers: this.authHeaders(),
+        params,
+      },
+    );
   }
 
   getFinanciero(
