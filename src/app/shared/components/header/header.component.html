@@ -49,7 +49,7 @@
         <ion-icon name="megaphone-outline"></ion-icon>
         <ion-badge color="warning" class="notification-badge">{{ avisosCount() }}</ion-badge>
       </ion-button>
-      <ion-button *ngIf="cantidadPendientes() > 0" (click)="abrirNotificaciones()" fill="clear" size="small">
+      <ion-button *ngIf="showMenu && !isModal && cantidadPendientes() > 0" (click)="abrirNotificaciones()" fill="clear" size="small">
         <ion-icon name="notifications-outline"></ion-icon>
         <ion-badge color="danger" class="notification-badge">{{cantidadPendientes()}}</ion-badge>
       </ion-button>

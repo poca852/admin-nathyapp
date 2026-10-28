@@ -1,5 +1,54 @@
-<app-header title="Imagen" [isModal]="true" />
+<div class="viewer">
+  <div class="toolbar">
+    <span class="titulo">{{ titulo }}</span>
+    <button type="button" class="btn-icon" aria-label="Cerrar" (click)="cerrar()">
+      <ion-icon name="close" aria-hidden="true"></ion-icon>
+    </button>
+  </div>
 
-<ion-content class="ion-padding">
-  <img [src]="url" alt="cliente">
-</ion-content>
+  <div
+    #lienzo
+    class="lienzo"
+    (pointerdown)="onPointerDown($event)"
+    (pointermove)="onPointerMove($event)"
+    (pointerup)="onPointerUp($event)"
+    (pointercancel)="onPointerUp($event)">
+    @if (!url || errorCarga) {
+    <div class="foto-error">
+      <ion-icon name="image-outline" aria-hidden="true"></ion-icon>
+      <p>{{ url ? 'No se pudo cargar la foto' : 'Esta foto no tiene archivo' }}</p>
+      <span>{{ url ? 'Puede ser la conexión, o que el archivo ya no esté.' : 'No hay una imagen guardada para mostrar.' }}</span>
+      @if (url) {
+      <button type="button" (click)="reintentar()">Reintentar</button>
+      }
+    </div>
+    } @else {
+    <img
+      #foto
+      [src]="direccion"
+      [alt]="titulo"
+      [style.transform]="transformacion"
+      draggable="false"
+      (load)="alCargar()"
+      (error)="alFallar()" />
+    }
+  </div>
+
+  <div class="controles" [class.ocultos]="!url || errorCarga">
+    <button type="button" class="btn-icon" aria-label="Alejar" (click)="alejar()">
+      <ion-icon name="remove-outline" aria-hidden="true"></ion-icon>
+    </button>
+    <button type="button" class="btn-icon" aria-label="Acercar" (click)="acercar()">
+      <ion-icon name="add-outline" aria-hidden="true"></ion-icon>
+    </button>
+    <button type="button" class="btn-icon" aria-label="Girar a la izquierda" (click)="girar(-90)">
+      <ion-icon class="espejo" name="refresh-outline" aria-hidden="true"></ion-icon>
+    </button>
+    <button type="button" class="btn-icon" aria-label="Girar a la derecha" (click)="girar(90)">
+      <ion-icon name="refresh-outline" aria-hidden="true"></ion-icon>
+    </button>
+    <button type="button" class="btn-icon" aria-label="Restablecer" (click)="restablecer()">
+      <ion-icon name="contract-outline" aria-hidden="true"></ion-icon>
+    </button>
+  </div>
+</div>

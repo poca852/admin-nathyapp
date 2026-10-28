@@ -1,17 +1,18 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { ClienteService } from '../../../services/cliente.service';
 import { UtilsService } from '../../../services/utils.service';
 import { Cliente } from 'src/app/models';
 import { FirebaseService } from '../../../services/firebase.service';
+import { carpetaDeFoto, uniqueImagePath } from 'src/app/helpers/image-upload';
 
 @Component({
   selector: 'app-update-cliente',
   templateUrl: './update-cliente.component.html',
   styleUrls: ['./update-cliente.component.scss'],
 })
-export class UpdateClienteComponent implements OnInit {
+export class UpdateClienteComponent implements OnInit, OnDestroy {
   @Input()
   cliente: Cliente;
 
@@ -38,6 +39,12 @@ export class UpdateClienteComponent implements OnInit {
   };
 
   submitting = false;
+  private guardado = false;
+  private readonly fotosIniciales = {
+    document_image: '',
+    business_image: '',
+    house_image: '',
+  };
 
   constructor(
     private clienteSvc: ClienteService,
@@ -58,6 +65,9 @@ export class UpdateClienteComponent implements OnInit {
         business_image: this.cliente.business_image || '',
         house_image: this.cliente.house_image || '',
       });
+      this.fotosIniciales.document_image = this.cliente.document_image || '';
+      this.fotosIniciales.business_image = this.cliente.business_image || '';
+      this.fotosIniciales.house_image = this.cliente.house_image || '';
       this.imagesCliente.document_image = this.cliente.document_image || null;
       this.imagesCliente.business_image = this.cliente.business_image || null;
       this.imagesCliente.house_image = this.cliente.house_image || null;
@@ -92,6 +102,7 @@ export class UpdateClienteComponent implements OnInit {
       next: () => {
         loading.dismiss();
         this.submitting = false;
+        this.guardado = true;
         this.utilsSvc.presentToast({
           message: 'Cliente actualizado',
           duration: 2500,
@@ -114,26 +125,23 @@ export class UpdateClienteComponent implements OnInit {
 
   public async takePicture(control: 'document_image' | 'business_image' | 'house_image'): Promise<void> {
     try {
-      const { dataUrl } = await this.utilsSvc.takePicture(
+      const image = await this.utilsSvc.takePicture(
         `Selecciona / Toma una foto`,
       );
 
-      let path = 'clientes';
-      const id = this.clienteId();
+      if (!image?.dataUrl) return;
 
-      switch (control) {
-        case 'document_image':
-          path += `/documentos/${id}`;
-          break;
-        case 'business_image':
-          path += `/business/${id}`;
-          break;
-        case 'house_image':
-          path += `/house/${id}`;
-          break;
-        default:
-          break;
+      const id = this.clienteId();
+      if (!id) {
+        await this.utilsSvc.presentToast({
+          message: 'No se encontró el identificador del cliente',
+          duration: 2500,
+          color: 'danger',
+        });
+        return;
       }
+      const previa = this.form.get(control)?.value || '';
+      const path = uniqueImagePath(carpetaDeFoto(control), id);
 
       const loading = await this.utilsSvc.loading({
         message: 'Subiendo imagen...',
@@ -141,7 +149,10 @@ export class UpdateClienteComponent implements OnInit {
       await loading.present();
 
       try {
-        const urlImage = await this.firebaseSvc.uploadImage(path, dataUrl);
+        const urlImage = await this.firebaseSvc.uploadImage(path, image.dataUrl);
+        if (previa.startsWith('https://') && previa !== this.fotosIniciales[control]) {
+          await this.firebaseSvc.deleteByUrls([previa]);
+        }
         this.imagesCliente[control] = urlImage;
         this.form.get(control)?.setValue(urlImage);
       } finally {
@@ -150,5 +161,13 @@ export class UpdateClienteComponent implements OnInit {
     } catch {
       // Usuario canceló o falló la captura; sin toast ruidoso
     }
+  }
+
+  ngOnDestroy(): void {
+    if (this.guardado) return;
+    const huerfanas = (['document_image', 'business_image', 'house_image'] as const)
+      .map((campo) => this.form.get(campo)?.value || '')
+      .filter((url) => url.startsWith('https://') && !Object.values(this.fotosIniciales).includes(url));
+    void this.firebaseSvc.deleteByUrls(huerfanas);
   }
 }

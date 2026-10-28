@@ -104,11 +104,11 @@ export class DetailClientePage {
     });
   }
 
-  async viewImage(url: string): Promise<void> {
+  async viewImage(url: string, titulo = 'Imagen'): Promise<void> {
     await this.utilsSvc.presentModal({
       component: ViewImageComponent,
-      cssClass: 'add-update-modal',
-      componentProps: { url },
+      cssClass: 'image-viewer-modal',
+      componentProps: { url, titulo },
     });
   }
 

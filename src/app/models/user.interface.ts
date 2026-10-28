@@ -15,6 +15,8 @@ export interface User {
    ubication?: number[];
    /** Sesión única activa (expuesto por API para admins). */
    hasActiveSession?: boolean;
+   /** El cobrador puede reemplazar fotos al renovar. */
+   puedeEditarFotosRenovacion?: boolean;
    activeSessionExpiresAt?: string | Date | null;
  }
  export interface AddUser{

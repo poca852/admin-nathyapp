@@ -2,6 +2,7 @@ import { Component, Input, OnInit, inject, computed } from '@angular/core';
 import { UtilsService } from 'src/app/services/utils.service';
 import { PwaInstallService } from 'src/app/services/pwa-install.service';
 import { PeticionesService } from 'src/app/services/peticiones.service';
+import { PeticionesImagenService } from 'src/app/services/peticiones-imagen.service';
 import { AnnouncementsService } from 'src/app/services/announcements.service';
 import { EmpresaService } from 'src/app/services/empresa.service';
 import { RoleService } from 'src/app/services/role.service';
@@ -30,13 +31,16 @@ export class HeaderComponent implements OnInit {
   utilsSvc = inject(UtilsService);
   pwaInstallSvc = inject(PwaInstallService);
   peticionesSvc = inject(PeticionesService);
+  peticionesImagenSvc = inject(PeticionesImagenService);
   announcementsSvc = inject(AnnouncementsService);
   empresaSvc = inject(EmpresaService);
   roleSvc = inject(RoleService);
   offlineSvc = inject(OfflineService);
   private readonly modalCtrl = inject(ModalController);
 
-  cantidadPendientes = computed(() => this.peticionesSvc.cantidadPendientes());
+  cantidadPendientes = computed(() =>
+    this.peticionesSvc.cantidadPendientes() + this.peticionesImagenSvc.cantidadPendientes(),
+  );
   avisosCount = computed(() => this.announcementsSvc.unreadCount());
   isOffline = computed(() => this.offlineSvc.isOffline());
   showAvisos = computed(() => {

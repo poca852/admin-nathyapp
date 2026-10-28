@@ -1,8 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { Camera, CameraResultType, CameraSource, Photo } from '@capacitor/camera';
 import { ActionSheetController, ActionSheetOptions, AlertController, AlertOptions, LoadingController, LoadingOptions, ModalController, ModalOptions, ToastController, ToastOptions } from '@ionic/angular';
 import { Share, ShareOptions } from '@capacitor/share';
+import { compressImageDataUrl, ensureDataUrl } from '../helpers/image-upload';
 
 @Injectable({
   providedIn: 'root'
@@ -27,7 +28,8 @@ export class UtilsService {
   async takePicture(promptLabelHeader: string) {
     try {
       const image = await Camera.getPhoto({
-        quality: 90,
+        quality: 60,
+        width: 1280,
         allowEditing: false,
         resultType: CameraResultType.DataUrl,
         source: CameraSource.Prompt,
@@ -35,10 +37,17 @@ export class UtilsService {
         promptLabelPhoto: 'Selecciona una imagen',
         promptLabelPicture: 'Toma una foto'
       });
-      return image
+      return this.withCompressedPhoto(image);
     } catch (error) {
       return null;
     }
+  }
+
+  private async withCompressedPhoto(image: Photo): Promise<Photo> {
+    if (!image?.dataUrl) return image;
+    const dataUrl = ensureDataUrl(image.dataUrl, image.format || 'jpeg');
+    image.dataUrl = await compressImageDataUrl(dataUrl);
+    return image;
   };
 
 

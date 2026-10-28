@@ -32,6 +32,7 @@ export class AddUpdateEmployeComponent implements OnInit {
     ruta: new FormControl<string | null>(null),
     rutas: new FormControl<string[]>([]),
     rol: new FormControl('', [Validators.required]),
+    puedeEditarFotosRenovacion: new FormControl(false),
   });
 
   public roles: Roles[] = [Roles.admin, Roles.cobrador, Roles.supervisor];
@@ -50,6 +51,7 @@ export class AddUpdateEmployeComponent implements OnInit {
         ruta: this.employe.ruta?.id || (this.employe.ruta as any)?._id || null,
         rutas: rutasIds,
         rol: this.employe.rol,
+        puedeEditarFotosRenovacion: !!this.employe.puedeEditarFotosRenovacion,
       });
     } else {
       this.form.controls.password.setValidators([
@@ -159,6 +161,9 @@ export class AddUpdateEmployeComponent implements OnInit {
     if (value.rol === Roles.supervisor && Array.isArray(value.rutas) && value.rutas.length > 0) {
       payload['rutas'] = value.rutas;
     }
+
+    payload['puedeEditarFotosRenovacion'] =
+      value.rol === Roles.cobrador && !!value.puedeEditarFotosRenovacion;
 
     return payload;
   }

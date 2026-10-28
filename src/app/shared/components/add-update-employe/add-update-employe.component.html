@@ -127,9 +127,23 @@
         </ion-select>
       </ion-item>
 
+      <ion-item
+        class="field-card"
+        lines="none"
+        *ngIf="form.controls.rol.value === 'COBRADOR'"
+      >
+        <ion-icon slot="start" name="images-outline" color="primary"></ion-icon>
+        <ion-label class="ion-text-wrap">Puede cambiar fotos al renovar</ion-label>
+        <ion-toggle
+          slot="end"
+          formControlName="puedeEditarFotosRenovacion"
+          aria-label="Puede cambiar fotos al renovar"
+        ></ion-toggle>
+      </ion-item>
+
       <div class="role-hint" *ngIf="form.controls.rol.value === 'COBRADOR'">
         <ion-icon name="information-circle-outline"></ion-icon>
-        <span>El cobrador opera en una sola ruta.</span>
+        <span>El cobrador opera en una sola ruta. Si el permiso de fotos está apagado, solo puede pedir el cambio y un administrador lo aprueba.</span>
       </div>
       <div class="role-hint" *ngIf="form.controls.rol.value === 'SUPERVISOR'">
         <ion-icon name="information-circle-outline"></ion-icon>

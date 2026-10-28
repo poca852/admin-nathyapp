@@ -17,6 +17,7 @@ export * from './ruta.interface';
 export * from './country.interface';
 export * from './categoria-gasto.enum';
 export * from './peticiones-ubicacion.interface';
+export * from './peticion-imagen.interface';
 export * from './reportes.interface';
 export * from './announcement.interface';
 export type {

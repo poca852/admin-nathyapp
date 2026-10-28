@@ -151,6 +151,13 @@ ion-button {
   }
 }
 
+ion-modal.image-viewer-modal {
+  --width: 100%;
+  --height: 100%;
+  --border-radius: 0;
+  --background: #000;
+}
+
 /* Modal centrado tipo tarjeta para avisos del super admin */
 ion-modal.announcement-alert-modal {
   --width: min(440px, calc(100% - 32px));

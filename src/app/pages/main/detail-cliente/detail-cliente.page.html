@@ -69,19 +69,19 @@
         <p class="section-label">Documentos e imágenes</p>
         <div class="image-gallery">
           @if (cli.document_image) {
-          <div class="image-thumb" (click)="viewImage(cli.document_image)">
+          <div class="image-thumb" (click)="viewImage(cli.document_image, 'Documento')">
             <img [src]="cli.document_image" [alt]="'Documento de ' + cli.alias" />
             <span class="image-label">Documento</span>
           </div>
           }
           @if (cli.house_image) {
-          <div class="image-thumb" (click)="viewImage(cli.house_image)">
+          <div class="image-thumb" (click)="viewImage(cli.house_image, 'Casa')">
             <img [src]="cli.house_image" [alt]="'Casa de ' + cli.alias" />
             <span class="image-label">Casa</span>
           </div>
           }
           @if (cli.business_image) {
-          <div class="image-thumb" (click)="viewImage(cli.business_image)">
+          <div class="image-thumb" (click)="viewImage(cli.business_image, 'Negocio')">
             <img [src]="cli.business_image" [alt]="'Negocio de ' + cli.alias" />
             <span class="image-label">Negocio</span>
           </div>
