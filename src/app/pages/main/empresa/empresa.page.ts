@@ -37,6 +37,7 @@ export class EmpresaPage {
       dayOfPay: e?.dayOfPay ?? null,
       phone: e?.phone || null,
       email: e?.email || null,
+      modoSocios: !!e?.modoSocios,
       cobraMora: !!e?.cobraMora,
       porcentajeMora: e?.porcentajeMora ?? 0,
     };

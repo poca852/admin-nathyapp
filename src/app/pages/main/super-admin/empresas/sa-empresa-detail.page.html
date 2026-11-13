@@ -194,6 +194,7 @@
             </p>
           </ion-label>
           <ion-button
+            *ngIf="!ruta.status || !empresa()?.modoSocios"
             slot="end"
             fill="clear"
             size="small"

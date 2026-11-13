@@ -4,6 +4,8 @@
 
 import { resolveSocketUrl } from '../app/helpers/socket-url.helpers';
 
+const devApi = import.meta.env.NG_APP_DEV_API || 'http://127.0.0.1:3333/api';
+
 export const environment = {
   production: false,
   version: '1.6.4',
@@ -11,10 +13,10 @@ export const environment = {
     'Edicion y eliminacion de creditos',
     'Correcciones generales y mejoras de rendimiento.',
   ],
-  baseUrl: import.meta.env.NG_APP_DEV_API,
+  baseUrl: devApi,
   socketUrl: resolveSocketUrl(
     import.meta.env.NG_APP_URL_DEV_SOCKET,
-    import.meta.env.NG_APP_DEV_API,
+    devApi,
   ),
   mapbox_token: import.meta.env.NG_APP_MAP_BOX,
   firebase: {

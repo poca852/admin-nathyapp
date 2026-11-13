@@ -84,6 +84,39 @@
       </div>
     </section>
 
+    <section class="form-section">
+      <header class="section-header">
+        <div class="section-icon">
+          <ion-icon name="people-outline"></ion-icon>
+        </div>
+        <div>
+          <h2>Control de socios</h2>
+          <p>Desglose de efectivo y cierre en dos pasos</p>
+        </div>
+      </header>
+
+      <div class="section-body">
+        <div class="toggle-row">
+          <div class="toggle-copy">
+            <div class="label-with-tip">
+              <span>Modo socios</span>
+              <button type="button" class="tip-btn" id="tip-modo-socios" aria-label="Ayuda modo socios">
+                <ion-icon name="help-circle-outline"></ion-icon>
+              </button>
+            </div>
+            <small>El cobrador desglosa el efectivo y sella el cierre</small>
+          </div>
+          <ion-toggle formControlName="modoSocios" [enableOnOffLabels]="true"></ion-toggle>
+        </div>
+
+        <ion-popover trigger="tip-modo-socios" triggerAction="click" side="bottom" alignment="start">
+          <ng-template>
+            <div class="tip-content">{{ tips.modoSocios }}</div>
+          </ng-template>
+        </ion-popover>
+      </div>
+    </section>
+
     <section class="form-section mora-section">
       <header class="section-header">
         <div class="section-icon accent">

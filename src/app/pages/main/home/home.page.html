@@ -146,6 +146,7 @@
 
               <div class="card-footer">
                 <ion-button
+                  *ngIf="muestraCierre(ruta)"
                   expand="block"
                   fill="solid"
                   [color]="ruta.status ? 'danger' : 'success'"

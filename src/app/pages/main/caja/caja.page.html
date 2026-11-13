@@ -101,6 +101,9 @@
           <ion-badge *ngIf="caja.status === false" color="danger">
             Cerrada
           </ion-badge>
+          <ion-badge *ngIf="caja.modoSocios && caja.estadoCierre === 'en_revision'" color="warning">
+            En revisión
+          </ion-badge>
           <ion-badge *ngIf="cobroPct() !== null" color="tertiary">
             {{ cobroPct() }}% cobrado
           </ion-badge>
@@ -108,6 +111,7 @@
       </div>
       <p class="hero-meta">
         {{ ruta()?.nombre | titlecase }} · {{ caja.fecha | date: 'dd MMM yyyy' }}
+        <span *ngIf="caja.modoSocios && caja.verificadoPorAdmin"> · Revisada por el admin</span>
       </p>
     </div>
 
@@ -180,6 +184,37 @@
           <span>Inversiones</span>
           <strong>{{ caja.inversion | money }}</strong>
         </div>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="metrics-card" *ngIf="caja.modoSocios && caja.estadoCierre && caja.estadoCierre !== 'abierta'">
+      <ion-card-header>
+        <ion-card-title>Control de socios</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="metric-row">
+          <span>Entregado a administración</span>
+          <strong>{{ caja.entregadoAdministracion != null ? (caja.entregadoAdministracion | money) : 'Sin registro' }}</strong>
+        </div>
+        <div class="metric-row">
+          <span>Retenido por el cobrador</span>
+          <strong>{{ caja.efectivoRetenido != null ? (caja.efectivoRetenido | money) : 'Sin registro' }}</strong>
+        </div>
+        <div class="metric-row">
+          <span>Marca del admin</span>
+          <strong>{{ caja.verificadoPorAdmin ? 'Ya la revisó' : 'Todavía no' }}</strong>
+        </div>
+        <p class="socios-note" *ngIf="caja.estadoCierre === 'en_revision'">
+          El cobrador todavía no sella el cierre. La ruta sigue abierta.
+        </p>
+        <ion-button
+          expand="block"
+          class="ion-margin-top"
+          [color]="caja.verificadoPorAdmin ? 'medium' : 'success'"
+          [disabled]="verificando()"
+          (click)="marcarVerificacion(!caja.verificadoPorAdmin)">
+          {{ caja.verificadoPorAdmin ? 'Quitar verificación' : 'Marcar como verificada' }}
+        </ion-button>
       </ion-card-content>
     </ion-card>
 

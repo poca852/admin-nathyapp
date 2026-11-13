@@ -49,6 +49,7 @@
 
     <div class="sa-actions">
       <button
+        *ngIf="!r.status || !modoSocios()"
         type="button"
         class="sa-action-card"
         [disabled]="statusBusy()"

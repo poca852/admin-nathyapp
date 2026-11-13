@@ -38,6 +38,8 @@ export class UpdateEmpresaComponent implements OnInit {
   ];
 
   readonly tips = {
+    modoSocios:
+      'Activa el control de socios. El cobrador desglosa el efectivo antes de cerrar y la caja pasa por revisión. El cierre definitivo lo sella el cobrador. Si está desactivado, el cierre de caja sigue siendo inmediato.',
     cobraMora:
       'Activa el cobro de mora en toda la empresa. Si está desactivado, no se podrá aplicar, perdonar ni cobrar mora en ningún crédito.',
     permiteMoraVoluntaria:
@@ -61,6 +63,7 @@ export class UpdateEmpresaComponent implements OnInit {
       Validators.max(31),
     ]),
     country: new FormControl('', [Validators.required]),
+    modoSocios: new FormControl(false),
     cobraMora: new FormControl(false),
     permiteMoraVoluntaria: new FormControl(false),
     porcentajeMora: new FormControl(0, [Validators.min(0)]),
@@ -83,6 +86,7 @@ export class UpdateEmpresaComponent implements OnInit {
         dayOfPay: this.empresa.dayOfPay ?? null,
         subscriptionGraceDays: this.empresa.subscriptionGraceDays ?? 3,
         country: this.empresa.country,
+        modoSocios: this.empresa.modoSocios ?? false,
         cobraMora: this.empresa.cobraMora ?? false,
         permiteMoraVoluntaria: this.empresa.permiteMoraVoluntaria ?? false,
         porcentajeMora: this.empresa.porcentajeMora ?? 0,
@@ -105,6 +109,7 @@ export class UpdateEmpresaComponent implements OnInit {
       dayOfPay,
       subscriptionGraceDays,
       country,
+      modoSocios,
       cobraMora,
       permiteMoraVoluntaria,
       porcentajeMora,
@@ -131,6 +136,7 @@ export class UpdateEmpresaComponent implements OnInit {
           ? Number(subscriptionGraceDays)
           : undefined,
       country: country || undefined,
+      modoSocios: !!modoSocios,
     };
 
     this.saving = true;
@@ -144,6 +150,7 @@ export class UpdateEmpresaComponent implements OnInit {
           phone: phone?.trim() || undefined,
           dayOfPay: empresaPayload.dayOfPay,
           subscriptionGraceDays: empresaPayload.subscriptionGraceDays,
+          modoSocios: !!modoSocios,
           ...moraConfig,
         } as any)
         .subscribe({

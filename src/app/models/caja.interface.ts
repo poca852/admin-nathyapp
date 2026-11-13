@@ -19,4 +19,9 @@ export interface Caja {
    cobraMora?: boolean;
    /** true = caja del día abierta / en curso */
    status?: boolean;
+   modoSocios?: boolean;
+   estadoCierre?: 'abierta' | 'en_revision' | 'cerrada';
+   entregadoAdministracion?: number;
+   efectivoRetenido?: number;
+   verificadoPorAdmin?: boolean;
  }

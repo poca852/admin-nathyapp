@@ -47,6 +47,13 @@ export class SaRutaDetailPage {
 
   readonly isOrphan = computed(() => !this.empresaId());
 
+  readonly modoSocios = computed(() => {
+    const emp = (this.ruta() as any)?.empresa;
+    if (emp && typeof emp === 'object' && emp.modoSocios) return true;
+    const id = this.empresaId();
+    return !!this.ctx.empresas().find((e) => e.id === id)?.modoSocios;
+  });
+
   ngOnInit(): void {
     this.resolveRuta();
   }
@@ -111,6 +118,7 @@ export class SaRutaDetailPage {
     if (!ruta || this.statusBusy()) return;
 
     const willOpen = !ruta.status;
+    if (!willOpen && this.modoSocios()) return;
     const nombre = ruta.nombre || 'esta ruta';
     this.utilsSvc.presentAlert({
       header: willOpen ? 'Abrir ruta' : 'Cerrar ruta',

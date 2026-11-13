@@ -50,4 +50,12 @@ export class CajaService {
       headers: this.authHeaders(),
     });
   }
+
+  verificarCaja(cajaId: string, verificado: boolean): Observable<Caja> {
+    return this.http.patch<Caja>(
+      `${this.baseUrl}/caja/verificacion/${cajaId}`,
+      { verificado },
+      { headers: this.authHeaders() },
+    );
+  }
 }

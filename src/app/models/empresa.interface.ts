@@ -21,6 +21,7 @@ export interface Empresa {
    owner?: User;
    employes: User[];
    rutas: Ruta[];
+   modoSocios?: boolean;
    cobraMora?: boolean;
    permiteMoraVoluntaria?: boolean;
    porcentajeMora?: number;

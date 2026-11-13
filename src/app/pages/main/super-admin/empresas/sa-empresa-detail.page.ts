@@ -187,6 +187,7 @@ export class SaEmpresaDetailPage {
     if (!id || this.statusBusyId()) return;
 
     const willOpen = !ruta.status;
+    if (!willOpen && !!this.empresa()?.modoSocios) return;
     const nombre = ruta.nombre || 'esta ruta';
     this.utilsSvc.presentAlert({
       header: willOpen ? 'Abrir ruta' : 'Cerrar ruta',

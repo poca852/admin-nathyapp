@@ -1,25 +1,29 @@
-import { Component, ViewChild, computed, inject, signal } from '@angular/core';
+import { Component, OnDestroy, ViewChild, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { DatetimeCustomEvent, IonModal } from '@ionic/angular';
+import { Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
 import { Caja, Ruta } from 'src/app/models';
 import { CajaService } from '../../../services/caja.service';
 import { UtilsService } from '../../../services/utils.service';
 import { EmpresaService } from '../../../services/empresa.service';
+import { CajaSociosEvent, WsService } from '../../../services/ws.service';
 
 @Component({
   selector: 'app-caja',
   templateUrl: './caja.page.html',
   styleUrls: ['./caja.page.scss'],
 })
-export class CajaPage {
+export class CajaPage implements OnDestroy {
   @ViewChild('modalCaja') modalCaja!: IonModal;
 
   private readonly cajaSvc = inject(CajaService);
   private readonly utilsSvc = inject(UtilsService);
   private readonly empresaSvc = inject(EmpresaService);
   private readonly router = inject(Router);
+  private readonly ws = inject(WsService);
+  private sociosSub: Subscription | null = null;
 
   readonly dateSelect = signal<Date>(this.startOfToday());
   readonly ruta = signal<Ruta | null>(null);
@@ -29,6 +33,7 @@ export class CajaPage {
   readonly searched = signal(false);
   /** true cuando la última carga usó ledger en vivo */
   readonly isLive = signal(false);
+  readonly verificando = signal(false);
 
   readonly cobroPct = computed(() => {
     const caja = this.currentCaja();
@@ -36,17 +41,24 @@ export class CajaPage {
     return Math.round((Number(caja.cobro || 0) / Number(caja.pretendido)) * 100);
   });
 
+  ngOnDestroy(): void {
+    this.sociosSub?.unsubscribe();
+  }
+
   ionViewWillEnter(): void {
     const preselected = this.empresaSvc.ruta();
     if (preselected?.id) {
       this.ruta.set(preselected);
     }
+    this.escucharCajaSocios();
     if (this.ruta()?.id) {
       this.searchCaja();
     }
   }
 
   ionViewWillLeave(): void {
+    this.sociosSub?.unsubscribe();
+    this.sociosSub = null;
     this.currentCaja.set(null);
     this.isLive.set(false);
     this.searched.set(false);
@@ -102,7 +114,27 @@ export class CajaPage {
     return true;
   }
 
-  searchCaja(event?: any): void {
+  private escucharCajaSocios(): void {
+    this.sociosSub?.unsubscribe();
+    this.sociosSub = this.ws.onCajaSocios().subscribe((event) => {
+      this.aplicarCajaSocios(event);
+    });
+  }
+
+  private aplicarCajaSocios(event: CajaSociosEvent): void {
+    const ruta = this.ruta();
+    const rutaId = ruta?.id || ruta?._id;
+    if (!event?.ruta || !rutaId || String(event.ruta) !== String(rutaId)) return;
+
+    const caja = this.currentCaja();
+    const cajaId = caja?.id || caja?._id;
+    const mismaCaja = !!(cajaId && event.cajaId && String(cajaId) === String(event.cajaId));
+    if (mismaCaja || this.isSelectedToday()) {
+      this.searchCaja(undefined, true);
+    }
+  }
+
+  searchCaja(event?: any, silent = false): void {
     const ruta = this.ruta();
     const date = this.dateSelect();
 
@@ -126,8 +158,10 @@ export class CajaPage {
     }
 
     const useLive = this.shouldUseLive();
-    this.loading.set(true);
-    this.loadError.set(false);
+    if (!silent) {
+      this.loading.set(true);
+      this.loadError.set(false);
+    }
     this.searched.set(true);
 
     const request$ = useLive
@@ -148,6 +182,7 @@ export class CajaPage {
           this.loadError.set(false);
         },
         error: (err) => {
+          if (silent) return;
           this.currentCaja.set(null);
           this.isLive.set(false);
           this.loadError.set(true);
@@ -176,5 +211,27 @@ export class CajaPage {
         fecha: fecha ? fecha.toISOString() : undefined,
       },
     });
+  }
+
+  marcarVerificacion(verificado: boolean): void {
+    const caja = this.currentCaja();
+    const cajaId = caja?.id || caja?._id;
+    if (!caja || !cajaId || this.verificando()) return;
+
+    this.verificando.set(true);
+    this.cajaSvc.verificarCaja(cajaId, verificado)
+      .pipe(finalize(() => this.verificando.set(false)))
+      .subscribe({
+        next: (updated) => {
+          this.currentCaja.set({ ...caja, ...updated, id: updated.id || cajaId });
+        },
+        error: (err) => {
+          this.utilsSvc.presentToast({
+            message: err?.error?.message || 'No se pudo actualizar la verificación',
+            duration: 2500,
+            color: 'danger',
+          });
+        },
+      });
   }
 }

@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { NotificacionesService } from './services/notificaciones.service';
 import { Subscription } from 'rxjs';
 import { EmpresaService } from './services/empresa.service';
-import { CajaCloseEvent, CajaLockEvent, WsService } from './services/ws.service';
+import { CajaCloseEvent, CajaLockEvent, CajaSociosEvent, WsService } from './services/ws.service';
 import { UtilsService } from './services/utils.service';
 import { OfflineService } from './services/offline.service';
 import { PwaUpdateService } from './services/pwa-update.service';
@@ -76,6 +76,25 @@ export class AppComponent implements OnInit, OnDestroy {
           duration: 2000,
           position: 'bottom',
           color: 'success',
+        });
+      })
+    );
+
+    this.subscriptions.add(
+      this.ws.onCajaSocios().subscribe((event: CajaSociosEvent) => {
+        if (!event?.ruta) return;
+        const message = event.tipo === 'verificacion'
+          ? (event.verificadoPorAdmin
+            ? 'Caja marcada como verificada'
+            : 'Se quitó la verificación')
+          : (event.actualizacion
+            ? 'El cobrador actualizó el desglose'
+            : 'El cobrador envió el desglose a revisión');
+        this.utilsSvc.presentToast({
+          message,
+          duration: 2200,
+          position: 'bottom',
+          color: event.tipo === 'verificacion' ? 'success' : 'warning',
         });
       })
     );

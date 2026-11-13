@@ -40,6 +40,9 @@
         <div class="hero-copy">
           <div class="hero-title-row">
             <h1>{{ emp.name | titlecase }}</h1>
+            <ion-badge [color]="resumen().modoSocios ? 'tertiary' : 'medium'" mode="md">
+              Socios {{ resumen().modoSocios ? 'ON' : 'OFF' }}
+            </ion-badge>
             <ion-badge [color]="resumen().cobraMora ? 'warning' : 'medium'" mode="md">
               Mora {{ resumen().cobraMora ? 'ON' : 'OFF' }}
             </ion-badge>

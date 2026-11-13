@@ -189,8 +189,20 @@ export class HomePage implements OnDestroy {
     return ruta.status ? 'Abierta desde' : 'Cerrada desde';
   }
 
+  /** En modo socios el cobrador sella el cierre. El admin solo abre una ruta ya cerrada. */
+  get modoSocios(): boolean {
+    const leerEmpresa = this.empresaSvc.empresa;
+    if (typeof leerEmpresa !== 'function') return false;
+    return !!leerEmpresa.call(this.empresaSvc)?.modoSocios;
+  }
+
+  muestraCierre(ruta: Ruta): boolean {
+    return !(this.modoSocios && ruta.status);
+  }
+
   async confirmToggle(ruta: Ruta): Promise<void> {
     if (this.actionPendingId) return;
+    if (ruta.status && this.modoSocios) return;
 
     const nombre = ruta.nombre || 'esta ruta';
     const header = ruta.status ? 'Cerrar ruta' : 'Abrir ruta';

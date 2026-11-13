@@ -12,6 +12,16 @@ export interface CajaCloseEvent {
   status?: boolean;
 }
 
+export interface CajaSociosEvent {
+  ruta: string;
+  empresa: string;
+  cajaId?: string;
+  tipo: 'revision' | 'verificacion';
+  actualizacion?: boolean;
+  estadoCierre?: 'abierta' | 'en_revision' | 'cerrada';
+  verificadoPorAdmin: boolean;
+}
+
 export interface CobradorPresenceEvent {
   cobradorId: string;
   nombre: string;
@@ -141,6 +151,10 @@ export class WsService {
 
   onCloseCaja(): Observable<CajaCloseEvent> {
     return this.listen<CajaCloseEvent>('close-caja');
+  }
+
+  onCajaSocios(): Observable<CajaSociosEvent> {
+    return this.listen<CajaSociosEvent>('caja-socios');
   }
 
   requestTrackingSnapshot(): void {
